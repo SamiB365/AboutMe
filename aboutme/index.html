@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="fi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Duobotit | About Me</title>
+    <meta name="description" content="Duobotit - tekninen tuki ja ohjelmistokehitys." />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="stylesheet" href="./styles/main.css" />
+  </head>
+  <body>
+    <main class="layout">
+      <section class="left">
+        <p class="kicker">Tervetuloa</p>
+        <h1>Duobotit</h1>
+        <p class="lead">
+          Tarjoamme teknistä tukea ja ohjelmistokehitystä käytännönläheisesti.
+          Tämä on uusi sivupohja, rakennettu selkeäksi ja kevyeksi.
+        </p>
+        <a class="btn" href="mailto:info@duobotit.fi">Ota yhteyttä</a>
+      </section>
+
+      <section class="right">
+        <div class="cards-fan" aria-label="Videokortit">
+          <button class="fan-arrow fan-arrow-left" aria-label="Seuraava">‹</button>
+          <button class="fan-arrow fan-arrow-right" aria-label="Seuraava">›</button>
+
+          <article class="stack-card card-back-4" aria-label="Kortti 5"></article>
+          <article class="stack-card card-back-3" aria-label="Kortti 4"></article>
+          <article class="stack-card card-back-2" aria-label="Kortti 3"></article>
+          <article class="stack-card card-back-1" aria-label="Kortti 2"></article>
+
+          <article class="stack-card card-front" aria-label="Kortti 1">
+            <video
+              autoplay
+              muted
+              loop
+              playsinline
+              preload="metadata"
+              disablepictureinpicture
+              controlslist="nodownload noplaybackrate noremoteplayback nofullscreen"
+            >
+              <source src="./assets/videos/Ruutu2k.mp4" type="video/mp4" />
+              Selaimesi ei tue videotoistoa.
+            </video>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <script src="./scripts/main.js"></script>
+  </body>
+</html>

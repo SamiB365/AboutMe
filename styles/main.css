@@ -88,13 +88,24 @@ h1 {
   transform: translateX(0) rotate(0deg);
 }
 
+/* piilota selainten omat media-kontrollit täysin */
 .card-front video {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
   background: #000;
-  pointer-events: none; /* klikki ei osu videoon */
+  pointer-events: none;
+}
+
+/* Chrome / Safari */
+.card-front video::-webkit-media-controls {
+  display: none !important;
+}
+
+/* PiP-nappi erikseen joissain WebKit-versioissa */
+.card-front video::-webkit-media-controls-picture-in-picture-button {
+  display: none !important;
 }
 
 @media (max-width: 900px) {

@@ -59,25 +59,41 @@ h1 {
   font-weight: 600;
 }
 
-.video-card {
-  background: linear-gradient(180deg, #1a243d, var(--card));
-  border: 1px solid #2a3658;
-  border-radius: 16px;
-  padding: 0.75rem;
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
-
-  max-width: 380px;
+/* 5 kortin fan-stack samalla koolla kuin toivoit */
+.cards-fan {
+  position: relative;
+  width: 100%;
+  max-width: 380px;   /* desktop-koko */
+  aspect-ratio: 3 / 4;
   margin-left: auto;
 }
 
-.video-card video {
+.stack-card {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  border: 1px solid #2a3658;
+  background: linear-gradient(180deg, #1a243d, var(--card));
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.card-back-4 { transform: translateX(-88px) rotate(-16deg); opacity: 0.42; }
+.card-back-3 { transform: translateX(-66px) rotate(-12deg); opacity: 0.55; }
+.card-back-2 { transform: translateX(-44px) rotate(-8deg);  opacity: 0.68; }
+.card-back-1 { transform: translateX(-22px) rotate(-4deg);  opacity: 0.82; }
+
+.card-front {
+  z-index: 10;
+  transform: translateX(0) rotate(0deg);
+}
+
+.card-front video {
   width: 100%;
-  aspect-ratio: 3 / 4; /* 3:4 kuvasuhde */
-  border: 0;
-  border-radius: 12px;
+  height: 100%;
+  object-fit: cover;
   display: block;
   background: #000;
-  object-fit: cover;
 }
 
 @media (max-width: 900px) {
@@ -87,8 +103,13 @@ h1 {
     padding: 1.2rem;
   }
 
-  .video-card {
-    max-width: 280px;
+  .cards-fan {
+    max-width: 280px; /* mobiilikoko */
     margin: 0 auto;
   }
+
+  .card-back-4 { transform: translateX(-52px) rotate(-12deg); }
+  .card-back-3 { transform: translateX(-39px) rotate(-9deg); }
+  .card-back-2 { transform: translateX(-26px) rotate(-6deg); }
+  .card-back-1 { transform: translateX(-13px) rotate(-3deg); }
 }

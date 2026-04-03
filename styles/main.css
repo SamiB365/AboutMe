@@ -94,6 +94,7 @@ h1 {
   object-fit: cover;
   display: block;
   background: #000;
+  pointer-events: none; /* klikki ei osu videoon */
 }
 
 @media (max-width: 900px) {

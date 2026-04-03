@@ -2,13 +2,33 @@
   const fan = document.querySelector('.cards-fan');
   if (!fan) return;
 
-  const getCards = () => Array.from(fan.querySelectorAll('.stack-card'));
+  // Alkuperäinen visuaalinen järjestys (vasemmalta taakse -> eteen)
+  const stackClasses = ['card-back-4', 'card-back-3', 'card-back-2', 'card-back-1', 'card-front'];
+
+  // Ota kortit talteen DOM-järjestyksessä alussa
+  let order = Array.from(fan.querySelectorAll('.stack-card'));
+
+  function applyStack() {
+    // Nollaa kaikki stack-luokat
+    order.forEach((card) => {
+      card.classList.remove('card-back-4', 'card-back-3', 'card-back-2', 'card-back-1', 'card-front');
+    });
+
+    // Aseta luokat aina indeksin mukaan => pino pysyy aina oikeana
+    order.forEach((card, i) => {
+      card.classList.add(stackClasses[i]);
+    });
+
+    // Varmista että front on päällimmäisenä myös DOM:ssa
+    fan.appendChild(order[order.length - 1]);
+
+    syncVideos();
+  }
 
   function syncVideos() {
-    const cards = getCards();
-    const front = cards[cards.length - 1];
+    const front = order[order.length - 1];
 
-    cards.forEach((card) => {
+    order.forEach((card) => {
       const v = card.querySelector('video');
       if (!v) return;
 
@@ -24,47 +44,18 @@
     });
   }
 
+  // Klikkaus vain etummaiseen korttiin
   fan.addEventListener('click', (e) => {
-    const front = fan.querySelector('.card-front');
-    if (!front) return;
+    const front = order[order.length - 1];
     if (!front.contains(e.target)) return;
 
-    front.classList.remove('card-front');
-    front.classList.add('card-back-4');
+    // Siirrä etummainen pinon taakse
+    order.unshift(order.pop());
 
-    const map = [
-      ['card-back-3', 'card-back-4'],
-      ['card-back-2', 'card-back-3'],
-      ['card-back-1', 'card-back-2']
-    ];
-
-    map.forEach(([from, to]) => {
-      const el = fan.querySelector('.' + from);
-      if (el) {
-        el.classList.remove(from);
-        el.classList.add(to);
-      }
-    });
-
-    const newFrontCandidate = fan.querySelector('.card-back-4');
-    if (newFrontCandidate && newFrontCandidate !== front) {
-      newFrontCandidate.classList.remove('card-back-4');
-      newFrontCandidate.classList.add('card-back-1');
-    }
-
-    const newFront = fan.querySelector('.card-back-1');
-    if (newFront) {
-      newFront.classList.remove('card-back-1');
-      newFront.classList.add('card-front');
-      fan.appendChild(newFront);
-    } else {
-      front.classList.remove('card-back-4');
-      front.classList.add('card-front');
-      fan.appendChild(front);
-    }
-
-    syncVideos();
+    // Piirrä pino uudelleen oikein
+    applyStack();
   });
 
-  syncVideos();
+  // Ensimmäinen render
+  applyStack();
 })();

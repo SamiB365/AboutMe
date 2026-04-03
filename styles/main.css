@@ -1,127 +1,153 @@
 :root {
-  --bg: #0b1020;
-  --card: #131a2b;
+  --bg: #050b1a;
+  --bg2: #0a1530;
   --text: #eaf0ff;
-  --muted: #aab6d3;
-  --accent: #5ea0ff;
+  --muted: #9fb0d1;
+  --accent: #7ea6ff;
 }
 
 * {
   box-sizing: border-box;
 }
 
-body {
+html, body {
   margin: 0;
-  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  background: radial-gradient(1200px 700px at 10% 10%, #17213d 0%, var(--bg) 55%);
+  min-height: 100%;
+}
+
+body {
   color: var(--text);
-  min-height: 100dvh;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background:
+    radial-gradient(1200px 700px at 12% 12%, #122247 0%, transparent 52%),
+    radial-gradient(900px 600px at 85% 80%, #0b1b3b 0%, transparent 50%),
+    linear-gradient(160deg, var(--bg) 0%, var(--bg2) 100%);
 }
 
 .layout {
-  max-width: 1100px;
+  width: min(1180px, 94vw);
   margin: 0 auto;
   min-height: 100dvh;
   display: grid;
-  grid-template-columns: 1.1fr 1fr;
-  gap: 2rem;
+  grid-template-columns: 1.05fr 1fr;
+  gap: clamp(1rem, 3vw, 3rem);
   align-items: center;
-  padding: 2rem;
+  padding: clamp(1rem, 3vw, 2.5rem) 0;
 }
 
-.kicker {
-  color: var(--accent);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 0.8rem;
-  margin: 0 0 0.6rem;
-}
-
-h1 {
-  font-size: clamp(2rem, 4vw, 3.2rem);
-  margin: 0 0 1rem;
-}
-
-.lead {
+.left .kicker {
+  margin: 0 0 .5rem;
   color: var(--muted);
-  line-height: 1.65;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  font-size: .85rem;
+}
+
+.left h1 {
+  margin: 0;
+  font-size: clamp(2rem, 6vw, 4.6rem);
+  line-height: 1.05;
+}
+
+.left .lead {
+  margin-top: 1rem;
   max-width: 52ch;
-  margin-bottom: 1.4rem;
+  color: #cdd9f3;
+  font-size: clamp(1rem, 1.8vw, 1.15rem);
+  line-height: 1.7;
 }
 
 .btn {
   display: inline-block;
-  padding: 0.75rem 1rem;
-  border-radius: 10px;
+  margin-top: 1.2rem;
   text-decoration: none;
-  color: white;
-  background: linear-gradient(135deg, #3f7cff, #6fa9ff);
-  font-weight: 600;
+  color: #08122b;
+  background: linear-gradient(180deg, #9fbcff, #7ea6ff);
+  padding: .78rem 1.08rem;
+  border-radius: .7rem;
+  font-weight: 700;
 }
 
-/* 5 kortin fan-stack samalla koolla kuin toivoit */
+.right {
+  display: grid;
+  place-items: center;
+}
+
+/* ===== Cards ===== */
 .cards-fan {
   position: relative;
-  width: 100%;
-  max-width: 380px;   /* desktop-koko */
+  width: min(560px, 90vw);
   aspect-ratio: 3 / 4;
-  margin-left: auto;
 }
 
 .stack-card {
   position: absolute;
   inset: 0;
-  border-radius: 16px;
-  border: 1px solid #2a3658;
-  background: linear-gradient(180deg, #1a243d, var(--card));
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+  border-radius: 18px;
   overflow: hidden;
+  border: 1px solid rgba(173, 201, 255, .15);
+  background: linear-gradient(180deg, rgba(121,153,217,.14), rgba(29,44,78,.22));
+  box-shadow: 0 16px 40px rgba(0, 0, 0, .35);
 }
 
-.card-back-4 { transform: translateX(-88px) rotate(-16deg); opacity: 0.42; }
-.card-back-3 { transform: translateX(-66px) rotate(-12deg); opacity: 0.55; }
-.card-back-2 { transform: translateX(-44px) rotate(-8deg);  opacity: 0.68; }
-.card-back-1 { transform: translateX(-22px) rotate(-4deg);  opacity: 0.82; }
-
-.card-front {
-  z-index: 10;
-  transform: translateX(0) rotate(0deg);
-}
-
-/* piilota selainten omat media-kontrollit täysin */
-.card-front video {
+.stack-card video {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
-  background: #000;
-  pointer-events: none;
 }
 
-/* Chrome / Safari */
-.card-front video::-webkit-media-controls {
-  display: none !important;
+/* Kiinteät slotit */
+.card-back-4 { transform: translate(-84px, 8px) rotate(-14deg) scale(.96); opacity: .33; z-index: 1; }
+.card-back-3 { transform: translate(-58px, 5px) rotate(-10deg) scale(.97); opacity: .48; z-index: 2; }
+.card-back-2 { transform: translate(-36px, 2px) rotate(-6deg)  scale(.98); opacity: .64; z-index: 3; }
+.card-back-1 { transform: translate(-18px, 1px) rotate(-3deg)  scale(.99); opacity: .82; z-index: 4; }
+.card-front  { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; z-index: 6; }
+
+/* Nuolet desktopille */
+.fan-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 30;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 999px;
+  background: rgba(8,12,24,.55);
+  color: #eaf0ff;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  backdrop-filter: blur(4px);
+}
+.fan-arrow-left { left: -56px; }
+.fan-arrow-right { right: -56px; }
+
+.fan-arrow:hover {
+  background: rgba(18,28,52,.75);
 }
 
-/* PiP-nappi erikseen joissain WebKit-versioissa */
-.card-front video::-webkit-media-controls-picture-in-picture-button {
-  display: none !important;
+/* Mobiili: nuolia ei näytetä */
+@media (hover: none), (pointer: coarse) {
+  .fan-arrow { display: none; }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 940px) {
   .layout {
     grid-template-columns: 1fr;
-    gap: 1.25rem;
-    padding: 1.2rem;
+    align-items: start;
+    padding-top: 1.2rem;
+  }
+
+  .right {
+    order: -1;
+    margin-top: .5rem;
   }
 
   .cards-fan {
-    max-width: 280px; /* mobiilikoko */
-    margin: 0 auto;
+    width: min(440px, 92vw);
   }
-
-  .card-back-4 { transform: translateX(-52px) rotate(-12deg); }
-  .card-back-3 { transform: translateX(-39px) rotate(-9deg); }
-  .card-back-2 { transform: translateX(-26px) rotate(-6deg); }
-  .card-back-1 { transform: translateX(-13px) rotate(-3deg); }
 }

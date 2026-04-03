@@ -65,6 +65,9 @@ h1 {
   border-radius: 16px;
   padding: 0.75rem;
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+
+  max-width: 260px;   /* pienempi kortti */
+  margin-left: auto;  /* oikealle desktopilla */
 }
 
 .video-card video {
@@ -74,6 +77,7 @@ h1 {
   border-radius: 12px;
   display: block;
   background: #000;
+  object-fit: cover;
 }
 
 @media (max-width: 900px) {
@@ -81,5 +85,10 @@ h1 {
     grid-template-columns: 1fr;
     gap: 1.25rem;
     padding: 1.2rem;
+  }
+
+  .video-card {
+    max-width: 220px;     /* mobiilissa hieman pienempi */
+    margin: 0 auto;       /* keskelle */
   }
 }

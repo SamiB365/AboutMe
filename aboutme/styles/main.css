@@ -67,7 +67,7 @@ body {
 
 .right { display: grid; place-items: center; }
 
-.cards-fan { position: relative; width: min(440px, 90vw); aspect-ratio: 3 / 4; }
+.cards-fan { position: relative; width: min(280px, 90vw); aspect-ratio: 3 / 4; }
 
 .stack-card {
   position: absolute;

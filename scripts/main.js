@@ -2,60 +2,65 @@
   const fan = document.querySelector('.cards-fan');
   if (!fan) return;
 
-  // Alkuperäinen visuaalinen järjestys (vasemmalta taakse -> eteen)
-  const stackClasses = ['card-back-4', 'card-back-3', 'card-back-2', 'card-back-1', 'card-front'];
+  // Kiinteät slotit DOM-järjestyksessä: 5 -> 1 (taaimmainen ... etummainen)
+  const slots = {
+    s5: fan.querySelector('.card-back-4'),
+    s4: fan.querySelector('.card-back-3'),
+    s3: fan.querySelector('.card-back-2'),
+    s2: fan.querySelector('.card-back-1'),
+    s1: fan.querySelector('.card-front') // etummainen
+  };
 
-  // Ota kortit talteen DOM-järjestyksessä alussa
-  let order = Array.from(fan.querySelectorAll('.stack-card'));
+  const slotOrder = [slots.s5, slots.s4, slots.s3, slots.s2, slots.s1];
+  if (slotOrder.some((s) => !s)) return;
 
-  function applyStack() {
-    // Nollaa kaikki stack-luokat
-    order.forEach((card) => {
-      card.classList.remove('card-back-4', 'card-back-3', 'card-back-2', 'card-back-1', 'card-front');
+  // Jokaiselle slotille oma "media payload" (voi olla video tai tyhjä)
+  // Alussa: vain etuslotissa on video, muissa tyhjä
+  let payloads = slotOrder.map((slot) => {
+    const video = slot.querySelector('video');
+    return { video }; // video voi olla null
+  });
+
+  // Tyhjennä slotit ja aseta payloadit takaisin slottijärjestykseen
+  function render() {
+    slotOrder.forEach((slot, i) => {
+      // Poista vanha sisältö
+      while (slot.firstChild) slot.removeChild(slot.firstChild);
+
+      const p = payloads[i];
+      if (p.video) {
+        slot.appendChild(p.video);
+      }
     });
-
-    // Aseta luokat aina indeksin mukaan => pino pysyy aina oikeana
-    order.forEach((card, i) => {
-      card.classList.add(stackClasses[i]);
-    });
-
-    // Varmista että front on päällimmäisenä myös DOM:ssa
-    fan.appendChild(order[order.length - 1]);
 
     syncVideos();
   }
 
+  // Vain etummainen slot (s1) pyörii
   function syncVideos() {
-    const front = order[order.length - 1];
+    const frontVideo = payloads[4]?.video || null; // slot1
 
-    order.forEach((card) => {
-      const v = card.querySelector('video');
-      if (!v) return;
-
-      if (card === front) {
-        v.muted = true;
-        v.loop = true;
-        v.playsInline = true;
-        v.play().catch(() => {});
+    payloads.forEach((p) => {
+      if (!p.video) return;
+      if (p.video === frontVideo) {
+        p.video.muted = true;
+        p.video.loop = true;
+        p.video.playsInline = true;
+        p.video.play().catch(() => {});
       } else {
-        v.pause();
-        v.currentTime = 0;
+        p.video.pause();
+        p.video.currentTime = 0;
       }
     });
   }
 
-  // Klikkaus vain etummaiseen korttiin
-  fan.addEventListener('click', (e) => {
-    const front = order[order.length - 1];
-    if (!front.contains(e.target)) return;
-
-    // Siirrä etummainen pinon taakse
-    order.unshift(order.pop());
-
-    // Piirrä pino uudelleen oikein
-    applyStack();
+  // Klikki vain etummaiseen slottiin
+  slots.s1.addEventListener('click', () => {
+    // Kierto: s1 -> s5, s5 -> s4, s4 -> s3, s3 -> s2, s2 -> s1
+    // Eli arrayn viimeinen siirtyy alkuun
+    payloads.unshift(payloads.pop());
+    render();
   });
 
-  // Ensimmäinen render
-  applyStack();
+  render();
 })();

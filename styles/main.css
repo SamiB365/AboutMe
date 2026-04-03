@@ -66,13 +66,13 @@ h1 {
   padding: 0.75rem;
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
 
-  max-width: 220px;   /* pienempi kortti */
-  margin-left: auto;  /* oikealle desktopilla */
+  max-width: 220px;
+  margin-left: auto;
 }
 
 .video-card video {
   width: 100%;
-  aspect-ratio: 9 / 16;
+  aspect-ratio: 3 / 4; /* 3:4 kuvasuhde */
   border: 0;
   border-radius: 12px;
   display: block;
@@ -88,7 +88,7 @@ h1 {
   }
 
   .video-card {
-    max-width: 220px;     /* mobiilissa hieman pienempi */
-    margin: 0 auto;       /* keskelle */
+    max-width: 220px;
+    margin: 0 auto;
   }
 }

@@ -104,6 +104,12 @@ body {
 .card-back-1 { transform: translate(-18px, 1px) rotate(-3deg)  scale(.99); opacity: .82; z-index: 4; }
 .card-front  { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; z-index: 6; }
 
+/* Tyhjä etukortti */
+.card-empty {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px dashed rgba(255, 255, 255, 0.25);
+}
+
 /* Nuolet desktopille */
 .fan-arrow {
   position: absolute;

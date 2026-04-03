@@ -1,59 +1,48 @@
-<!doctype html>
-<html lang="fi">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Duobotit | About Me</title>
-    <meta
-      name="description"
-      content="Duobotit - tekninen tuki ja ohjelmistokehitys."
-    />
-    <meta name="robots" content="noindex, nofollow" />
-    <link rel="stylesheet" href="./styles/main.css" />
-  </head>
-  <body>
-    <main class="layout">
-      <section class="left">
-        <p class="kicker">Tervetuloa</p>
-        <h1>Duobotit</h1>
-        <p class="lead">
-          Tarjoamme teknistä tukea ja ohjelmistokehitystä käytännönläheisesti.
-          Tämä on uusi sivupohja, rakennettu selkeäksi ja kevyeksi.
-        </p>
-        <a class="btn" href="mailto:info@duobotit.fi">Ota yhteyttä</a>
-        <p style="margin-top: 1rem">
-          <a href="/">← Takaisin etusivulle</a>
-        </p>
-      </section>
+<div class="cards-fan" aria-label="Videokortit">
+  <button class="fan-arrow fan-arrow-left" aria-label="Edellinen">‹</button>
+  <button class="fan-arrow fan-arrow-right" aria-label="Seuraava">›</button>
 
-      <section class="right">
-        <div class="cards-fan" aria-label="Videokortit">
-          <button class="fan-arrow fan-arrow-left" aria-label="Edellinen">‹</button>
-          <button class="fan-arrow fan-arrow-right" aria-label="Seuraava">›</button>
+  <!-- Kortti 5 -->
+  <article class="stack-card card-back-4" aria-label="Kortti 5">
+    <video autoplay muted loop playsinline preload="metadata">
+      <source src="./assets/videos/Hertta.mp4" type="video/mp4" />
+    </video>
+  </article>
 
-          <article class="stack-card card-back-4" aria-label="Kortti 5"></article>
-          <article class="stack-card card-back-3" aria-label="Kortti 4"></article>
-          <article class="stack-card card-back-2" aria-label="Kortti 3"></article>
-          <article class="stack-card card-back-1" aria-label="Kortti 2"></article>
+  <!-- Kortti 4 -->
+  <article class="stack-card card-back-3" aria-label="Kortti 4">
+    <video autoplay muted loop playsinline preload="metadata">
+      <source src="./assets/videos/Risti.mp4" type="video/mp4" />
+    </video>
+  </article>
 
-          <article class="stack-card card-front" aria-label="Kortti 1">
-            <video
-              autoplay
-              muted
-              loop
-              playsinline
-              preload="metadata"
-              disablepictureinpicture
-              controlslist="nodownload noplaybackrate noremoteplayback nofullscreen"
-            >
-              <source src="./assets/videos/Ruutu.mp4" type="video/mp4" />
-              Selaimesi ei tue videotoistoa.
-            </video>
-          </article>
-        </div>
-      </section>
-    </main>
+  <!-- Kortti 3 -->
+  <article class="stack-card card-back-2" aria-label="Kortti 3">
+    <video autoplay muted loop playsinline preload="metadata">
+      <source src="./assets/videos/Pata.mp4" type="video/mp4" />
+    </video>
+  </article>
 
-    <script src="./scripts/main.js"></script>
-  </body>
-</html>
+  <!-- Kortti 2 -->
+  <article class="stack-card card-back-1" aria-label="Kortti 2">
+    <video autoplay muted loop playsinline preload="metadata">
+      <source src="./assets/videos/Ruutu.mp4" type="video/mp4" />
+    </video>
+  </article>
+
+  <!-- Kortti 1 (etu) -->
+  <article class="stack-card card-front" aria-label="Kortti 1">
+    <video
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="metadata"
+      disablepictureinpicture
+      controlslist="nodownload noplaybackrate noremoteplayback nofullscreen"
+    >
+      <source src="./assets/videos/Ruutu.mp4" type="video/mp4" />
+      Selaimesi ei tue videotoistoa.
+    </video>
+  </article>
+</div>

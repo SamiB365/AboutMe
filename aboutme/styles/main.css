@@ -103,6 +103,15 @@ body {
 
 /* ─── VALUE TAGS ─── */
 
+.value-label {
+  margin: 0 0 .5rem;
+  font-size: .75rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: .7;
+}
+
 .value-tags {
   display: flex;
   flex-wrap: wrap;
@@ -254,6 +263,7 @@ body {
   .right {
     order: -1;
     margin-top: .5rem;
+    margin-bottom: 2.5rem;
   }
 
   .cards-fan {

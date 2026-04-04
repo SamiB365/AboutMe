@@ -10,12 +10,14 @@
   </head>
   <body>
 
-    <!-- HERO: Korttipakka + intro -->
-    <section class="hero">
-      <div class="hero__inner">
-        <div class="hero__text">
-          <p class="kicker">About Me</p>
-          <h1>Sami Bayar</h1>
+    <main class="layout">
+
+      <section class="left">
+        <p class="kicker">About Me</p>
+        <h1>Sami Bayar</h1>
+
+        <!-- Avauskortti (default, visible) -->
+        <div class="card-text active" data-card="intro">
           <p class="card-subtitle">🃏 Avauskortti</p>
           <p class="card-motto">Team Support Specialist</p>
           <div class="lead">
@@ -24,120 +26,107 @@
             <p class="joker-line">Olen se jokerikortti jota ei aina osata odottaa mutta joka täydentää kokonaisuutta.</p>
           </div>
         </div>
-        <div class="hero__cards">
-          <div class="cards-fan" aria-label="Videokortit">
-            <button class="fan-arrow fan-arrow-left" aria-label="Edellinen">‹</button>
-            <button class="fan-arrow fan-arrow-right" aria-label="Seuraava">›</button>
 
-            <article class="stack-card card-back-4" aria-label="Hertta">
-              <video muted playsinline preload="metadata">
-                <source src="./assets/videos/Hertta.mp4" type="video/mp4" />
-              </video>
-            </article>
-            <article class="stack-card card-back-3" aria-label="Risti">
-              <video muted playsinline preload="metadata">
-                <source src="./assets/videos/Risti.mp4" type="video/mp4" />
-              </video>
-            </article>
-            <article class="stack-card card-back-2" aria-label="Pata">
-              <video muted playsinline preload="metadata">
-                <source src="./assets/videos/Pata.mp4" type="video/mp4" />
-              </video>
-            </article>
-            <article class="stack-card card-back-1" aria-label="Ruutu">
-              <video muted playsinline preload="metadata">
-                <source src="./assets/videos/Ruutu.mp4" type="video/mp4" />
-              </video>
-            </article>
-            <article class="stack-card card-front card-empty" aria-label="Avauskortti"></article>
+        <!-- ♥ Hertta (hidden) -->
+        <div class="card-text" data-card="hertta">
+          <p class="card-subtitle">♥ Hertta</p>
+          <p class="card-motto">Psykologinen turvallisuus on suorituskyvyn kivijalka.</p>
+          <div class="lead">
+            <p>Aistin tiimin dynamiikan ja yksilöiden tilanteet usein ennen kuin niistä puhutaan ääneen. Tämä ei ole mystiikkaa vaan vuosien sivutuote siitä että on ollut tekemisissä kaikenlaisten ihmisten kanssa ja oppinut näkemään sen mitä rivien välissä tapahtuu.</p>
+            <p>Lähestyn vaikeitakin aiheita suoraan mutta niin että toinen kokee tulleensa kuulluksi eikä arvioiduksi koska ilman psykologista turvallisuutta tiimi suorittaa mutta ei kehity.</p>
+          </div>
+          <div class="value-tags">
+            <span class="value-tag">Tilannetaju</span>
+            <span class="value-tag">Vaikuttava kommunikaatio</span>
+            <span class="value-tag">Psykologinen turvallisuus</span>
           </div>
         </div>
-      </div>
-    </section>
 
-    <!-- TEKSTIKORTIT -->
-    <section class="cards-section">
-      <div class="cards-grid">
+        <!-- ♦ Ruutu (hidden) -->
+        <div class="card-text" data-card="ruutu">
+          <p class="card-subtitle">♦ Ruutu</p>
+          <p class="card-motto">Prosessien tehtävä on mahdollistaa onnistuminen ei rajoittaa sitä.</p>
+          <div class="lead">
+            <p>Hyvät tiimit eivät kaadu osaamisen puutteeseen vaan epäselviin rakenteisiin. Vahvuuteni on tunnistaa ne pullonkaulat jotka hidastavat arkea ja purkaa ne ennen kuin niistä kasvaa oikeita ongelmia.</p>
+            <p>Selkeytän vastuita ja rakennan tukirakenteita jotka keventävät tiimin kuormitusta ja tuovat tilaa keskittyä olennaiseen.</p>
+          </div>
+          <div class="value-tags">
+            <span class="value-tag">Focus</span>
+            <span class="value-tag">Luottamus</span>
+            <span class="value-tag">Flow</span>
+          </div>
+        </div>
 
-        <!-- ♥ Hertta -->
-        <article class="suit-card suit-card--heart" data-suit="♥">
-          <div class="suit-card__header">
-            <span class="suit-card__suit-icon">♥</span>
-            <h2 class="suit-card__title">Tunneäly & tiimidynamiikka</h2>
+        <!-- ♠ Pata (hidden) -->
+        <div class="card-text" data-card="pata">
+          <p class="card-subtitle">♠ Pata</p>
+          <p class="card-motto">Kestävät tulokset syntyvät maltista ja sitoutumisesta.</p>
+          <div class="lead">
+            <p>Minua motivoi ympäristö jossa arvoa luodaan pitkäjänteisellä työllä eikä pikavoitoilla. Haluan sitoutua syvällisesti ja rakentaa jotain joka kestää eikä vain ratkaise tämän päivän ongelmaa.</p>
+            <p>Kehitän osaamistani jatkuvasti sillä kun tilanne kiristyy niin oikeat päätökset vaativat syvällistä ymmärrystä ja kykyä keskittyä olennaiseen eikä siihen mikä vain tuntuu kiireelliseltä.</p>
           </div>
-          <p class="suit-card__lead">Psykologinen turvallisuus on suorituskyvyn kivijalka.</p>
-          <p>Aistin tiimin dynamiikan ja yksilöiden tilanteet usein ennen kuin niistä puhutaan ääneen. Tämä ei ole mystiikkaa vaan vuosien sivutuote siitä että on ollut tekemisissä kaikenlaisten ihmisten kanssa ja oppinut näkemään sen mitä rivien välissä tapahtuu.</p>
-          <p>Lähestyn vaikeitakin aiheita suoraan mutta niin että toinen kokee tulleensa kuulluksi eikä arvioiduksi koska ilman psykologista turvallisuutta tiimi suorittaa mutta ei kehity.</p>
-          <div class="suit-card__value">
-            <div class="suit-card__value-items">
-              <span class="suit-card__value-item">Tilannetaju</span>
-              <span class="suit-card__value-item">Vaikuttava kommunikaatio</span>
-              <span class="suit-card__value-item">Psykologinen turvallisuus</span>
-            </div>
+          <div class="value-tags">
+            <span class="value-tag">Suorituskyky</span>
+            <span class="value-tag">Vakaus</span>
+            <span class="value-tag">Jatkuvuus</span>
           </div>
-        </article>
+        </div>
 
-        <!-- ♦ Ruutu -->
-        <article class="suit-card suit-card--diamond" data-suit="♦">
-          <div class="suit-card__header">
-            <span class="suit-card__suit-icon">♦</span>
-            <h2 class="suit-card__title">Prosessit, rakenteet & flow</h2>
+        <!-- ♣ Risti (hidden) -->
+        <div class="card-text" data-card="risti">
+          <p class="card-subtitle">♣ Risti</p>
+          <p class="card-motto">Tekninen lukutaito poistaa kitkaa vision ja toteutuksen väliltä.</p>
+          <div class="lead">
+            <p>Toimin tulkkina liiketoiminnan ja kehityksen välissä. Ymmärrän ohjelmistokehityksen rakenteet ja logiikan tarpeeksi syvällisesti käydäkseni kehittäjien kanssa ratkaisulähtöistä keskustelua ilman turhia välikäsiä.</p>
+            <p>Ajattelen luonnostaan QA-lähtöisesti ja hyödynnän tekoälyä/automaatiota siellä missä ne vapauttavat tiimin aikaa oikeasti merkitykselliselle työlle.</p>
           </div>
-          <p class="suit-card__lead">Prosessien tehtävä on mahdollistaa onnistuminen ei rajoittaa sitä.</p>
-          <p>Hyvät tiimit eivät kaadu osaamisen puutteeseen vaan epäselviin rakenteisiin. Vahvuuteni on tunnistaa ne pullonkaulat jotka hidastavat arkea ja purkaa ne ennen kuin niistä kasvaa oikeita ongelmia.</p>
-          <p>Selkeytän vastuita ja rakennan tukirakenteita jotka keventävät tiimin kuormitusta ja tuovat tilaa keskittyä olennaiseen.</p>
-          <div class="suit-card__value">
-            <div class="suit-card__value-items">
-              <span class="suit-card__value-item">Focus</span>
-              <span class="suit-card__value-item">Luottamus</span>
-              <span class="suit-card__value-item">Flow</span>
-            </div>
+          <div class="value-tags">
+            <span class="value-tag">Tekninen tulkki</span>
+            <span class="value-tag">Laadunvarmistus</span>
+            <span class="value-tag">Automaatio</span>
           </div>
-        </article>
+        </div>
 
-        <!-- ♠ Pata -->
-        <article class="suit-card suit-card--spade" data-suit="♠">
-          <div class="suit-card__header">
-            <span class="suit-card__suit-icon">♠</span>
-            <h2 class="suit-card__title">Motivaatio, kasvu & sitoutuminen</h2>
-          </div>
-          <p class="suit-card__lead">Kestävät tulokset syntyvät maltista ja sitoutumisesta.</p>
-          <p>Minua motivoi ympäristö jossa arvoa luodaan pitkäjänteisellä työllä eikä pikavoitoilla. Haluan sitoutua syvällisesti ja rakentaa jotain joka kestää eikä vain ratkaise tämän päivän ongelmaa.</p>
-          <p>Kehitän osaamistani jatkuvasti sillä kun tilanne kiristyy niin oikeat päätökset vaativat syvällistä ymmärrystä ja kykyä keskittyä olennaiseen eikä siihen mikä vain tuntuu kiireelliseltä.</p>
-          <div class="suit-card__value">
-            <div class="suit-card__value-items">
-              <span class="suit-card__value-item">Suorituskyky</span>
-              <span class="suit-card__value-item">Vakaus</span>
-              <span class="suit-card__value-item">Jatkuvuus</span>
-            </div>
-          </div>
-        </article>
+        <a class="btn" href="mailto:sami.bayar@duobotit.fi">Ota yhteyttä</a>
+        <p style="margin-top: 1rem">
+          <a href="/">← Takaisin etusivulle</a>
+        </p>
+      </section>
 
-        <!-- ♣ Risti -->
-        <article class="suit-card suit-card--club" data-suit="♣">
-          <div class="suit-card__header">
-            <span class="suit-card__suit-icon">♣</span>
-            <h2 class="suit-card__title">Tekninen lukutaito & QA-ajattelu</h2>
-          </div>
-          <p class="suit-card__lead">Tekninen lukutaito poistaa kitkaa vision ja toteutuksen väliltä.</p>
-          <p>Toimin tulkkina liiketoiminnan ja kehityksen välissä. Ymmärrän ohjelmistokehityksen rakenteet ja logiikan tarpeeksi syvällisesti käydäkseni kehittäjien kanssa ratkaisulähtöistä keskustelua ilman turhia välikäsiä.</p>
-          <p>Ajattelen luonnostaan QA-lähtöisesti ja hyödynnän tekoälyä/automaatiota siellä missä ne vapauttavat tiimin aikaa oikeasti merkitykselliselle työlle.</p>
-          <div class="suit-card__value">
-            <div class="suit-card__value-items">
-              <span class="suit-card__value-item">Tekninen tulkki</span>
-              <span class="suit-card__value-item">Laadunvarmistus</span>
-              <span class="suit-card__value-item">Automaatio</span>
-            </div>
-          </div>
-        </article>
+      <section class="right">
+        <div class="cards-fan" aria-label="Videokortit">
+          <button class="fan-arrow fan-arrow-left" aria-label="Edellinen">‹</button>
+          <button class="fan-arrow fan-arrow-right" aria-label="Seuraava">›</button>
 
-      </div>
-    </section>
+          <article class="stack-card card-back-4" data-name="hertta" aria-label="Hertta">
+            <video muted playsinline preload="metadata">
+              <source src="./assets/videos/Hertta.mp4" type="video/mp4" />
+            </video>
+          </article>
 
-    <footer class="site-footer">
-      <a class="btn" href="mailto:sami.bayar@duobotit.fi">Ota yhteyttä</a>
-      <p><a href="/">← Takaisin etusivulle</a></p>
-    </footer>
+          <article class="stack-card card-back-3" data-name="risti" aria-label="Risti">
+            <video muted playsinline preload="metadata">
+              <source src="./assets/videos/Risti.mp4" type="video/mp4" />
+            </video>
+          </article>
+
+          <article class="stack-card card-back-2" data-name="pata" aria-label="Pata">
+            <video muted playsinline preload="metadata">
+              <source src="./assets/videos/Pata.mp4" type="video/mp4" />
+            </video>
+          </article>
+
+          <article class="stack-card card-back-1" data-name="ruutu" aria-label="Ruutu">
+            <video muted playsinline preload="metadata">
+              <source src="./assets/videos/Ruutu.mp4" type="video/mp4" />
+            </video>
+          </article>
+
+          <article class="stack-card card-front card-empty" data-name="intro" aria-label="Avauskortti"></article>
+        </div>
+      </section>
+
+    </main>
 
     <script src="./scripts/main.js"></script>
   </body>

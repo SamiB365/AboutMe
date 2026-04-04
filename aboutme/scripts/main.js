@@ -9,8 +9,6 @@
   const cards = Array.from(fan.querySelectorAll(".stack-card"));
   if (cards.length !== 5) return;
 
-  const cardTexts = document.querySelectorAll(".card-text");
-
   let order = [...cards];
 
   function syncVideos() {
@@ -31,28 +29,12 @@
     });
   }
 
-  function syncText() {
-    const frontCard = order[4];
-    const activeCardName = frontCard.dataset.name;
-
-    cardTexts.forEach((text) => {
-      if (text.dataset.card === activeCardName) {
-        text.style.display = "block";
-        text.classList.add("fade-in");
-        setTimeout(() => text.classList.remove("fade-in"), 400);
-      } else {
-        text.style.display = "none";
-      }
-    });
-  }
-
   function applyOrder() {
     order.forEach((card, i) => {
       card.classList.remove("card-back-4", "card-back-3", "card-back-2", "card-back-1", "card-front");
       card.classList.add(slotClasses[i]);
     });
     syncVideos();
-    syncText();
   }
 
   function rotateForward() {
@@ -75,6 +57,7 @@
     rotateBackward();
   });
 
+  // Swipe support
   let touchStartX = 0;
   fan.addEventListener("touchstart", (e) => {
     touchStartX = e.changedTouches[0].screenX;

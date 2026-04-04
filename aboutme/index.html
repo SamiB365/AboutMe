@@ -9,15 +9,13 @@
     <link rel="stylesheet" href="./styles/main.css" />
   </head>
   <body>
-
     <main class="layout">
-
       <section class="left">
         <p class="kicker">About Me</p>
         <h1>Sami Bayar</h1>
 
-        <!-- Avauskortti (default, visible) -->
-        <div class="card-text active" data-card="intro">
+        <!-- Avauskortti -->
+        <div class="card-text" data-card="intro">
           <p class="card-subtitle">🃏 Avauskortti</p>
           <p class="card-motto">Team Support Specialist</p>
           <div class="lead">
@@ -27,8 +25,8 @@
           </div>
         </div>
 
-        <!-- ♥ Hertta (hidden) -->
-        <div class="card-text" data-card="hertta">
+        <!-- ♥ Hertta -->
+        <div class="card-text" data-card="hertta" style="display:none">
           <p class="card-subtitle">♥ Hertta</p>
           <p class="card-motto">Psykologinen turvallisuus on suorituskyvyn kivijalka.</p>
           <div class="lead">
@@ -43,8 +41,8 @@
           </div>
         </div>
 
-        <!-- ♦ Ruutu (hidden) -->
-        <div class="card-text" data-card="ruutu">
+        <!-- ♦ Ruutu -->
+        <div class="card-text" data-card="ruutu" style="display:none">
           <p class="card-subtitle">♦ Ruutu</p>
           <p class="card-motto">Prosessien tehtävä on mahdollistaa onnistuminen ei rajoittaa sitä.</p>
           <div class="lead">
@@ -59,8 +57,8 @@
           </div>
         </div>
 
-        <!-- ♠ Pata (hidden) -->
-        <div class="card-text" data-card="pata">
+        <!-- ♠ Pata -->
+        <div class="card-text" data-card="pata" style="display:none">
           <p class="card-subtitle">♠ Pata</p>
           <p class="card-motto">Kestävät tulokset syntyvät maltista ja sitoutumisesta.</p>
           <div class="lead">
@@ -75,8 +73,8 @@
           </div>
         </div>
 
-        <!-- ♣ Risti (hidden) -->
-        <div class="card-text" data-card="risti">
+        <!-- ♣ Risti -->
+        <div class="card-text" data-card="risti" style="display:none">
           <p class="card-subtitle">♣ Risti</p>
           <p class="card-motto">Tekninen lukutaito poistaa kitkaa vision ja toteutuksen väliltä.</p>
           <div class="lead">
@@ -126,7 +124,8 @@
           <article class="stack-card card-front card-empty" data-name="intro" aria-label="Avauskortti"></article>
         </div>
       </section>
-
     </main>
 
-    <script data-cf
+    <script src="./scripts/main.js"></script>
+  </body>
+</html>

@@ -54,6 +54,14 @@ body {
   line-height: 1.7;
 }
 
+.lead p {
+  margin: 0 0 .8rem;
+}
+
+.lead p:last-child {
+  margin-bottom: 0;
+}
+
 .btn {
   display: inline-block;
   margin-top: 1.2rem;
@@ -77,6 +85,7 @@ body {
   border: 1px solid rgba(173, 201, 255, .15);
   background: linear-gradient(180deg, rgba(121,153,217,.14), rgba(29,44,78,.22));
   box-shadow: 0 16px 40px rgba(0, 0, 0, .35);
+  transition: transform .4s ease, opacity .4s ease;
 }
 
 .stack-card video { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -108,13 +117,83 @@ body {
   cursor: pointer;
   display: grid;
   place-items: center;
+  transition: background .2s ease, border-color .2s ease;
 }
+
+.fan-arrow:hover {
+  background: rgba(159, 188, 255, .15);
+  border-color: rgba(159, 188, 255, .4);
+}
+
 .fan-arrow-left { left: -56px; }
 .fan-arrow-right { right: -56px; }
 
 @media (hover: none), (pointer: coarse) {
   .fan-arrow { display: none; }
 }
+
+/* ─── CARD TEXT SECTIONS ─── */
+
+.card-text {
+  margin-top: .5rem;
+}
+
+.card-subtitle {
+  margin: 0 0 .3rem;
+  color: var(--muted);
+  font-size: .9rem;
+  letter-spacing: .04em;
+}
+
+.card-motto {
+  margin: 0 0 .5rem;
+  font-style: italic;
+  color: #8fa8d4;
+  font-size: clamp(.95rem, 1.6vw, 1.05rem);
+  line-height: 1.5;
+}
+
+.joker-line {
+  margin-top: .6rem;
+  color: #9fbcff;
+  font-weight: 500;
+  font-size: clamp(1rem, 1.8vw, 1.1rem);
+}
+
+/* ─── VALUE TAGS ─── */
+
+.value-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 1rem;
+}
+
+.value-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 14px;
+  border-radius: 100px;
+  font-size: .82rem;
+  font-weight: 500;
+  color: #b8ccf0;
+  background: rgba(159, 188, 255, .08);
+  border: 1px solid rgba(159, 188, 255, .15);
+  letter-spacing: .02em;
+}
+
+/* ─── FADE ANIMATION ─── */
+
+.fade-in {
+  animation: fadeIn .4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── RESPONSIVE ─── */
 
 @media (max-width: 940px) {
   .layout { grid-template-columns: 1fr; align-items: start; padding-top: 1.2rem; }

@@ -4,13 +4,13 @@
 
   const leftArrow = fan.querySelector(".fan-arrow-left");
   const rightArrow = fan.querySelector(".fan-arrow-right");
+  const leftSection = document.querySelector(".left");
 
   const slotClasses = ["card-back-4", "card-back-3", "card-back-2", "card-back-1", "card-front"];
   const cards = Array.from(fan.querySelectorAll(".stack-card"));
   if (cards.length !== 5) return;
 
   const cardTexts = document.querySelectorAll(".card-text");
-
   let order = [...cards];
 
   function syncVideos() {
@@ -32,14 +32,14 @@
   }
 
   function syncText() {
-    const frontCard = order[4];
-    const activeCardName = frontCard.dataset.name;
-
+    const activeCardName = order[4].dataset.name;
     cardTexts.forEach((text) => {
-      if (text.dataset.card === activeCardName) {
-        text.classList.add("active");
-      } else {
-        text.classList.remove("active");
+      const active = text.dataset.card === activeCardName;
+      text.style.display = active ? "block" : "none";
+
+      if (active) {
+        text.classList.add("fade-in");
+        setTimeout(() => text.classList.remove("fade-in"), 350);
       }
     });
   }
@@ -73,19 +73,40 @@
     rotateBackward();
   });
 
-  // Swipe support
-  let touchStartX = 0;
-  fan.addEventListener("touchstart", (e) => {
-    touchStartX = e.changedTouches[0].screenX;
-  }, { passive: true });
+  function bindSwipe(el) {
+    if (!el) return;
 
-  fan.addEventListener("touchend", (e) => {
-    const diff = touchStartX - e.changedTouches[0].screenX;
-    if (Math.abs(diff) > 50) {
-      if (diff > 0) rotateForward();
-      else rotateBackward();
-    }
-  }, { passive: true });
+    let startX = 0;
+    let startY = 0;
+    let tracking = false;
+    const THRESHOLD = 35;
+
+    el.addEventListener("pointerdown", (e) => {
+      tracking = true;
+      startX = e.clientX;
+      startY = e.clientY;
+    });
+
+    el.addEventListener("pointerup", (e) => {
+      if (!tracking) return;
+      tracking = false;
+
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+
+      if (Math.abs(dx) > THRESHOLD && Math.abs(dx) > Math.abs(dy)) {
+        if (dx < 0) rotateForward();
+        else rotateBackward();
+      }
+    });
+
+    el.addEventListener("pointercancel", () => {
+      tracking = false;
+    });
+  }
+
+  bindSwipe(fan);
+  bindSwipe(leftSection);
 
   applyOrder();
 })();

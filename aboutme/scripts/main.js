@@ -17,8 +17,8 @@
     order.forEach((card, i) => {
       const v = card.querySelector("video");
       if (!v) return;
-
       const isFront = i === 4;
+
       if (isFront) {
         v.muted = true;
         v.loop = true;

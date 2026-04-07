@@ -51,11 +51,11 @@ body {
   max-width: 52ch;
   color: #cdd9f3;
   font-size: clamp(1rem, 1.8vw, 1.15rem);
-  line-height: 1.6;
+  line-height: 1.5;
 }
 
 .lead p {
-  margin: 0 0 .10rem;
+  margin: 0 0 .3rem;
 }
 
 .lead p:last-child {

@@ -104,9 +104,10 @@ body {
   height: 100%;
   object-fit: cover;
   display: block;
+  z-index: 0;
 }
 
-/* Shaded frame overlay (no ::after, per request) */
+/* Shaded frame overlay (blue glass) */
 .stack-card::before {
   content: "";
   position: absolute;
@@ -124,6 +125,22 @@ body {
     inset 0 -10px 24px rgba(0, 0, 0, 0.22);
 }
 
+/* ---------- PATA ONLY: use PNG frame instead of blue glass ---------- */
+.stack-card[data-name="pata"]::before {
+  content: none;
+}
+
+.stack-card[data-name="pata"] .card-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 3;       /* above the video */
+  object-fit: fill; /* frame image made for 3:4 */
+}
+
+/* Card positions / stacking */
 .card-back-4 { transform: translate(-84px, 8px) rotate(-14deg) scale(.96); opacity: .33; z-index: 1; }
 .card-back-3 { transform: translate(-58px, 5px) rotate(-10deg) scale(.97); opacity: .48; z-index: 2; }
 .card-back-2 { transform: translate(-36px, 2px) rotate(-6deg)  scale(.98); opacity: .64; z-index: 3; }

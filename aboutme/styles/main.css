@@ -110,7 +110,7 @@ body {
   z-index: 0; /* keep under overlays */
 }
 
-/* Shaded frame overlay (no ::after, per request) */
+/* Shaded frame overlay (blue glass) */
 .stack-card::before {
   content: "";
   position: absolute;
@@ -128,19 +128,34 @@ body {
     inset 0 -10px 24px rgba(0, 0, 0, 0.22);
 }
 
-/* ---------- PATA ONLY: use PNG frame instead of blue-glass pseudo frame ---------- */
-.stack-card[data-name="pata"]::before {
-  content: none !important; /* only image frame on pata */
+/* TEST: force frame image visible even if other rules conflict */
+.stack-card .test-frame{
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 9999 !important;
+  opacity: 1 !important;
+  display: block !important;
+  object-fit: contain !important;
+  background: rgba(255, 0, 255, 0.12) !important; /* debug tint */
+  outline: 3px solid rgba(255, 0, 255, 0.9) !important; /* debug border */
 }
 
+/* Optional: still keep normal rule for card-frame */
 .stack-card .card-frame {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 10;       /* above video (and above ::before if present) */
-  object-fit: fill;  /* frame image made for 3:4 */
+  z-index: 10;
+  object-fit: fill;
+}
+
+/* (Optional for your test) disable blue-glass on pata so it's not masking anything */
+.stack-card[data-name="pata"]::before {
+  content: none !important;
 }
 
 .card-back-4 { transform: translate(-84px, 8px) rotate(-14deg) scale(.96); opacity: .33; z-index: 1; }
@@ -170,111 +185,4 @@ body {
 
 .fan-arrow:hover {
   background: rgba(159, 188, 255, .15);
-  border-color: rgba(159, 188, 255, .4);
-}
-
-.fan-arrow-left { left: -56px; }
-.fan-arrow-right { right: -56px; }
-
-@media (hover: none), (pointer: coarse) {
-  .fan-arrow { display: none; }
-}
-
-.card-text { margin-top: .5rem; }
-
-.card-subtitle {
-  margin: 0 0 .3rem;
-  color: var(--muted);
-  font-size: .9rem;
-  letter-spacing: .04em;
-}
-
-.card-motto {
-  margin: 0 0 .5rem;
-  font-style: italic;
-  color: #8fa8d4;
-  font-size: clamp(.95rem, 1.6vw, 1.05rem);
-  line-height: 1.5;
-}
-
-.joker-line {
-  margin-top: .6rem;
-  color: #9fbcff;
-  font-weight: 500;
-  font-size: clamp(1rem, 1.8vw, 1.1rem);
-}
-
-.value-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 1rem;
-}
-
-.value-label {
-  margin: 0 0 10px;
-  color: var(--muted);
-  font-size: 0.82rem;
-  letter-spacing: 0.02em;
-}
-
-.value-tags .value-label {
-  flex-basis: 100%;
-  margin-bottom: 6px;
-}
-
-.value-tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 5px 14px;
-  border-radius: 100px;
-  font-size: .82rem;
-  font-weight: 500;
-  color: #b8ccf0;
-  background: rgba(159, 188, 255, .08);
-  border: 1px solid rgba(159, 188, 255, .15);
-  letter-spacing: .02em;
-}
-
-.fade-in {
-  animation: fadeIn .4s ease-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.left,
-.cards-fan {
-  touch-action: pan-y;
-  -webkit-user-select: none;
-  user-select: none;
-}
-
-@media (max-width: 940px) {
-  .layout {
-    grid-template-columns: 1fr;
-    align-items: start;
-    padding-top: 1.2rem;
-  }
-
-  .right {
-    order: -1;
-    margin-top: .5rem;
-  }
-
-  .left {
-    margin-top: 1.2rem;
-  }
-
-  .cards-fan {
-    width: min(360px, 92vw);
-    margin: 0 auto;
-  }
-
-  .card-back-4 { transform: translate(-50px, 6px) rotate(-10deg) scale(.96); }
-  .card-back-3 { transform: translate(-36px, 4px) rotate(-7deg)  scale(.97); }
-  .card-back-2 { transform: translate(-24px, 2px) rotate(-4deg)  scale(.98); }
-  .card-back-1 { transform: translate(-12px, 1px) rotate(-2deg)  scale(.99); }
-}
+  border-color: rgba(159,

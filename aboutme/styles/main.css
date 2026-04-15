@@ -90,8 +90,8 @@ body {
   isolation: isolate; /* local stacking context */
 
   /* knobs */
-  --video-scale: 0.90;  /* ↓ video size by 10% */
-  --frame-scale: 1.20;  /* ↑ frame size by 20% */
+  --video-scale: 0.70;  /* ↓ video size by 20% (from 0.90 -> 0.70) */
+  --frame-scale: 1.30;  /* ↑ frame size by +10% (from 1.20 -> 1.30) */
 }
 
 /* ===== LAYERS =====

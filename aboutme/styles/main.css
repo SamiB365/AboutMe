@@ -86,27 +86,30 @@ body {
   box-shadow: 0 16px 40px rgba(0, 0, 0, .35);
   transition: transform .4s ease, opacity .4s ease;
   isolation: isolate;
+
+  /* tuning knobs */
+  --video-scale: 0.70;  /* 0.70 = 70%, 0.90 = 90%, 1.00 = 100% */
+  --frame-scale: 1.00;  /* default for all cards */
 }
 
-/* VIDEO: 10% smaller (90% width/height), centered */
-.stack-card video {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 70%;
-  height: 70%;
-  transform: translate(-50%, -50%);
-  object-fit: cover;
-  display: block;
-  z-index: 0;
+/* VIDEO (force override) */
+.stack-card > video {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
 
-  /* optional: match inner window rounding */
+  width: calc(100% * var(--video-scale)) !important;
+  height: calc(100% * var(--video-scale)) !important;
+
+  transform: translate(-50%, -50%) !important;
+  object-fit: cover !important;
+  display: block !important;
+  z-index: 0 !important;
+
   border-radius: 12px;
 }
 
-/* FRAME overlay (default) */
-.stack-card { --frame-scale: 1; }
-
+/* FRAME overlay */
 .stack-card .card-frame{
   position: absolute;
   inset: 0;
@@ -115,16 +118,17 @@ body {
   z-index: 2;
   pointer-events: none;
 
-  display: block;             /* IMPORTANT for img */
-  object-fit: contain;        /* no stretching */
+  display: block;
+  object-fit: contain;
   object-position: 50% 50%;
   transform: scale(var(--frame-scale));
   transform-origin: center;
 }
 
-/* Only pata card: frame scale 1.2 */
+/* Only pata card tweaks */
 .stack-card[data-name="pata"]{
-  --frame-scale: 1.2;
+  --frame-scale: 1.20;
+  --video-scale: 0.70; /* change this and it WILL change */
 }
 
 .card-back-4 { transform: translate(-84px, 8px) rotate(-14deg) scale(.96); opacity: .33; z-index: 1; }

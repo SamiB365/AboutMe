@@ -104,7 +104,7 @@ body {
 
   width: calc(100% * var(--video-scale-x));
   height: calc(100% * var(--video-scale));
-  transform: translate(-50%, -50%) scaleY(1.03); /* desktop: +3% taller */
+  transform: translate(-50%, -50%) scaleY(1.03); /* desktop vertical scale */
   transform-origin: center;
 
   object-fit: cover;
@@ -245,9 +245,9 @@ body {
     margin: 0 auto;
   }
 
-  /* Mobile change:
-     - raise video by 1%: 50% -> 49%
-     - increase vertical size by 1%: scaleY 1.03 -> 1.04
+  /* Mobile:
+     - raise 1%: 50% -> 49%
+     - vertical +1%: scaleY 1.03 -> 1.04
   */
   .stack-card {
     --video-scale-x: 0.693;

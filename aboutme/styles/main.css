@@ -90,10 +90,10 @@ body {
   isolation: isolate; /* local stacking context */
 
   /* Defaults = desktop */
-  --video-scale: 0.70;     /* width scale */
-  --video-scale-y: 0.721;  /* height scale (+3% taller than width scale) */
-  --video-top: 45%;        /* DESKTOP moved up (was 47.5%) */
-  --frame-scale: 1.30;     /* frame size */
+  --video-scale: 0.70;        /* width scale */
+  --video-scale-y: 0.72821;   /* height scale (0.721 * 1.01) => +1% taller */
+  --video-top: 45.5%;         /* 0.5% lower than 45% */
+  --frame-scale: 1.30;        /* frame size */
 }
 
 /* ===== LAYERS ===== */
@@ -242,10 +242,11 @@ body {
     margin: 0 auto;
   }
 
+  /* Mobile: keep same relative change (+1% taller), and keep your previous position */
   .stack-card {
     --video-scale: 0.70;
-    --video-scale-y: 0.721;
-    --video-top: 50%; /* mobile unchanged */
+    --video-scale-y: 0.72821;
+    --video-top: 50%;
   }
 
   .card-back-4 { transform: translate(-50px, 6px) rotate(-10deg) scale(.96); }

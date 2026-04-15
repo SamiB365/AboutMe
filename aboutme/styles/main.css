@@ -89,10 +89,10 @@ body {
   transition: transform .4s ease, opacity .4s ease;
   isolation: isolate; /* local stacking context */
 
-  /* Desktop defaults */
-  --video-scale: 0.78; /* desktop: vähän isompi kuin mobiilissa */
-  --video-top: 45%;    /* desktop: ylemmäs */
-  --frame-scale: 1.30; /* frame +30% */
+  /* Defaults = desktop */
+  --video-scale: 0.70;  /* desktop: smaller by ~10% from previous 0.78 */
+  --video-top: 45%;
+  --frame-scale: 1.30;
 }
 
 /* ===== LAYERS ===== */
@@ -225,7 +225,7 @@ body {
   user-select: none;
 }
 
-/* ===== Mobile overrides (keep the look you liked) ===== */
+/* ===== Mobile overrides ===== */
 @media (max-width: 940px) {
   .layout {
     grid-template-columns: 1fr;
@@ -241,9 +241,9 @@ body {
     margin: 0 auto;
   }
 
-  .stack-card{
-    --video-scale: 0.70; /* mobiili: kuten sulla nyt */
-    --video-top: 45%;    /* jos mobiili näyttää hyvältä, pidä tämä */
+  .stack-card {
+    --video-scale: 0.70;  /* keep same size on mobile */
+    --video-top: 47.5%;   /* mobile: 2.5% lower (45 -> 47.5) */
   }
 
   .card-back-4 { transform: translate(-50px, 6px) rotate(-10deg) scale(.96); }

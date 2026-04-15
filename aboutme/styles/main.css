@@ -70,10 +70,15 @@ body {
 
 .right { display: grid; place-items: center; }
 
+/* ===== Cards fan wrapper ===== */
 .cards-fan {
   position: relative;
   width: min(420px, 90vw);
   aspect-ratio: 3 / 4;
+
+  /* 5% narrower + 5% taller */
+  transform: scaleX(0.95) scaleY(1.05);
+  transform-origin: center;
 }
 
 .stack-card {
@@ -92,10 +97,13 @@ body {
   --frame-scale: 1.00;  /* default for all cards */
 }
 
-/* VIDEO (force override) */
+/* ===== VIDEO =====
+   - forced override so you can SEE changes
+   - moved 10% upward: top 40% instead of 50%
+*/
 .stack-card > video {
   position: absolute !important;
-  top: 50% !important;
+  top: 40% !important;  /* 10% higher */
   left: 50% !important;
 
   width: calc(100% * var(--video-scale)) !important;
@@ -109,7 +117,7 @@ body {
   border-radius: 12px;
 }
 
-/* FRAME overlay */
+/* ===== FRAME overlay ===== */
 .stack-card .card-frame{
   position: absolute;
   inset: 0;
@@ -128,15 +136,17 @@ body {
 /* Only pata card tweaks */
 .stack-card[data-name="pata"]{
   --frame-scale: 1.20;
-  --video-scale: 0.70; /* change this and it WILL change */
+  --video-scale: 0.70;  /* adjust to 0.80/0.90/1.00 if needed */
 }
 
+/* ===== Fan transforms for the stack ===== */
 .card-back-4 { transform: translate(-84px, 8px) rotate(-14deg) scale(.96); opacity: .33; z-index: 1; }
 .card-back-3 { transform: translate(-58px, 5px) rotate(-10deg) scale(.97); opacity: .48; z-index: 2; }
 .card-back-2 { transform: translate(-36px, 2px) rotate(-6deg)  scale(.98); opacity: .64; z-index: 3; }
 .card-back-1 { transform: translate(-18px, 1px) rotate(-3deg)  scale(.99); opacity: .82; z-index: 4; }
 .card-front  { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; z-index: 6; }
 
+/* ===== Arrows ===== */
 .fan-arrow {
   position: absolute;
   top: 50%;
@@ -168,6 +178,7 @@ body {
   .fan-arrow { display: none; }
 }
 
+/* ===== Text block under cards ===== */
 .card-text { margin-top: .5rem; }
 
 .card-subtitle {
@@ -250,6 +261,10 @@ body {
   .cards-fan {
     width: min(360px, 92vw);
     margin: 0 auto;
+
+    /* keep the same 5% narrow + 5% tall on mobile too */
+    transform: scaleX(0.95) scaleY(1.05);
+    transform-origin: center;
   }
 
   .card-back-4 { transform: translate(-50px, 6px) rotate(-10deg) scale(.96); }

@@ -87,13 +87,13 @@ body {
   background: linear-gradient(180deg, rgba(121,153,217,.14), rgba(29,44,78,.22));
   box-shadow: 0 16px 40px rgba(0, 0, 0, .35);
   transition: transform .4s ease, opacity .4s ease;
-  isolation: isolate; /* local stacking context */
+  isolation: isolate;
 
-  /* Defaults = desktop */
-  --video-scale: 0.70;        /* width scale */
-  --video-scale-y: 0.72821;   /* height scale (0.721 * 1.01) => +1% taller */
-  --video-top: 45.5%;         /* 0.5% lower than 45% */
-  --frame-scale: 1.30;        /* frame size */
+  /* knobs */
+  --video-scale-x: 0.693; /* width: 0.70 -> -1% */
+  --video-scale: 0.70;    /* base (used for height) */
+  --video-top: 45.5%;
+  --frame-scale: 1.30;
 }
 
 /* ===== LAYERS ===== */
@@ -101,9 +101,12 @@ body {
   position: absolute;
   top: var(--video-top);
   left: 50%;
-  width: calc(100% * var(--video-scale));
-  height: calc(100% * var(--video-scale-y));
-  transform: translate(-50%, -50%);
+
+  width: calc(100% * var(--video-scale-x)); /* narrower by 1% */
+  height: calc(100% * var(--video-scale));  /* base height */
+  transform: translate(-50%, -50%) scaleY(1.01); /* taller by 1% */
+  transform-origin: center;
+
   object-fit: cover;
   display: block;
   z-index: 0;
@@ -242,10 +245,9 @@ body {
     margin: 0 auto;
   }
 
-  /* Mobile: keep same relative change (+1% taller), and keep your previous position */
   .stack-card {
+    --video-scale-x: 0.693; /* keep same */
     --video-scale: 0.70;
-    --video-scale-y: 0.72821;
     --video-top: 50%;
   }
 

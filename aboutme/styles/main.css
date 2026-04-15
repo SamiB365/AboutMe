@@ -100,7 +100,7 @@ body {
 */
 .stack-card > video {
   position: absolute;
-  top: 50%;
+  top: 45%;              /* 5% higher than center */
   left: 50%;
 
   width: calc(100% * var(--video-scale));

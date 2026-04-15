@@ -92,7 +92,7 @@ body {
   /* knobs */
   --video-scale-x: 0.693; /* width: 0.70 -> -1% */
   --video-scale: 0.70;    /* base (used for height) */
-  --video-top: 45.5%;
+  --video-top: 46.5%;     /* was 45.5% -> 1% lower */
   --frame-scale: 1.30;
 }
 
@@ -104,7 +104,7 @@ body {
 
   width: calc(100% * var(--video-scale-x)); /* narrower by 1% */
   height: calc(100% * var(--video-scale));  /* base height */
-  transform: translate(-50%, -50%) scaleY(1.01); /* taller by 1% */
+  transform: translate(-50%, -50%) scaleY(1.02); /* was 1.01 -> +1% more taller */
   transform-origin: center;
 
   object-fit: cover;
@@ -246,7 +246,7 @@ body {
   }
 
   .stack-card {
-    --video-scale-x: 0.693; /* keep same */
+    --video-scale-x: 0.693;
     --video-scale: 0.70;
     --video-top: 50%;
   }

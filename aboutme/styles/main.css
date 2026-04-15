@@ -88,20 +88,29 @@ body {
   box-shadow: 0 16px 40px rgba(0, 0, 0, .35);
   transition: transform .4s ease, opacity .4s ease;
   isolation: isolate; /* local stacking context */
+
+  /* knobs */
+  --video-scale: 0.90;  /* ↓ video size by 10% */
+  --frame-scale: 1.20;  /* ↑ frame size by 20% */
 }
 
-/* ===== LAYERS (important) =====
+/* ===== LAYERS =====
    layer 0: video
-   layer 2: frame image
+   layer 2: frame
 */
 .stack-card > video {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  top: 50%;
+  left: 50%;
+
+  width: calc(100% * var(--video-scale));
+  height: calc(100% * var(--video-scale));
+  transform: translate(-50%, -50%);
+
   object-fit: cover;
   display: block;
   z-index: 0;
+  border-radius: 12px;
 }
 
 .stack-card > img.card-frame {
@@ -115,6 +124,9 @@ body {
   z-index: 2;              /* frame over video */
   object-fit: contain;     /* don't crop */
   object-position: center;
+
+  transform: scale(var(--frame-scale));
+  transform-origin: center;
 }
 
 /* ===== Fan transforms for the stack ===== */

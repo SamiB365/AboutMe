@@ -75,12 +75,9 @@ body {
   position: relative;
   width: min(420px, 90vw);
   aspect-ratio: 3 / 4;
-
-  /* normal position/size */
-  transform: none;
-  transform-origin: center;
 }
 
+/* ===== Card ===== */
 .stack-card {
   position: absolute;
   inset: 0;
@@ -92,71 +89,38 @@ body {
   transition: transform .4s ease, opacity .4s ease;
   isolation: isolate;
 
-  /* content sizing (your current test) */
+  /* content sizing (your test) */
   --content-scale-x: 0.80; /* width 80% */
   --content-scale-y: 0.90; /* height 90% */
-
-  /* frame sizing */
-  --frame-scale: 1.00;
-
-  /* frame image url placeholder (set by [data-card]) */
-  --frame-url: none;
 }
 
-/* ===== CONTENT (video) ===== */
+/* ===== Video always BEHIND ===== */
 .stack-card > video {
-  position: absolute !important;
-  top: 50% !important;
-  left: 50% !important;
-
-  width: calc(100% * var(--content-scale-x)) !important;
-  height: calc(100% * var(--content-scale-y)) !important;
-
-  transform: translate(-50%, -50%) !important;
-  object-fit: cover !important;
-  display: block !important;
-  z-index: 0 !important;
-
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(100% * var(--content-scale-x));
+  height: calc(100% * var(--content-scale-y));
+  transform: translate(-50%, -50%);
+  object-fit: cover;
+  display: block;
+  z-index: 0;
   border-radius: 12px;
 }
 
-/* ===== FRAME overlay via pseudo-element ===== */
-.stack-card::after{
-  content: "";
+/* ===== Frame always ON TOP and fits inside ===== */
+.stack-card > img.card-frame {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
   pointer-events: none;
 
-  background-image: var(--frame-url);
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
-
-  transform: scale(var(--frame-scale));
-  transform-origin: center;
-}
-
-/* ===== Per-card frame image mapping ===== */
-.stack-card[data-card="pata"]{
-  --frame-url: url("./assets/frames/pata-frame.png");
-}
-
-.stack-card[data-card="hertta"]{
-  --frame-url: url("./assets/frames/hertta-frame.png");
-}
-
-.stack-card[data-card="ruutu"]{
-  --frame-url: url("./assets/frames/ruutu-frame.png");
-}
-
-.stack-card[data-card="risti"]{
-  --frame-url: url("./assets/frames/risti-frame.png");
-}
-
-/* Joker = 8-frame */
-.stack-card[data-card="joker"]{
-  --frame-url: url("./assets/frames/8-frame.png");
+  display: block;
+  object-fit: contain;
+  object-position: 50% 50%;
+  transform: none;
 }
 
 /* ===== Fan transforms for the stack ===== */

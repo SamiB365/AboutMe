@@ -54,13 +54,8 @@ body {
   line-height: 1.3;
 }
 
-.lead p {
-  margin: 0 0 .3rem;
-}
-
-.lead p:last-child {
-  margin-bottom: 0;
-}
+.lead p { margin: 0 0 .3rem; }
+.lead p:last-child { margin-bottom: 0; }
 
 .btn {
   display: inline-block;
@@ -93,18 +88,25 @@ body {
   isolation: isolate;
 }
 
-/* VIDEO always under overlays */
+/* VIDEO: 10% smaller (90% width/height), centered */
 .stack-card video {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  top: 50%;
+  left: 50%;
+  width: 90%;
+  height: 90%;
+  transform: translate(-50%, -50%);
   object-fit: cover;
   display: block;
   z-index: 0;
+
+  /* optional: match inner window rounding */
+  border-radius: 12px;
 }
 
-/* FRAME overlay above video */
+/* FRAME overlay (default) */
+.stack-card { --frame-scale: 1; }
+
 .stack-card .card-frame{
   position: absolute;
   inset: 0;
@@ -115,9 +117,14 @@ body {
 
   display: block;             /* IMPORTANT for img */
   object-fit: contain;        /* no stretching */
-  object-position: 50% 50%;   /* center it */
-  transform: scale(1.15);     /* adjust: 1.05–1.30 */
+  object-position: 50% 50%;
+  transform: scale(var(--frame-scale));
   transform-origin: center;
+}
+
+/* Only pata card: frame scale 1.2 */
+.stack-card[data-name="pata"]{
+  --frame-scale: 1.2;
 }
 
 .card-back-4 { transform: translate(-84px, 8px) rotate(-14deg) scale(.96); opacity: .33; z-index: 1; }
@@ -213,17 +220,14 @@ body {
   letter-spacing: .02em;
 }
 
-.fade-in {
-  animation: fadeIn .4s ease-out;
-}
+.fade-in { animation: fadeIn .4s ease-out; }
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.left,
-.cards-fan {
+.left, .cards-fan {
   touch-action: pan-y;
   -webkit-user-select: none;
   user-select: none;
@@ -236,14 +240,8 @@ body {
     padding-top: 1.2rem;
   }
 
-  .right {
-    order: -1;
-    margin-top: .5rem;
-  }
-
-  .left {
-    margin-top: 1.2rem;
-  }
+  .right { order: -1; margin-top: .5rem; }
+  .left { margin-top: 1.2rem; }
 
   .cards-fan {
     width: min(360px, 92vw);

@@ -89,10 +89,10 @@ body {
   transition: transform .4s ease, opacity .4s ease;
   isolation: isolate;
 
-  /* knobs */
+  /* knobs (desktop) */
   --video-scale-x: 0.693; /* width: 0.70 -> -1% */
   --video-scale: 0.70;    /* base (used for height) */
-  --video-top: 46.5%;     /* was 45.5% -> 1% lower */
+  --video-top: 47.5%;     /* DESKTOP: lowered 2% from 45.5% */
   --frame-scale: 1.30;
 }
 
@@ -102,9 +102,9 @@ body {
   top: var(--video-top);
   left: 50%;
 
-  width: calc(100% * var(--video-scale-x)); /* narrower by 1% */
-  height: calc(100% * var(--video-scale));  /* base height */
-  transform: translate(-50%, -50%) scaleY(1.02); /* was 1.01 -> +1% more taller */
+  width: calc(100% * var(--video-scale-x));
+  height: calc(100% * var(--video-scale));
+  transform: translate(-50%, -50%) scaleY(1.02); /* keep taller by 2% */
   transform-origin: center;
 
   object-fit: cover;
@@ -229,7 +229,7 @@ body {
   user-select: none;
 }
 
-/* ===== Mobile overrides ===== */
+/* ===== Mobile overrides (DO NOT change video on mobile) ===== */
 @media (max-width: 940px) {
   .layout {
     grid-template-columns: 1fr;
@@ -245,6 +245,7 @@ body {
     margin: 0 auto;
   }
 
+  /* keep mobile exactly as it was */
   .stack-card {
     --video-scale-x: 0.693;
     --video-scale: 0.70;

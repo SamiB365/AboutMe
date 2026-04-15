@@ -77,6 +77,14 @@ body {
   aspect-ratio: 3 / 4;
 }
 
+/* Hard-disable any bluish “card background” layers inside the stack */
+.cards-fan .stack-card,
+.cards-fan .stack-card::before,
+.cards-fan .stack-card::after {
+  background: transparent !important;
+  border: none !important;
+}
+
 /* ===== Card base ===== */
 .stack-card {
   position: absolute;
@@ -84,19 +92,20 @@ body {
   border-radius: 18px;
   overflow: hidden;
 
-  /* removed bluish translucent background/frame */
   background: transparent;
   border: none;
 
+  /* Keep shadow (remove this too if you want zero “plate” feel) */
   box-shadow: 0 16px 40px rgba(0, 0, 0, .35);
+
   transition: transform .4s ease, opacity .4s ease;
   isolation: isolate;
 
   /* knobs (desktop defaults) */
   --video-scale-x: 0.693; /* width: 0.70 -> -1% */
-  --video-scale: 0.70;    /* base (used for height) */
-  --video-top: 45.5%;     /* desktop raised by 1% (from 46.5%) */
-  --frame-scale: 1.30;    /* frame size */
+  --video-scale: 0.70;    /* base height */
+  --video-top: 45.5%;     /* desktop position */
+  --frame-scale: 1.30;
 }
 
 /* ===== LAYERS ===== */
@@ -105,9 +114,9 @@ body {
   top: var(--video-top);
   left: 50%;
 
-  width: calc(100% * var(--video-scale-x)); /* narrower by 1% */
-  height: calc(100% * var(--video-scale));  /* base height */
-  transform: translate(-50%, -50%) scaleY(1.03); /* vertical scale */
+  width: calc(100% * var(--video-scale-x));
+  height: calc(100% * var(--video-scale));
+  transform: translate(-50%, -50%) scaleY(1.03);
   transform-origin: center;
 
   object-fit: cover;
@@ -130,12 +139,12 @@ body {
   transform-origin: center;
 }
 
-/* ===== Fan transforms for the stack (slightly more angle) ===== */
-.card-back-4 { transform: translate(-84px, 8px) rotate(-16deg) scale(.96); opacity: .33; z-index: 1; }
-.card-back-3 { transform: translate(-58px, 5px) rotate(-12deg) scale(.97); opacity: .48; z-index: 2; }
-.card-back-2 { transform: translate(-36px, 2px) rotate(-8deg)  scale(.98); opacity: .64; z-index: 3; }
-.card-back-1 { transform: translate(-18px, 1px) rotate(-4deg)  scale(.99); opacity: .82; z-index: 4; }
-.card-front  { transform: translate(0, 0)   rotate(-1deg) scale(1); opacity: 1; z-index: 6; }
+/* ===== Fan transforms for the stack (a bit more angle) ===== */
+.card-back-4 { transform: translate(-84px, 8px) rotate(-18deg) scale(.96); opacity: .33; z-index: 1; }
+.card-back-3 { transform: translate(-58px, 5px) rotate(-14deg) scale(.97); opacity: .48; z-index: 2; }
+.card-back-2 { transform: translate(-36px, 2px) rotate(-9deg)  scale(.98); opacity: .64; z-index: 3; }
+.card-back-1 { transform: translate(-18px, 1px) rotate(-5deg)  scale(.99); opacity: .82; z-index: 4; }
+.card-front  { transform: translate(0, 0)   rotate(-2deg) scale(1); opacity: 1; z-index: 6; }
 
 /* ===== Arrows ===== */
 .fan-arrow {
@@ -248,15 +257,14 @@ body {
     margin: 0 auto;
   }
 
-  /* mobile: raise 1% and +1% vertical size */
   .stack-card {
     --video-scale-x: 0.693;
     --video-scale: 0.70;
-    --video-top: 49%; /* was 50% */
+    --video-top: 49%;
   }
 
   .stack-card > video {
-    transform: translate(-50%, -50%) scaleY(1.04); /* was 1.03 */
+    transform: translate(-50%, -50%) scaleY(1.04);
   }
 
   .card-back-4 { transform: translate(-50px, 6px) rotate(-10deg) scale(.96); }

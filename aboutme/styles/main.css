@@ -92,7 +92,7 @@ body {
   /* knobs (desktop defaults) */
   --video-scale-x: 0.693; /* width: 0.70 -> -1% */
   --video-scale: 0.70;    /* base (used for height) */
-  --video-top: 46.5%;     /* move UP on desktop: was 47.5% */
+  --video-top: 46.5%;     /* desktop position */
   --frame-scale: 1.30;
 }
 
@@ -104,7 +104,7 @@ body {
 
   width: calc(100% * var(--video-scale-x));
   height: calc(100% * var(--video-scale));
-  transform: translate(-50%, -50%) scaleY(1.03); /* +1% taller than previous 1.02 */
+  transform: translate(-50%, -50%) scaleY(1.03); /* desktop: +3% taller */
   transform-origin: center;
 
   object-fit: cover;
@@ -229,7 +229,7 @@ body {
   user-select: none;
 }
 
-/* ===== Mobile overrides (do not change mobile video) ===== */
+/* ===== Mobile overrides ===== */
 @media (max-width: 940px) {
   .layout {
     grid-template-columns: 1fr;
@@ -245,11 +245,18 @@ body {
     margin: 0 auto;
   }
 
-  /* keep mobile exactly as before */
+  /* Mobile change:
+     - raise video by 1%: 50% -> 49%
+     - increase vertical size by 1%: scaleY 1.03 -> 1.04
+  */
   .stack-card {
     --video-scale-x: 0.693;
     --video-scale: 0.70;
-    --video-top: 50%;
+    --video-top: 49%;
+  }
+
+  .stack-card > video {
+    transform: translate(-50%, -50%) scaleY(1.04);
   }
 
   .card-back-4 { transform: translate(-50px, 6px) rotate(-10deg) scale(.96); }

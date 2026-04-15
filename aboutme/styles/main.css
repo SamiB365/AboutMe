@@ -90,13 +90,28 @@ body {
   background: linear-gradient(180deg, rgba(121,153,217,.14), rgba(29,44,78,.22));
   box-shadow: 0 16px 40px rgba(0, 0, 0, .35);
   transition: transform .4s ease, opacity .4s ease;
+  isolation: isolate; /* important for reliable z-index layering inside card */
 }
 
 .stack-card video {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+  z-index: 0; /* video stays under overlays */
+}
+
+/* Overlay image (frame) above video */
+.stack-card .card-frame{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+  object-fit: fill; /* change to contain if you don't want stretching */
 }
 
 .card-back-4 { transform: translate(-84px, 8px) rotate(-14deg) scale(.96); opacity: .33; z-index: 1; }

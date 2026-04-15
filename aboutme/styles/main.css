@@ -76,8 +76,9 @@ body {
   width: min(420px, 90vw);
   aspect-ratio: 3 / 4;
 
-  /* back to normal position/size */
+  /* normal position/size */
   transform: none;
+  transform-origin: center;
 }
 
 .stack-card {
@@ -92,18 +93,19 @@ body {
   isolation: isolate;
 
   /* tuning knobs */
-  --video-scale: 0.70;  /* 70% */
+  --video-scale-x: 0.80; /* width 80% */
+  --video-scale-y: 0.90; /* height 90% */
   --frame-scale: 1.00;
 }
 
-/* ===== VIDEO: 70% x 70%, normal centered position ===== */
+/* ===== VIDEO: width 80% / height 90%, centered ===== */
 .stack-card > video {
   position: absolute !important;
   top: 50% !important;
   left: 50% !important;
 
-  width: calc(100% * var(--video-scale)) !important;
-  height: calc(100% * var(--video-scale)) !important;
+  width: calc(100% * var(--video-scale-x)) !important;
+  height: calc(100% * var(--video-scale-y)) !important;
 
   transform: translate(-50%, -50%) !important;
   object-fit: cover !important;
@@ -129,10 +131,11 @@ body {
   transform-origin: center;
 }
 
-/* If you still want pata frame larger, keep this; otherwise set to 1.00 */
+/* Only pata card tweaks (optional) */
 .stack-card[data-name="pata"]{
   --frame-scale: 1.20;
-  --video-scale: 0.70;
+  --video-scale-x: 0.80;
+  --video-scale-y: 0.90;
 }
 
 /* ===== Fan transforms for the stack ===== */
@@ -257,7 +260,6 @@ body {
   .cards-fan {
     width: min(360px, 92vw);
     margin: 0 auto;
-    transform: none;
   }
 
   .card-back-4 { transform: translate(-50px, 6px) rotate(-10deg) scale(.96); }

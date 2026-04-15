@@ -32,9 +32,11 @@
   }
 
   function syncText() {
-    const activeCardName = order[4].dataset.name;
+    // IMPORTANT: use data-card (not data-name)
+    const activeCard = order[4].dataset.card;
+
     cardTexts.forEach((text) => {
-      const active = text.dataset.card === activeCardName;
+      const active = text.dataset.card === activeCard;
       text.style.display = active ? "block" : "none";
 
       if (active) {

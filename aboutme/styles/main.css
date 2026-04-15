@@ -76,8 +76,8 @@ body {
   width: min(420px, 90vw);
   aspect-ratio: 3 / 4;
 
-  /* 5% narrower + 5% taller */
-  transform: scaleX(0.95) scaleY(1.05);
+  /* MOVE UP 15% + 5% narrower + 5% taller */
+  transform: translateY(-15%) scaleX(0.95) scaleY(1.05);
   transform-origin: center;
 }
 
@@ -262,8 +262,8 @@ body {
     width: min(360px, 92vw);
     margin: 0 auto;
 
-    /* keep the same 5% narrow + 5% tall on mobile too */
-    transform: scaleX(0.95) scaleY(1.05);
+    /* keep same move/scale on mobile */
+    transform: translateY(-15%) scaleX(0.95) scaleY(1.05);
     transform-origin: center;
   }
 

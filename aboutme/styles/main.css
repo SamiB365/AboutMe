@@ -51,11 +51,11 @@ body {
   max-width: 52ch;
   color: #cdd9f3;
   font-size: clamp(1rem, 1.8vw, 1.15rem);
-  line-height: 1.7;
+  line-height: 1.3;
 }
 
 .lead p {
-  margin: 0 0 .8rem;
+  margin: 0 0 .3rem;
 }
 
 .lead p:last-child {
@@ -90,9 +90,10 @@ body {
   background: linear-gradient(180deg, rgba(121,153,217,.14), rgba(29,44,78,.22));
   box-shadow: 0 16px 40px rgba(0, 0, 0, .35);
   transition: transform .4s ease, opacity .4s ease;
-  isolation: isolate; /* important for reliable z-index layering inside card */
+  isolation: isolate;
 }
 
+/* VIDEO always under overlays */
 .stack-card video {
   position: absolute;
   inset: 0;
@@ -100,10 +101,10 @@ body {
   height: 100%;
   object-fit: cover;
   display: block;
-  z-index: 0; /* video stays under overlays */
+  z-index: 0;
 }
 
-/* Overlay image (frame) above video */
+/* FRAME overlay above video */
 .stack-card .card-frame{
   position: absolute;
   inset: 0;
@@ -112,9 +113,10 @@ body {
   z-index: 2;
   pointer-events: none;
 
-  object-fit: contain;
-  object-position: 50% 50%;
-  transform: scale(1.3);
+  display: block;             /* IMPORTANT for img */
+  object-fit: contain;        /* no stretching */
+  object-position: 50% 50%;   /* center it */
+  transform: scale(1.12);     /* adjust: 1.05–1.30 */
   transform-origin: center;
 }
 

@@ -77,35 +77,35 @@ body {
   aspect-ratio: 3 / 4;
 }
 
-/* Hard-disable any bluish “card background” layers inside the stack */
-.cards-fan .stack-card,
-.cards-fan .stack-card::before,
-.cards-fan .stack-card::after {
-  background: transparent !important;
-  border: none !important;
-}
-
 /* ===== Card base ===== */
 .stack-card {
   position: absolute;
   inset: 0;
   border-radius: 18px;
   overflow: hidden;
-
-  background: transparent;
-  border: none;
-
-  /* Keep shadow (remove this too if you want zero “plate” feel) */
-  box-shadow: 0 16px 40px rgba(0, 0, 0, .35);
-
   transition: transform .4s ease, opacity .4s ease;
   isolation: isolate;
+
+  /* remove all “plate” styling from the card itself */
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
 
   /* knobs (desktop defaults) */
   --video-scale-x: 0.693; /* width: 0.70 -> -1% */
   --video-scale: 0.70;    /* base height */
   --video-top: 45.5%;     /* desktop position */
-  --frame-scale: 1.30;
+  --frame-scale: 1.30;    /* frame size */
+}
+
+/* remove any overlay pseudo-elements if they exist */
+.stack-card::before,
+.stack-card::after {
+  content: none !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  filter: none !important;
 }
 
 /* ===== LAYERS ===== */
@@ -133,10 +133,14 @@ body {
   display: block;
   pointer-events: none;
   z-index: 2;
+
   object-fit: contain;
   object-position: center;
   transform: scale(var(--frame-scale));
   transform-origin: center;
+
+  /* keep depth without adding a “plate” behind the stack */
+  filter: drop-shadow(0 14px 26px rgba(0, 0, 0, .45));
 }
 
 /* ===== Fan transforms for the stack (a bit more angle) ===== */

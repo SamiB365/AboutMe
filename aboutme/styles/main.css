@@ -117,7 +117,6 @@ body {
   width: calc(100% * var(--video-scale-x));
   height: calc(100% * var(--video-scale));
 
-  /* DESKTOP: vertical scale 1.05 */
   transform: translate(-50%, -50%) scaleY(1.05);
   transform-origin: center;
 
@@ -141,12 +140,35 @@ body {
   object-fit: contain;
   object-position: center;
 
-  /* make the IMAGE (frame) 1% taller vertically */
   transform: scale(var(--frame-scale)) scaleY(1.01);
   transform-origin: center;
 
   /* softer, wider shadow / glow */
   filter: drop-shadow(0 22px 46px rgba(0, 0, 0, .45));
+}
+
+/* Joker (or any) overlay badge on top of the frame */
+.stack-card .card-badge {
+  position: absolute;
+  left: 50%;
+  bottom: 10%;
+  transform: translateX(-50%);
+  z-index: 5; /* above frame (2) */
+  pointer-events: none;
+
+  padding: 6px 12px;
+  border-radius: 999px;
+
+  color: rgba(255, 255, 255, .92);
+  font-weight: 800;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  font-size: 12px;
+
+  background: rgba(0, 0, 0, .25);
+  backdrop-filter: blur(4px);
+  text-shadow: 0 10px 22px rgba(0, 0, 0, .55);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, .35);
 }
 
 /* ===== Fan transforms for the stack (fan like playing cards) ===== */
@@ -267,7 +289,6 @@ body {
     margin: 0 auto;
   }
 
-  /* MOBILE: video-top 47% and vertical scale 1.05 */
   .stack-card {
     --video-scale-x: 0.693;
     --video-scale: 0.70;
@@ -278,6 +299,7 @@ body {
     transform: translate(-50%, -50%) scaleY(1.05);
   }
 
+  /* keep mobile fan smaller so it fits */
   .card-back-4 { transform: translate(-50px, 6px) rotate(-10deg) scale(.96); }
   .card-back-3 { transform: translate(-36px, 4px) rotate(-7deg)  scale(.97); }
   .card-back-2 { transform: translate(-24px, 2px) rotate(-4deg)  scale(.98); }

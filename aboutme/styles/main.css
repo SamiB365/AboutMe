@@ -125,6 +125,8 @@ body {
   display: block;
   z-index: 0;
   border-radius: 12px;
+
+  filter: none !important;
 }
 
 .stack-card > img.card-frame {
@@ -138,18 +140,21 @@ body {
 
   object-fit: contain;
   object-position: center;
-  transform: scale(var(--frame-scale));
+
+  /* make the IMAGE (frame) 1% taller vertically */
+  transform: scale(var(--frame-scale)) scaleY(1.01);
   transform-origin: center;
 
-  filter: drop-shadow(0 14px 26px rgba(0, 0, 0, .45));
+  /* softer, wider shadow / glow */
+  filter: drop-shadow(0 22px 46px rgba(0, 0, 0, .45));
 }
 
-/* ===== Fan transforms for the stack (a bit more angle) ===== */
-.card-back-4 { transform: translate(-84px, 8px) rotate(-18deg) scale(.96); opacity: .33; z-index: 1; }
-.card-back-3 { transform: translate(-58px, 5px) rotate(-14deg) scale(.97); opacity: .48; z-index: 2; }
-.card-back-2 { transform: translate(-36px, 2px) rotate(-9deg)  scale(.98); opacity: .64; z-index: 3; }
-.card-back-1 { transform: translate(-18px, 1px) rotate(-5deg)  scale(.99); opacity: .82; z-index: 4; }
-.card-front  { transform: translate(0, 0)   rotate(-2deg) scale(1); opacity: 1; z-index: 6; }
+/* ===== Fan transforms for the stack (fan like playing cards) ===== */
+.card-back-4 { transform: translate(-130px, 26px) rotate(-30deg) scale(.965); opacity: .32; z-index: 1; }
+.card-back-3 { transform: translate(-95px, 18px)  rotate(-22deg) scale(.975); opacity: .46; z-index: 2; }
+.card-back-2 { transform: translate(-62px, 10px)  rotate(-14deg) scale(.985); opacity: .62; z-index: 3; }
+.card-back-1 { transform: translate(-32px, 4px)   rotate(-7deg)  scale(.995); opacity: .80; z-index: 4; }
+.card-front  { transform: translate(0, 0)         rotate(0deg)   scale(1);    opacity: 1;   z-index: 6; }
 
 /* ===== Arrows ===== */
 .fan-arrow {

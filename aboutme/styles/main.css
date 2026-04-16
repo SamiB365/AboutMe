@@ -116,7 +116,9 @@ body {
 
   width: calc(100% * var(--video-scale-x));
   height: calc(100% * var(--video-scale));
-  transform: translate(-50%, -50%) scaleY(1.03);
+
+  /* Desktop: +2% vertical size */
+  transform: translate(-50%, -50%) scaleY(1.02);
   transform-origin: center;
 
   object-fit: cover;
@@ -261,6 +263,10 @@ body {
     margin: 0 auto;
   }
 
+  /* Mobile:
+     - raise 1%: 50% -> 49%
+     - vertical +1% (relative to desktop's 1.02): 1.02 -> 1.03
+  */
   .stack-card {
     --video-scale-x: 0.693;
     --video-scale: 0.70;
@@ -268,7 +274,7 @@ body {
   }
 
   .stack-card > video {
-    transform: translate(-50%, -50%) scaleY(1.04);
+    transform: translate(-50%, -50%) scaleY(1.03);
   }
 
   .card-back-4 { transform: translate(-50px, 6px) rotate(-10deg) scale(.96); }

@@ -8,15 +8,49 @@
       name="description"
       content="Duobotit tarjoaa teknistä tukea ja ohjelmistokehitystä."
     />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Caveat:wght@700&family=Nunito:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
   </head>
-  <body>
-    <main>
-      <h1>Duobotit</h1>
-      <p>Tarjoamme teknistä tukea ja ohjelmistokehitystä käytännönläheisesti.</p>
 
+  <body>
+    <header class="topbar">
       <nav aria-label="Päänavigaatio">
         <a href="/aboutme/">About Me</a>
       </nav>
+    </header>
+
+    <main>
+      <h1 class="sr-only">Duobotit</h1>
+
+      <!-- KUVAPAIKKA: tähän vaihtuvat framet järjestyksessä.
+           Koko kuva on klikattava — klikkaus piilottaa hahmot (idle/wave). -->
+      <div
+        class="stage"
+        id="stage"
+        role="button"
+        tabindex="0"
+        aria-label="Klikkaa käynnistääksesi animaation uudelleen"
+      >
+        <img id="frame" class="frame" alt="" />
+        <p class="frames-missing">
+          Lisää framet kansioon <code>assets/duobotit/…</code>
+        </p>
+      </div>
+
+      <div class="logo-area">
+        <span class="wordmark">Duobotit</span>
+      </div>
+
+      <p class="tagline">
+        Tarjoamme teknistä tukea ja ohjelmistokehitystä käytännönläheisesti.
+      </p>
     </main>
+
+    <script src="animation.js"></script>
   </body>
 </html>

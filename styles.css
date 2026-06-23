@@ -1,43 +1,84 @@
+/* =====================================================================
+   DUOBOTIT — tyylit (WebGL-versio)
+   WebGL-canvas hoitaa karusellin/3D:n. Tämä tiedosto = overlay-UI:
+   lataus, intro, brändi, vihjeet, sarjakuvamaailma (modaali).
+   Suunniteltu työpöytäselaimelle.
+   ===================================================================== */
 :root {
-  /* avaruustausta + valoisuus */
-  --bg-0: #05060c;            /* lähes musta pohja */
-  --bg-1: #131428;            /* pehmeä keskuksen hehku */
+  --bg-0: #05060c;          /* lähes musta pohja */
+  --bg-1: #131428;          /* keskuksen hehku */
   --cream: #f4ead7;
   --muted: #9a93ad;
   --marigold: #ffb24c;
-
-  /* === KARUSELLIN 3D-SÄÄDÖT === */
-  --radius: 1000px;           /* ympyrän säde – kuinka kaukana kortit ovat keskeltä */
-  --perspective: 1500px;     /* pieni = voimakkaampi 3D, iso = loivempi */
-  --thick: 0px;              /* kortit 2D (litteät) – etu/taka samassa tasossa, ei paksuutta */
-  --r: 16px;                 /* kortin kulmien pyöristys */
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: auto; }
+html, body { margin: 0; height: 100%; }
 body {
-  margin: 0;
-  min-height: 100vh;
-  background:
-    radial-gradient(120% 80% at 50% 38%, var(--bg-1) 0%, var(--bg-0) 60%),
-    var(--bg-0);
+  background: var(--bg-0);
   color: var(--cream);
   font-family: "Nunito", system-ui, sans-serif;
-  overflow-x: hidden;
+  /* WebGL omistaa ruudun → ei sivun scrollia */
+  overflow: hidden;
+  overscroll-behavior: none;
 }
-/* vinjetti reunoille (keskittää valon) */
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 1;
-  background: radial-gradient(130% 100% at 50% 45%, transparent 55%, rgba(0,0,0,0.55) 100%);
-}
-body.intro-active { overflow: hidden; height: 100vh; }
 body.modal-open { overflow: hidden; }
 
-/* ====== INTRO-PORTTI ====== */
+/* ====== WEBGL-CANVAS (täysruutu, taustalla) ====== */
+#gl {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  display: block;
+  z-index: 0;
+  touch-action: none;
+}
+
+/* ====== LATAUS ====== */
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  background: radial-gradient(110% 90% at 50% 45%, var(--bg-1), var(--bg-0) 65%);
+  transition: opacity 0.6s ease, visibility 0.6s ease;
+}
+.loader.hide { opacity: 0; visibility: hidden; pointer-events: none; }
+.loader-logo {
+  font-family: "Fredoka", sans-serif;
+  font-weight: 700;
+  font-size: 2rem;
+  letter-spacing: 0.02em;
+}
+.loader-bar {
+  width: min(280px, 60vw);
+  height: 3px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.1);
+  overflow: hidden;
+}
+.loader-bar i {
+  display: block;
+  width: 0%;
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--marigold), #ff7ab0);
+  transition: width 0.25s ease;
+}
+.loader-text {
+  font-family: "Space Mono", monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ====== INTRO-PORTTI (robotti) ====== */
 .intro {
   position: fixed;
   inset: 0;
@@ -45,7 +86,9 @@ body.modal-open { overflow: hidden; }
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(110% 90% at 50% 45%, var(--bg-1), var(--bg-0) 65%);
+  background: radial-gradient(110% 90% at 50% 45%, rgba(19,20,40,0.65), rgba(5,6,12,0.85) 65%);
+  backdrop-filter: blur(2px);
+  transition: opacity 0.6s ease;
 }
 .intro[hidden] { display: none; }
 .intro-btn {
@@ -58,14 +101,15 @@ body.modal-open { overflow: hidden; }
   cursor: pointer;
   padding: 24px;
   border-radius: 24px;
+  transition: transform 0.3s ease;
 }
-.intro-btn:hover { background: rgba(255,255,255,0.03); }
+.intro-btn:hover { transform: translateY(-4px); }
 .intro-btn:focus-visible { outline: 2px solid var(--marigold); outline-offset: 4px; }
 .intro-frame {
   width: min(460px, 80vw);
   aspect-ratio: 600 / 440;
   object-fit: contain;
-  filter: drop-shadow(0 12px 50px rgba(255,178,76,0.18));
+  filter: drop-shadow(0 12px 50px rgba(255,178,76,0.22));
 }
 .intro-hint {
   font-family: "Caveat", cursive;
@@ -73,7 +117,7 @@ body.modal-open { overflow: hidden; }
   color: var(--marigold);
 }
 
-/* brändi (näkyy kun sisällä) */
+/* ====== UI-OVERLAY ====== */
 .brand {
   position: fixed;
   top: 20px; left: clamp(16px, 4vw, 40px);
@@ -83,185 +127,79 @@ body.modal-open { overflow: hidden; }
   font-size: 1.3rem;
   letter-spacing: 0.01em;
   opacity: 0;
-  transition: opacity 0.6s ease;
+  transition: opacity 0.8s ease;
+  pointer-events: none;
 }
 body.entered .brand { opacity: 1; }
 
-/* ====== SIVUSTO ====== */
-.site {
-  position: relative;
-  z-index: 2;
-  opacity: 0;
-  transition: opacity 0.7s ease;
-}
-body.entered .site { opacity: 1; }
-
-/* ====== KARUSELLI ====== */
-.track { position: relative; }
-.snap { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
-.snap-point { position: absolute; left: 0; right: 0; height: 1px; scroll-snap-align: start; }
-body.reduced .snap { display: none; }
-.stage {
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  perspective: var(--perspective);
-  /* katsotaan putkea hieman ylhäältä → etukortinkin paksuus (alareuna) näkyy */
-  perspective-origin: 50% 34%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  /* karuselli kutistuu + himmenee taustalle kun kortti avataan ("jäit taakse") */
-  transition: transform 0.66s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.6s ease;
-}
-/* modaalin auetessa karuselli vetäytyy taustalle */
-body.modal-open .stage { transform: scale(0.92); opacity: 0.35; }
-.ring {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform-style: preserve-3d;
-  /* vedetään putki taakse niin että etukortti on tasan keskellä (z = 0) */
-  transform: translateZ(calc(var(--radius) * -1));
-  will-change: transform;
-}
-.slot {
-  position: absolute;
-  left: 0; top: 0;
-  transform-style: preserve-3d;
-  /* kierto putken ympäri (--angle) + pystyporras (--level) = spiraali.
-     rotateY ei muuta Y-akselia, joten --level on puhdas pystysiirto. */
-  transform: rotateY(var(--angle, 0deg)) translateZ(var(--radius)) translateY(var(--level, 0px));
-}
-
-.card {
-  /* keskitetään kortti slotin origoon; 3D-säiliö = paksu laatta (etu, taka, reunat) */
-  --card-w: clamp(280px, 54vw, 620px);
-  --card-h: calc(var(--card-w) * 440 / 600);   /* oletus = sama kuvasuhde; voi yliajaa erikseen */
-  /* --tilt = taustakorttien ylimääräinen kierto (site.js); keskikortti 0° */
-  transform: translate(-50%, -50%) rotateY(var(--tilt, 0deg));
-  transform-style: preserve-3d;
-  width: var(--card-w);
-  height: var(--card-h);
-  padding: 0;
-  border: none;
-  background: none;
-  cursor: pointer;
-  opacity: calc(0.32 + 0.68 * var(--focus, 0));
-  transition: opacity 0.15s linear;
-}
-
-/* ====== MOBIILIN MANUAALISET SÄÄDÖT ======
-   Kortin koko ja sivu-/syvyysetäisyys kapealla ruudulla (max-width: 640px).
-   PYSTYETÄISYYS korttien välillä säädetään site.js → CONFIG.levelStepMobile. */
-@media (max-width: 640px) {
-  :root {
-    --radius: 450px;   /* putken säde mobiilissa – pienennä = kortit lähemmäs (sivu/syvyys) */
-  }
-  .card {
-    --card-w: 300px;    /* kortin LEVEYS (px) mobiilissa */
-    --card-h: 420px;    /* kortin KORKEUS (px) mobiilissa – säädä erikseen leveydestä */
-  }
-}
-/* etu- ja takapinta – kumpikin oma pintansa, näkyy vain kameraan päin oleva */
-.card-face {
-  position: absolute;
+.ui {
+  position: fixed;
   inset: 0;
-  border-radius: var(--r);
-  overflow: hidden;
-  backface-visibility: hidden;
-  border: 1px solid rgba(var(--tint), calc(0.25 + 0.5 * var(--focus, 0)));
-  transition: border-color 0.15s linear;
+  z-index: 20;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.8s ease;
 }
-.card-front {
-  background: #0c0d18;
-  /* työnnetään etupinta puoli paksuutta eteenpäin + hehku vain etupintaan (kevennetty) */
-  transform: translateZ(calc(var(--thick) / 2));
-  /* --face (site.js): 1 = etupuoli kameraan, 0 = selkä → hohto sammuu takapuolelta */
-  box-shadow: 0 0 calc(10px + 34px * var(--focus, 0)) rgba(var(--tint), calc((0.08 + 0.22 * var(--focus, 0)) * var(--face, 1)));
-}
-.card-back {
-  /* käännetty 180° + työnnetty puoli paksuutta taakse → laatan takapinta */
-  transform: rotateY(180deg) translateZ(calc(var(--thick) / 2));
-  background:
-    radial-gradient(120% 90% at 50% 28%, rgba(var(--tint), 0.20), transparent 62%),
-    linear-gradient(160deg, #14152a, #0a0a16);
-}
+body.entered .ui { opacity: 1; }
 
-/* ----- LITTEÄ 2D-KORTTI -----
-   Vain etu- ja takapinta samassa tasossa (ei paksuutta / ekstruusiota).
-   backface-visibility piilottaa taustapuolen niin kortilla on kaksi puolta. */
-.card:focus-visible { outline: 2px solid var(--marigold); outline-offset: 4px; }
-.card-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-.card-title {
-  position: absolute;
-  left: 16px;
-  bottom: 14px;
-  font-family: "Space Mono", monospace;
+/* Etukortin otsikko (vaihtuu pyöriessä) */
+.card-label {
+  position: fixed;
+  left: 50%;
+  bottom: clamp(78px, 14vh, 130px);
+  transform: translateX(-50%) translateY(8px);
+  font-family: "Fredoka", sans-serif;
   font-weight: 700;
-  font-size: clamp(0.9rem, 2vw, 1.15rem);
-  letter-spacing: 0.02em;
+  font-size: clamp(1.4rem, 3.4vw, 2.4rem);
+  letter-spacing: 0.01em;
   color: #fff;
-  text-shadow: 0 2px 12px rgba(0,0,0,0.8);
+  text-shadow: 0 4px 30px rgba(0,0,0,0.6);
+  opacity: 0;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  white-space: nowrap;
 }
+.card-label.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
 .scroll-hint {
-  position: absolute;
-  bottom: 28px;
+  position: fixed;
+  bottom: 30px;
   left: 50%;
   transform: translateX(-50%);
   font-family: "Space Mono", monospace;
-  font-size: 0.85rem;
-  letter-spacing: 0.15em;
+  font-size: 0.8rem;
+  letter-spacing: 0.18em;
   color: var(--muted);
   text-transform: uppercase;
-  transition: opacity 0.4s ease;
-  animation: hintPulse 2s ease-in-out infinite;
+  animation: hintPulse 2.4s ease-in-out infinite;
 }
-@keyframes hintPulse { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(5px); } }
+@keyframes hintPulse { 0%,100% { opacity: 0.55; } 50% { opacity: 1; } }
 
-/* ====== POHJA / FOOTER ====== */
-.footer {
-  position: relative;
-  z-index: 2;
-  scroll-snap-align: start;
-  min-height: 70vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  gap: 12px;
-  padding: 60px 24px 80px;
-  background: linear-gradient(180deg, transparent, rgba(0,0,0,0.5));
+.credit {
+  position: fixed;
+  bottom: 12px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  font-size: 0.72rem;
+  color: rgba(154,147,173,0.55);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+  pointer-events: none;
 }
-.footer-word {
-  font-family: "Fredoka", sans-serif;
-  font-weight: 700;
-  font-size: clamp(2.2rem, 8vw, 4rem);
-  margin: 0;
-}
-.footer p { color: var(--muted); margin: 0; max-width: 40ch; }
-.footer-small { font-size: 0.85rem; opacity: 0.7; margin-top: 18px !important; }
+body.entered .credit { opacity: 1; }
+@media (max-width: 720px) { .credit { display: none; } }
 
-/* ====== MODAALI ====== */
-.modal { display: none; }
+/* ====== MODAALI: sarjakuvamaailma (DOM) ====== */
+.modal {
+  --world-opacity: 0;
+  display: none;
+}
 .modal:not([hidden]) {
-  display: flex;
+  display: block;
   position: fixed;
   inset: 0;
   z-index: 70;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
 }
-/* Opaakki tausta (ei blur → kevyt mobiilille). Feidaa esiin .open-luokalla. */
 .modal-backdrop {
   position: absolute;
   inset: 0;
@@ -269,53 +207,25 @@ body.modal-open .stage { transform: scale(0.92); opacity: 0.35; }
   background:
     radial-gradient(120% 90% at 50% 42%, rgba(19,20,40,0.96), rgba(5,6,12,0.985) 70%),
     var(--bg-0);
-  opacity: 0;
-  transition: opacity 0.55s ease;
+  opacity: var(--world-opacity);
 }
-.modal.open .modal-backdrop { opacity: 1; }
-/* Kortin klooni joka kasvaa täyteen ruutuun (zoom in). Jää näkyviin tyhjänä. */
-.zoomer {
-  position: fixed;
-  z-index: 1;
-  margin: 0;
-  overflow: hidden;
-  border-radius: var(--r);
-  transform-origin: center center;
-  will-change: transform, opacity;
-  pointer-events: none;
-  box-shadow: 0 30px 90px rgba(0,0,0,0.55);
-}
-.zoomer img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-/* ====== MAAILMA (avautuu kortin läpi vesiportaalina) ======
-   .world = täysruudun säiliö joka paljastuu pyöreän maskin (--rip) kasvaessa
-   klikkauskohdasta (--px/--py). SVG-suodatin (#waterRipple) tekee reunaan
-   vesimäisen taittuman sukelluksen ajaksi. */
-.fx-defs { position: absolute; width: 0; height: 0; overflow: hidden; pointer-events: none; }
-
+/* Maailma = täysruudun selattava sarjakuva. Feidaa esiin sukelluksen lopussa. */
 .world {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  opacity: 0;
-  --rip: 0px;
-  /* pyöreä maski klikkauskohdasta – pehmeä reuna = vesimäinen meniski.
-     Säde (--rip) PIKSELEINÄ (JS ajaa) – circle-säde ei voi olla %. */
-  -webkit-mask-image: radial-gradient(circle var(--rip) at var(--px, 50%) var(--py, 50%), #000 58%, rgba(0,0,0,0) 72%);
-          mask-image: radial-gradient(circle var(--rip) at var(--px, 50%) var(--py, 50%), #000 58%, rgba(0,0,0,0) 72%);
+  opacity: var(--world-opacity);
   background:
     radial-gradient(120% 80% at 50% 0%, rgba(var(--world-theme, 120,200,255), 0.18), transparent 60%),
     var(--bg-0);
 }
-/* Kun maailma on täysin auki: ei maskia/suodatinta → kevyt ja selattava. */
-.modal.opened .world { -webkit-mask-image: none; mask-image: none; filter: none; }
+.modal.opened .world { opacity: 1; transition: opacity 0.3s ease; }
 
 .world-scroll { display: flex; flex-direction: column; align-items: center; padding-bottom: 120px; }
 
-/* Koko ruudun "uusi maailma" -näkymä heti portaalin takana. */
 .world-hero {
   position: relative;
   width: 100%;
@@ -353,8 +263,9 @@ body.modal-open .stage { transform: scale(0.92); opacity: 0.35; }
   letter-spacing: 0.15em;
   color: var(--muted);
   text-transform: uppercase;
-  animation: hintPulse 2s ease-in-out infinite;
+  animation: cuePulse 2s ease-in-out infinite;
 }
+@keyframes cuePulse { 0%,100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
 
 /* Sarjakuvaruudut (webtoon-pystyscroll) – feidaavat sisään vieritettäessä. */
 .panel {
@@ -380,28 +291,6 @@ body.modal-open .stage { transform: scale(0.92); opacity: 0.35; }
   color: var(--cream);
 }
 
-/* Valonvälähdys läpäisyhetkellä (kuin pinnan rikkoutuminen). */
-.fx-flash {
-  position: absolute;
-  z-index: 3;
-  left: var(--px, 50%);
-  top: var(--py, 50%);
-  width: 12px;
-  height: 12px;
-  margin: -6px 0 0 -6px;
-  border-radius: 50%;
-  pointer-events: none;
-  opacity: 0;
-  mix-blend-mode: screen;
-  background: radial-gradient(circle, rgba(225,245,255,0.95), rgba(130,205,255,0.4) 42%, transparent 70%);
-}
-.modal.diving .fx-flash { animation: flashBurst 0.62s ease-out forwards; }
-@keyframes flashBurst {
-  0% { opacity: 0; transform: scale(1); }
-  16% { opacity: 0.85; }
-  100% { opacity: 0; transform: scale(64); }
-}
-
 .modal-close {
   position: fixed;
   top: clamp(14px, 3vh, 28px); right: clamp(14px, 3vw, 28px);
@@ -414,46 +303,13 @@ body.modal-open .stage { transform: scale(0.92); opacity: 0.35; }
   font-size: 1.6rem; line-height: 1;
   cursor: pointer;
   opacity: 0;
-  transition: opacity 0.3s ease 0.2s;
+  transition: opacity 0.3s ease 0.15s, background 0.2s ease;
 }
 .modal.open .modal-close { opacity: 1; }
-.modal-close:hover { background: #24264180; }
+.modal-close:hover { background: #242641; }
 .modal-close:focus-visible { outline: 2px solid var(--marigold); outline-offset: 2px; }
 
-/* ====== REDUCED MOTION: kortit listana, ei pyöritystä ====== */
-body.reduced .stage { position: static; height: auto; perspective: none; padding: 80px 0 40px; }
-body.reduced .ring { position: static; transform: none; display: flex; flex-direction: column; align-items: center; gap: 32px; }
-body.reduced .slot { position: static; transform: none; }
-body.reduced .card { transform: none; opacity: 1; }
-body.reduced .scroll-hint { display: none; }
-body.reduced .intro-hint { animation: none; }
+/* ====== REDUCED MOTION ====== */
 body.reduced .panel { opacity: 1; transform: none; transition: none; }
-body.reduced .world-cue { animation: none; }
-
-/* ====== MOBIILI: vain pystyasento ======
-   Pystysuora karuselli toimii parhaiten pystyasennossa. Kosketuslaitteen
-   vaaka-asennossa peitetään sisältö ja pyydetään kääntämään puhelin pystyyn.
-   (Selain ei salli orientaation pakottamista lukkoon ilman PWA-fullscreeniä,
-   joten ohjataan käyttäjä peittonäkymällä.) */
-@media (hover: none) and (orientation: landscape) and (max-height: 560px) {
-  body { overflow: hidden; }
-  body::before {
-    content: "↻  Käännä puhelin pystyasentoon";
-    position: fixed;
-    inset: 0;
-    z-index: 200;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 2rem;
-    background:
-      radial-gradient(120% 90% at 50% 40%, var(--bg-1), var(--bg-0) 65%),
-      var(--bg-0);
-    color: var(--cream);
-    font-family: "Nunito", system-ui, sans-serif;
-    font-size: clamp(1.1rem, 4vw, 1.5rem);
-    font-weight: 800;
-    letter-spacing: 0.02em;
-  }
-}
+body.reduced .world-cue,
+body.reduced .scroll-hint { animation: none; }

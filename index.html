@@ -9,58 +9,53 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Caveat:wght@700&family=Space+Mono:wght@400;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
+
+    <!-- Three.js (CDN, ESM importmap) – ei buildiä -->
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+      }
+    </script>
   </head>
 
   <body>
-    <!-- ====== INTRO-PORTTI ====== -->
-    <div class="intro" id="intro">
+    <!-- ====== WEBGL-NÄKYMÄ (3D-karuselli) ====== -->
+    <canvas id="gl" aria-label="3D-näkymä"></canvas>
+
+    <!-- ====== LATAUS ====== -->
+    <div class="loader" id="loader">
+      <div class="loader-logo">Duobotit</div>
+      <div class="loader-bar"><i id="loaderFill"></i></div>
+      <span class="loader-text">ladataan…</span>
+    </div>
+
+    <!-- ====== INTRO-PORTTI (robotti) ====== -->
+    <div class="intro" id="intro" hidden>
       <button class="intro-btn" id="introBtn" type="button" aria-label="Avaa sivusto">
         <img id="introFrame" class="intro-frame" alt="" />
         <span class="intro-hint">click me</span>
       </button>
     </div>
 
-    <!-- ====== SIVUSTO ====== -->
+    <!-- ====== UI-OVERLAY ====== -->
     <div class="brand" aria-hidden="true">Duobotit</div>
+    <div class="ui" id="ui">
+      <div class="card-label" id="cardLabel" aria-live="polite"></div>
+      <div class="scroll-hint" id="scrollHint">scrollaa&nbsp;↕&nbsp;&middot;&nbsp;klikkaa korttia</div>
+    </div>
+    <footer class="credit" aria-hidden="true">© Duobotit — tekninen tuki · ohjelmistokehitys · pelit · sarjakuva</footer>
 
-    <main class="site" id="site">
-      <!-- karuselli-osio: scrollaus pyörittää -->
-      <section class="track" id="track" aria-label="Kortit">
-        <div class="snap" id="snap" aria-hidden="true"></div>
-        <div class="stage">
-          <div class="ring" id="ring"><!-- kortit luodaan site.js:ssä --></div>
-          <div class="scroll-hint" id="scrollHint">scrollaa&nbsp;↓</div>
-        </div>
-      </section>
-
-      <!-- sivun pohja -->
-      <footer class="footer">
-        <h2 class="footer-word">Duobotit</h2>
-        <p>Teknistä tukea, ohjelmistokehitystä, pelejä ja sarjakuvaa.</p>
-        <p class="footer-small">© Duobotit</p>
-      </footer>
-    </main>
-
-    <!-- ====== MODAALI (kortti kasvaa → sukellus vesiportaalin läpi → maailma) ====== -->
+    <!-- ====== MODAALI: sarjakuvamaailma (DOM) ====== -->
     <div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-label="Kortin näkymä">
       <div class="modal-backdrop" data-close></div>
-      <!-- Avautuva maailma (sarjakuva); sisältö rakennetaan site.js:ssä -->
+      <!-- Avautuva maailma (sarjakuva); sisältö rakennetaan app.js:ssä -->
       <section class="world" id="world" aria-label="Maailma"></section>
-      <!-- Valonvälähdys läpäisyhetkellä -->
-      <div class="fx-flash" id="fxFlash" aria-hidden="true"></div>
       <button class="modal-close" id="modalClose" type="button" aria-label="Sulje">×</button>
     </div>
 
-    <!-- SVG-suodatin: vesimäinen taittuma (feTurbulence + feDisplacementMap) portaalin reunaan -->
-    <svg class="fx-defs" aria-hidden="true" focusable="false" width="0" height="0">
-      <defs>
-        <filter id="waterRipple" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
-          <feTurbulence id="fxTurb" type="fractalNoise" baseFrequency="0.012 0.02" numOctaves="2" seed="7" result="noise" />
-          <feDisplacementMap id="fxDisp" in="SourceGraphic" in2="noise" scale="0" xChannelSelector="R" yChannelSelector="G" />
-        </filter>
-      </defs>
-    </svg>
-
-    <script src="site.js"></script>
+    <script type="module" src="app.js"></script>
   </body>
 </html>

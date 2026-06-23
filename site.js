@@ -342,8 +342,8 @@ introBtn.addEventListener("click", enterSite);
 const modal = document.getElementById("modal");
 const modalClose = document.getElementById("modalClose");
 const worldEl = document.getElementById("world");
-const dispEl = document.getElementById("fxDisp");   // feDisplacementMap (vesivääristymä)
-const turbEl = document.getElementById("fxTurb");   // feTurbulence (kohina)
+const dispEl = document.getElementById("fxDisp");   // feDisplacementMap (sileä refraktio)
+const portalRim = document.getElementById("portalRim"); // hohtava portaalin reuna
 let modalSource = null;     // klikattu kortti-elementti
 let activeZoomer = null;    // kasvatettu kortin klooni
 let diveTimer = null;       // ajastin: koska sukellus alkaa
@@ -376,7 +376,7 @@ const escapeHtml = (s) =>
 
 // Rakentaa maailman sisällön (hero + sarjakuvaruudut) modaaliin.
 function buildWorld(world) {
-  worldEl.style.setProperty("--world-theme", world.theme || "120,200,255");
+  modal.style.setProperty("--world-theme", world.theme || "120,200,255");
   const hero =
     `<div class="world-hero" style="background-image:url('${encodeURI(world.cover)}')">` +
       `<h2 class="world-title">${escapeHtml(world.title || "")}</h2>` +
@@ -433,6 +433,7 @@ function openModal(card, sourceEl, ev) {
   const py = ev && ev.clientY ? ev.clientY : window.innerHeight / 2;
   modal.style.setProperty("--px", px + "px");
   modal.style.setProperty("--py", py + "px");
+  modal.style.setProperty("--rip", "0px");   // portaali alkaa nollasta
 
   // Ilman animaatiota (reduced motion / ei lähde-elementtiä): näytä maailma suoraan.
   if (!modalSource || reduce) {
@@ -454,21 +455,22 @@ function openModal(card, sourceEl, ev) {
   activeZoomer = z;
   z.getBoundingClientRect();                 // pakota reflow
   z.style.transition =
-    "transform 0.62s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.5s ease";
+    "transform 0.7s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.55s ease";
   z.style.transform = zoomTransform(src);
   z.style.borderRadius = "0px";
 
   // Vaihe 2: sukellus kortin läpi (~zoomin loppupuolella).
-  diveTimer = window.setTimeout(startDive, 430);
+  diveTimer = window.setTimeout(startDive, 460);
   modalClose.focus();
 }
 
 // Vaihe 2: vesiportaali avautuu klikkauskohdasta ja paljastaa maailman.
 function startDive() {
   diveTimer = null;
-  worldEl.style.opacity = "1";                 // näkyy portaalin maskin läpi
-  worldEl.style.filter = "url(#waterRipple)";  // vesimäinen taittuma reunaan
-  modal.classList.add("diving");               // valonvälähdys
+  worldEl.style.opacity = "1";                          // näkyy portaalin maskin läpi
+  worldEl.style.filter = "url(#waterRipple) blur(4px)"; // sileä refraktio + tarkennuksen veto
+  if (portalRim) portalRim.style.opacity = "1";         // hohtava reuna esiin
+  modal.classList.add("diving");                        // pehmeä värillinen bloom
 
   let finished = false;
   const finish = () => {
@@ -480,31 +482,32 @@ function startDive() {
     worldEl.style.filter = "";
     worldEl.style.webkitMaskImage = "none";
     worldEl.style.maskImage = "none";
+    if (portalRim) portalRim.style.opacity = "0";
     modal.classList.remove("diving");
     modal.classList.add("opened");
     if (activeZoomer) { activeZoomer.remove(); activeZoomer = null; }
   };
   animatePortal(finish);
   // Varmistus: jos rAF ei pyöri (esim. tausta-välilehti), avaa silti.
-  diveFallback = window.setTimeout(finish, 720 + 300);
+  diveFallback = window.setTimeout(finish, 820 + 300);
 }
 
 // Animoi portaalin säteen (--rip) + vesivääristymän (rAF, ~0.72 s).
 function animatePortal(onDone) {
-  const DUR = 720;
+  const DUR = 820;
   const start = performance.now();
   // Maskiympyrän loppusäde: ruudun lävistäjä (+ marginaali) → peittää koko ruudun.
-  const target = Math.hypot(window.innerWidth, window.innerHeight) * 1.1;
-  const easeOut = (t) => 1 - Math.pow(1 - t, 3);
+  const target = Math.hypot(window.innerWidth, window.innerHeight) * 1.12;
+  const easeOutExpo = (t) => (t >= 1 ? 1 : 1 - Math.pow(2, -10 * t));
   function frame(now) {
     const t = Math.min(1, (now - start) / DUR);
-    const e = easeOut(t);
-    worldEl.style.setProperty("--rip", (e * target).toFixed(1) + "px");
-    if (dispEl) dispEl.setAttribute("scale", ((1 - e) * 38).toFixed(1));   // taittuma laantuu
-    if (turbEl) {
-      const bf = 0.01 + (1 - e) * 0.016;   // kohina hieman tihenee → laantuu
-      turbEl.setAttribute("baseFrequency", bf.toFixed(4) + " " + (bf * 1.6).toFixed(4));
-    }
+    const e = easeOutExpo(t);
+    modal.style.setProperty("--rip", (e * target).toFixed(1) + "px");
+    // Sileä refraktio + tarkennuksen veto laantuvat → 0 (ei rakeista värinää).
+    if (dispEl) dispEl.setAttribute("scale", ((1 - e) * 12).toFixed(1));
+    worldEl.style.filter = `url(#waterRipple) blur(${((1 - e) * 4).toFixed(2)}px)`;
+    // Hohtava reuna kirkkaimmillaan alussa, sammuu loppua kohti.
+    if (portalRim) portalRim.style.opacity = Math.max(0, Math.min(1, (1 - e) * 1.5)).toFixed(3);
     if (t < 1) portalRAF = requestAnimationFrame(frame);
     else { portalRAF = null; if (onDone) onDone(); }
   }
@@ -518,6 +521,8 @@ function closeModal() {
   modal.classList.remove("open", "diving", "opened");
   document.body.classList.remove("modal-open");   // karuselli palaa
   if (activeZoomer) { activeZoomer.remove(); activeZoomer = null; }
+  if (portalRim) portalRim.style.opacity = "0";
+  modal.style.setProperty("--rip", "0px");
 
   // Maailma feidaa pois, sitten modaali piiloon ja tilat nollataan.
   worldEl.style.transition = "opacity 0.4s ease";

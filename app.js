@@ -64,6 +64,20 @@ const CONFIG = {
     packetSpeed: 0.55,   // datan virtausnopeus
     seed: 7,             // satunnaissiemen (vakaa puu reloadissa)
   },
+  // SARJAKUVATAUSTA (Spider-Verse-printti): halftone-pisteet + litteät väritasot + terävät hiukkaset
+  comicBg: {
+    baseColor: "26,18,54",       // pohjaväri (syvä indigo) – litteä taso
+    midColor: "64,22,92",        // välitaso (violetti/magenta) – litteä taso
+    edgeColor: "8,5,20",         // reuna/tummennus (litteä vinjetti)
+    dotColorA: "236,64,160",     // halftone-pisteen väri 1 (magenta)
+    dotColorB: "40,210,230",     // halftone-pisteen väri 2 (syaani)
+    dotScale: 90.0,              // halftone-ruudukon tiheys (isompi → pienemmät/tiheämmät pisteet)
+    dotStrength: 0.5,            // pisterasterin voimakkuus (0–1)
+    drift: 0.012,                // taustan liikkeen nopeus (lähes paikallaan)
+    particleCount: 220,          // sarjakuvahiukkasten määrä
+    particleFps: 12,             // hiukkasten nykivän liikkeen päivitystahti (fps; render pyörii 60)
+    particleColors: ["236,64,160", "40,210,230", "255,232,64"], // kirkkaat CMYK-henkiset värit
+  },
   exposure: 1.12,
 };
 
@@ -178,7 +192,7 @@ function preload() {
    SHADERIT
    ===================================================================== */
 
-// --- Tausta: pehmeä radiaaligradientti (brändin avaruustausta) ---
+// --- Tausta: PRINTTI-SARJAKUVA (litteät väritasot + Ben-Day-halftone + vinjetti) ---
 const BG_VERT = /* glsl */ `
   varying vec2 vUv;
   void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }
@@ -186,63 +200,39 @@ const BG_VERT = /* glsl */ `
 const BG_FRAG = /* glsl */ `
   precision highp float;
   varying vec2 vUv;
-  uniform vec3  uGlow;   // keskuksen hehku
-  uniform vec3  uEdge;   // reunan tummuus
+  uniform vec3  uBase;      // pohjaväri (litteä taso)
+  uniform vec3  uMid;       // välitaso (litteä)
+  uniform vec3  uEdge;      // reuna/tummennus (vinjetti)
+  uniform vec3  uDotA;      // halftone-pisteen väri 1
+  uniform vec3  uDotB;      // halftone-pisteen väri 2
+  uniform float uDotScale;  // pisteruudukon tiheys
+  uniform float uDotStrength;
+  uniform float uDrift;     // taustan liikkeen nopeus (lähes 0)
   uniform float uTime;
-  uniform float uAspect; // leveys/korkeus → pylväät pysyvät pystyssä
-
-  float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-  float noise(vec2 p){
-    vec2 i = floor(p), f = fract(p);
-    float a = hash(i), b = hash(i + vec2(1.0, 0.0));
-    float c = hash(i + vec2(0.0, 1.0)), d = hash(i + vec2(1.0, 1.0));
-    vec2 u = f * f * (3.0 - 2.0 * f);
-    return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
-  }
-  float fbm(vec2 p){
-    float v = 0.0, a = 0.5;
-    for (int i = 0; i < 5; i++){ v += a * noise(p); p *= 2.02; a *= 0.5; }
-    return v;
-  }
+  uniform float uAspect;
 
   void main(){
     vec2 uv = vUv;
-    float d = distance(uv, vec2(0.5, 0.55));
+    float d = distance(uv, vec2(0.5, 0.52));
 
-    // 1) syvä avaruusgradientti
-    vec3 col = mix(uGlow, uEdge, smoothstep(0.0, 0.78, d));
+    // 1) LITTEÄT VÄRITASOT (cel): kvantisoitu diagonaali → kovat askelmat, EI liukuväriä
+    float t = clamp(uv.x * 0.55 + (1.0 - uv.y) * 0.6, 0.0, 1.0);
+    float q = floor(t * 3.0) / 2.0;          // 0.0 / 0.5 / 1.0 → 3 selkeää tasoa
+    vec3 col = mix(uBase, uMid, q);
 
-    // 2) kosmiset nebula-pilvet (hidas liike)
-    float n = fbm(uv * vec2(uAspect, 1.0) * 3.2 + vec2(uTime * 0.02, uTime * 0.013));
-    float n2 = fbm(uv * vec2(uAspect, 1.0) * 6.0 - vec2(uTime * 0.015, 0.0));
-    vec3 nebA = vec3(0.10, 0.04, 0.26);   // violetti
-    vec3 nebB = vec3(0.0, 0.22, 0.34);    // syaani
-    vec3 neb = mix(nebA, nebB, n2);
-    col += neb * pow(n, 1.6) * 0.55 * (1.0 - d * 0.7);
+    // 2) BEN-DAY / halftone-pisterasteri (tiheämpi keskellä, harvempi reunoilla)
+    vec2 g = uv * vec2(uAspect, 1.0) * uDotScale;
+    g += vec2(sin(uTime * uDrift), cos(uTime * uDrift * 0.8)) * 2.0; // erittäin hidas ajautuma
+    vec2 cell = fract(g) - 0.5;
+    float patt = length(cell) / 0.5;
+    float tone = smoothstep(0.85, 0.05, d);  // 1 keskellä → 0 reunalla
+    float dots = 1.0 - smoothstep(tone * 1.15 - 0.08, tone * 1.15 + 0.08, patt);
+    float swap = mod(floor(g.x) + floor(g.y), 2.0);   // joka toinen piste eri väri → CMYK-henki
+    vec3 dotCol = mix(uDotA, uDotB, swap);
+    col = mix(col, dotCol, dots * uDotStrength);
 
-    // 3) tähtikenttä (kimaltava)
-    vec2 sg = uv * vec2(uAspect, 1.0) * 240.0;
-    vec2 sc = floor(sg);
-    float s = hash(sc);
-    float twk = step(0.991, s) * (0.5 + 0.5 * sin(uTime * 3.0 + s * 50.0));
-    col += vec3(0.85, 0.92, 1.0) * twk;
-
-    // 4) MATRIX-digitaalisade (vihreät pystypylväät, kirkas pää + himmenevä jälki)
-    float cols = 70.0;
-    float ci = floor(uv.x * cols);
-    float r1 = hash(vec2(ci, 9.0));
-    float speed = 0.18 + r1 * 0.5;
-    float head = fract(r1 * 17.0 + uTime * speed);   // pään y-paikka (0..1)
-    float colY = 1.0 - uv.y;                          // ylä = 0
-    float dy = colY - head;                           // etäisyys päästä alaspäin
-    float trail = exp(-max(dy, 0.0) * 5.5) * step(-0.02, dy);
-    float headGlow = exp(-abs(dy) * 26.0);
-    float rows = 48.0;
-    float ri = floor(uv.y * rows);
-    float flick = step(0.30, hash(vec2(ci, ri) + floor(uTime * 7.0)));
-    vec3 mtx = vec3(0.18, 1.0, 0.45) * (trail * flick * 0.9 + headGlow);
-    // näkyy enemmän reunoilla → ei peitä keskellä olevia kortteja
-    col += mtx * 0.30 * smoothstep(0.14, 0.6, d);
+    // 3) reunan tummennus → litteä tumma vinjetti
+    col = mix(uEdge, col, smoothstep(1.08, 0.30, d));
 
     gl_FragColor = vec4(col, 1.0);
   }
@@ -492,15 +482,21 @@ function initThree(canvas) {
   clock = new THREE.Clock();
 }
 
-// Tausta: kosminen avaruus + matrix-digitaalisade (iso taso kauimpana)
+// Tausta: printti-sarjakuva (litteät väritasot + Ben-Day-halftone + vinjetti, iso taso kauimpana)
 function buildBackground() {
   const geo = new THREE.PlaneGeometry(120, 80);
   const mat = new THREE.ShaderMaterial({
     vertexShader: BG_VERT,
     fragmentShader: BG_FRAG,
     uniforms: {
-      uGlow: { value: colHex("#10122e") },
-      uEdge: { value: colHex("#03040a") },
+      uBase: { value: colRGB255(CONFIG.comicBg.baseColor) },
+      uMid: { value: colRGB255(CONFIG.comicBg.midColor) },
+      uEdge: { value: colRGB255(CONFIG.comicBg.edgeColor) },
+      uDotA: { value: colRGB255(CONFIG.comicBg.dotColorA) },
+      uDotB: { value: colRGB255(CONFIG.comicBg.dotColorB) },
+      uDotScale: { value: CONFIG.comicBg.dotScale },
+      uDotStrength: { value: CONFIG.comicBg.dotStrength },
+      uDrift: { value: CONFIG.comicBg.drift },
       uTime: { value: 0 },
       uAspect: { value: window.innerWidth / window.innerHeight },
     },
@@ -514,47 +510,76 @@ function buildBackground() {
   bgMat = mat;
 }
 
-// Hiukkaskenttä (syvyys + liike, bloom saa ne kimaltelemaan)
+// Sarjakuvahiukkaset (terävät CMYK-pisteet/plus-merkit, nykivä ~12fps liike, bloom-hehku)
 function buildParticles() {
   particleGroup = new THREE.Group();
-  const N = reduce ? 400 : 1500;
+  const C = CONFIG.comicBg;
+  const N = reduce ? Math.round(C.particleCount * 0.4) : C.particleCount;
   const positions = new Float32Array(N * 3);
   const sizes = new Float32Array(N);
+  const typesArr = new Float32Array(N);     // 0 = piste, 1 = plus-merkki
+  const colorArr = new Float32Array(N * 3);
+  const palette = C.particleColors.map(colRGB255);
   for (let i = 0; i < N; i++) {
     positions[i * 3 + 0] = (Math.random() - 0.5) * 60;
     positions[i * 3 + 1] = (Math.random() - 0.5) * 36;
     positions[i * 3 + 2] = -25 + Math.random() * 30;
     sizes[i] = Math.random();
+    typesArr[i] = Math.random() < 0.5 ? 1.0 : 0.0;
+    const c = palette[(Math.random() * palette.length) | 0];
+    colorArr[i * 3 + 0] = c.r; colorArr[i * 3 + 1] = c.g; colorArr[i * 3 + 2] = c.b;
   }
   const geo = new THREE.BufferGeometry();
   geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
   geo.setAttribute("aSize", new THREE.BufferAttribute(sizes, 1));
+  geo.setAttribute("aType", new THREE.BufferAttribute(typesArr, 1));
+  geo.setAttribute("aColor", new THREE.BufferAttribute(colorArr, 3));
   const mat = new THREE.ShaderMaterial({
     transparent: true,
     depthWrite: false,
-    blending: THREE.AdditiveBlending,
-    uniforms: { uColor: { value: colHex("#9fc6ff") }, uTime: { value: 0 } },
+    blending: THREE.AdditiveBlending,   // kirkkaat päällekkäiset → bloom-hehku
+    uniforms: { uTime: { value: 0 }, uFps: { value: C.particleFps } },
     vertexShader: /* glsl */ `
       attribute float aSize;
+      attribute float aType;
+      attribute vec3 aColor;
       uniform float uTime;
-      varying float vA;
+      uniform float uFps;
+      varying float vType;
+      varying vec3 vColor;
       void main(){
+        // NYKIVÄ liike: kvantisoi aika ~12 fps → portaittainen (Spider-Verse-henki)
+        float tq = floor(uTime * uFps) / uFps;
         vec3 p = position;
-        p.y += sin(uTime * 0.2 + position.x * 0.3) * 0.4;
+        p.y += sin(tq * 0.6 + position.x * 0.3) * 0.6;
+        p.x += cos(tq * 0.5 + position.y * 0.25) * 0.4;
         vec4 mv = modelViewMatrix * vec4(p, 1.0);
-        gl_PointSize = (aSize * 3.0 + 0.6) * (140.0 / -mv.z);
+        gl_PointSize = (aSize * 4.0 + 1.5) * (150.0 / -mv.z);  // syvyys: kaukana pienempi
         gl_Position = projectionMatrix * mv;
-        vA = aSize;
+        vType = aType;
+        vColor = aColor;
       }
     `,
     fragmentShader: /* glsl */ `
-      uniform vec3 uColor;
-      varying float vA;
+      precision highp float;
+      varying float vType;
+      varying vec3 vColor;
       void main(){
-        vec2 c = gl_PointCoord - 0.5;
-        float d = length(c);
-        float a = smoothstep(0.5, 0.0, d);
-        gl_FragColor = vec4(uColor * (0.4 + vA), a * (0.25 + vA * 0.6));
+        vec2 c = abs(gl_PointCoord - 0.5);
+        float mask;
+        if (vType > 0.5) {
+          // PLUS-merkki: kovareunainen risti
+          float bar = 0.12;   // varren paksuus
+          float arm = 0.46;   // varren pituus
+          float h = step(c.x, bar) * step(c.y, arm);
+          float v = step(c.y, bar) * step(c.x, arm);
+          mask = max(h, v);
+        } else {
+          // PISTE: kovareunainen ympyrä (EI smoothstep → painettu piste)
+          mask = step(length(c), 0.34);
+        }
+        if (mask < 0.5) discard;   // kovat reunat
+        gl_FragColor = vec4(vColor, 1.0);
       }
     `,
   });
@@ -1268,10 +1293,10 @@ function animate() {
       (CONFIG.card.frame.hoverGlow - CONFIG.card.frame.glow) * c.hover;
   }
 
-  // post + hiukkasten aika
+  // post + hiukkasten aika (reduce → tausta + hiukkaset jäätyvät)
   postPass.uniforms.uTime.value = time;
-  if (bgMat) bgMat.uniforms.uTime.value = time;
-  if (particleGroup.userData.mat) particleGroup.userData.mat.uniforms.uTime.value = time;
+  if (bgMat && !reduce) bgMat.uniforms.uTime.value = time;
+  if (particleGroup.userData.mat && !reduce) particleGroup.userData.mat.uniforms.uTime.value = time;
   updateTree(time);
 
   composer.render();

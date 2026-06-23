@@ -104,6 +104,10 @@ function framePlayer(img) {
 const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 if (reduce) document.body.classList.add("reduced");
 
+// Kosketuslaite (mobiili/tabletti): snäppi pois käytöstä — natiivi kosketus-
+// liuku tuntuu paremmalta ilman snäppiä. Vain hiirellä/levyllä snäppi käytössä.
+const isTouch = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+
 /* ----- KORTTIEN LUONTI ----- */
 const ring = document.getElementById("ring");
 CARDS.forEach((c, i) => {
@@ -278,7 +282,7 @@ function trackVelocity() {
 
 /* Yritä snäpätä: snapToNearest tarkistaa että kortti on tarpeeksi lähellä keskustaa. */
 function attemptSnap() {
-  if (reduce || isSnapping || !CONFIG.snapEnabled) return;
+  if (reduce || isTouch || isSnapping || !CONFIG.snapEnabled) return;
   velocity = 0;
   snapToNearest();
 }

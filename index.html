@@ -4,53 +4,53 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Duobotit</title>
-    <meta
-      name="description"
-      content="Duobotit tarjoaa teknistä tukea ja ohjelmistokehitystä."
-    />
+    <meta name="description" content="Duobotit – tekninen tuki, ohjelmistokehitys, pelit ja sarjakuva." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Caveat:wght@700&family=Nunito:wght@400;600;700&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Caveat:wght@700&family=Space+Mono:wght@400;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
   </head>
 
   <body>
-    <header class="topbar">
-      <nav aria-label="Päänavigaatio">
-        <a href="/aboutme/">About Me</a>
-      </nav>
-    </header>
+    <!-- ====== INTRO-PORTTI ====== -->
+    <div class="intro" id="intro">
+      <button class="intro-btn" id="introBtn" type="button" aria-label="Avaa sivusto">
+        <img id="introFrame" class="intro-frame" alt="" />
+        <span class="intro-hint">click me</span>
+      </button>
+    </div>
 
-    <main>
-      <h1 class="sr-only">Duobotit</h1>
+    <!-- ====== SIVUSTO ====== -->
+    <div class="brand" aria-hidden="true">Duobotit</div>
 
-      <!-- KUVAPAIKKA: tähän vaihtuvat framet järjestyksessä.
-           Koko kuva on klikattava — klikkaus piilottaa hahmot (idle/wave). -->
-      <div
-        class="stage"
-        id="stage"
-        role="button"
-        tabindex="0"
-        aria-label="Klikkaa käynnistääksesi animaation uudelleen"
-      >
-        <img id="frame" class="frame" alt="" />
-        <p class="frames-missing">
-          Lisää framet kansioon <code>assets/duobotit/…</code>
-        </p>
-      </div>
+    <main class="site" id="site">
+      <!-- karuselli-osio: scrollaus pyörittää -->
+      <section class="track" id="track" aria-label="Kortit">
+        <div class="snap" id="snap" aria-hidden="true"></div>
+        <div class="stage">
+          <div class="ring" id="ring"><!-- kortit luodaan site.js:ssä --></div>
+          <div class="scroll-hint" id="scrollHint">scrollaa&nbsp;↓</div>
+        </div>
+      </section>
 
-      <div class="logo-area">
-        <span class="wordmark">Duobotit</span>
-      </div>
-
-      <p class="tagline">
-        Tarjoamme teknistä tukea ja ohjelmistokehitystä käytännönläheisesti.
-      </p>
+      <!-- sivun pohja -->
+      <footer class="footer">
+        <h2 class="footer-word">Duobotit</h2>
+        <p>Teknistä tukea, ohjelmistokehitystä, pelejä ja sarjakuvaa.</p>
+        <p class="footer-small">© Duobotit</p>
+      </footer>
     </main>
 
-    <script src="animation.js"></script>
+    <!-- ====== MODAALI ====== -->
+    <div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-label="Kortin näkymä">
+      <div class="modal-backdrop" data-close></div>
+      <div class="modal-box">
+        <button class="modal-close" id="modalClose" type="button" aria-label="Sulje">×</button>
+        <img class="modal-img" id="modalImg" alt="" />
+        <h3 class="modal-title" id="modalTitle"></h3>
+      </div>
+    </div>
+
+    <script src="site.js"></script>
   </body>
 </html>

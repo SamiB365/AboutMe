@@ -9,7 +9,7 @@
   /* === KARUSELLIN 3D-SÄÄDÖT === */
   --radius: 1000px;           /* ympyrän säde – kuinka kaukana kortit ovat keskeltä */
   --perspective: 1500px;     /* pieni = voimakkaampi 3D, iso = loivempi */
-  --thick: 70px;             /* kortin paksuus – iso = paksummat reunat / enemmän syvyyttä */
+  --thick: 0px;              /* kortit 2D (litteät) – etu/taka samassa tasossa, ei paksuutta */
   --r: 16px;                 /* kortin kulmien pyöristys */
 }
 
@@ -172,9 +172,9 @@ body.reduced .snap { display: none; }
 }
 .card-front {
   background: #0c0d18;
-  /* työnnetään etupinta puoli paksuutta eteenpäin + hehku vain etupintaan */
+  /* työnnetään etupinta puoli paksuutta eteenpäin + hehku vain etupintaan (kevennetty) */
   transform: translateZ(calc(var(--thick) / 2));
-  box-shadow: 0 0 calc(18px + 70px * var(--focus, 0)) rgba(var(--tint), calc(0.12 + 0.4 * var(--focus, 0)));
+  box-shadow: 0 0 calc(10px + 34px * var(--focus, 0)) rgba(var(--tint), calc(0.08 + 0.22 * var(--focus, 0)));
 }
 .card-back {
   /* käännetty 180° + työnnetty puoli paksuutta taakse → laatan takapinta */
@@ -184,18 +184,9 @@ body.reduced .snap { display: none; }
     linear-gradient(160deg, #14152a, #0a0a16);
 }
 
-/* ----- LAATAN PAKSUUS (ekstruusio) -----
-   Etu- ja takapinnan väliin pinotaan useita kiinteitä kerroksia. Pinotut
-   kerrokset muodostavat kiinteän sivun, joka näkyy mistä tahansa kulmasta
-   kun kortti kääntyy putkella (toisin kuin ohuet seinämät, jotka jäävät
-   joko piiloon tai kääntyvät särmä edellä näkymättömiin). */
-.card-layer {
-  position: absolute;
-  inset: 0;
-  border-radius: var(--r);
-  background: linear-gradient(160deg, #191b2e, #0c0d18);
-  border: 1px solid rgba(var(--tint), 0.16);
-}
+/* ----- LITTEÄ 2D-KORTTI -----
+   Vain etu- ja takapinta samassa tasossa (ei paksuutta / ekstruusiota).
+   backface-visibility piilottaa taustapuolen niin kortilla on kaksi puolta. */
 .card:focus-visible { outline: 2px solid var(--marigold); outline-offset: 4px; }
 .card-img {
   width: 100%;

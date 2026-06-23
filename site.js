@@ -47,11 +47,6 @@ const CARDS = [
   { img: "assets/duobotit/peeking/005.webp", title: "Kortti 3",  tint: "168,130,255" },
   { img: "assets/duobotit/intro/008.webp",   title: "Kortti 4",  tint: "255,178,76"  },
   { img: "assets/duobotit/idle/014.webp",    title: "Kortti 5",  tint: "120,200,255" },
-  { img: "assets/duobotit/wave/010.webp",    title: "Kortti 6",  tint: "255,120,180" },
-  { img: "assets/duobotit/hiding/004.webp",  title: "Kortti 7",  tint: "95,208,196"  },
-  { img: "assets/duobotit/peeking/008.webp", title: "Kortti 8",  tint: "168,130,255" },
-  { img: "assets/duobotit/idle/002.webp",    title: "Kortti 9",  tint: "255,178,76"  },
-  { img: "assets/duobotit/intro/004.webp",   title: "Kortti 10", tint: "120,200,255" },
 ];
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -126,18 +121,9 @@ CARDS.forEach((c, i) => {
   card.style.setProperty("--tint", c.tint);
   card.style.setProperty("--focus", i === 0 ? "1" : "0");
   card.setAttribute("aria-label", c.title);
-  // Paksuus ekstruusiolla: pinotaan kerroksia etu- ja takapinnan väliin.
-  const LAYERS = 16;
-  let layersHTML = "";
-  for (let L = 1; L < LAYERS - 1; L++) {
-    const f = (0.5 - L / (LAYERS - 1)).toFixed(4); // väli +0.5 → -0.5
-    layersHTML +=
-      `<span class="card-layer" aria-hidden="true" ` +
-      `style="transform:translateZ(calc(var(--thick) * ${f}))"></span>`;
-  }
+  // Litteä 2D-kortti: vain etu- ja takapinta (ei paksuutta / ekstruusiota).
   card.innerHTML =
     `<span class="card-face card-back" aria-hidden="true"></span>` +
-    layersHTML +
     `<span class="card-face card-front">` +
       `<img class="card-img" src="${c.img}" alt="" />` +
       `<span class="card-title">${c.title}</span>` +

@@ -47,6 +47,8 @@ const CARDS = [
   { img: "assets/duobotit/peeking/005.webp", title: "Kortti 3",  tint: "168,130,255" },
   { img: "assets/duobotit/intro/008.webp",   title: "Kortti 4",  tint: "255,178,76"  },
   { img: "assets/duobotit/idle/014.webp",    title: "Kortti 5",  tint: "120,200,255" },
+  { img: "assets/duobotit/hiding/006.webp",  title: "Kortti 6",  tint: "255,150,120" },
+  { img: "assets/duobotit/wave/012.webp",    title: "Kortti 7",  tint: "150,255,180" },
 ];
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -128,7 +130,16 @@ CARDS.forEach((c, i) => {
       `<img class="card-img" src="${c.img}" alt="" />` +
       `<span class="card-title">${c.title}</span>` +
     `</span>`;
-  card.addEventListener("click", () => openModal(c));
+  card.addEventListener("click", (ev) => {
+    // Avaa vain kun kortin ETUPUOLI on kameraan päin. Jos kortti on kääntynyt
+    // selkä edellä (yli 90°), klikkaus ei tee mitään.
+    const angle = parseFloat(slot.style.getPropertyValue("--angle")) || 0;
+    const tilt = parseFloat(card.style.getPropertyValue("--tilt")) || 0;
+    const a = (((angle + tilt) % 360) + 360) % 360;   // 0–360°
+    const frontFacing = a < 90 || a > 270;
+    if (!frontFacing) return;
+    openModal(c, card, ev);
+  });
 
   slot.appendChild(card);
   ring.appendChild(slot);
@@ -167,6 +178,9 @@ function update() {
     const tilt = clamp(off * CONFIG.tiltPerCard, -CONFIG.tiltMax, CONFIG.tiltMax);
     slot.firstElementChild.style.setProperty("--tilt", tilt + "deg");
     slot.firstElementChild.style.setProperty("--focus", String(Math.max(0, 1 - Math.min(d, 3.5) / 3.5)));
+    // Hohto vain kun ETUPUOLI on kameraan päin – selkä edellä (yli 90°) ei hohda.
+    const a = (((off * CONFIG.anglePerCard + tilt) % 360) + 360) % 360;
+    slot.firstElementChild.style.setProperty("--face", a < 90 || a > 270 ? "1" : "0");
   });
 
   if (scrollHint) scrollHint.style.opacity = window.scrollY > 60 ? "0" : "";
@@ -316,23 +330,206 @@ function enterSite() {
 introBtn.addEventListener("click", enterSite);
 
 /* ---------------------------------------------------------------------
-   Modaali (kortin iso näkymä)
+   Modaali: kortti kasvaa → sukellus VESIPORTAALIN läpi → maailma (sarjakuva)
+
+   Vaiheet:
+   1) Klikatusta kortista tehdään klooni (.zoomer), joka kasvaa täyteen ruutuun.
+   2) Zoomin loppupuolella avautuu pyöreä "vesiportaali" klikkauskohdasta:
+      .world-maski (--rip) kasvaa, SVG-suodatin (#waterRipple) taittaa reunaa
+      kuin vedenpinta, ja valonvälähdys leimahtaa. Portaalin alta paljastuu
+      maailma (hero-kuva + webtoon-tyyliset sarjakuvaruudut).
    --------------------------------------------------------------------- */
 const modal = document.getElementById("modal");
-const modalImg = document.getElementById("modalImg");
-const modalTitle = document.getElementById("modalTitle");
+const modalClose = document.getElementById("modalClose");
+const worldEl = document.getElementById("world");
+const dispEl = document.getElementById("fxDisp");   // feDisplacementMap (vesivääristymä)
+const turbEl = document.getElementById("fxTurb");   // feTurbulence (kohina)
+let modalSource = null;     // klikattu kortti-elementti
+let activeZoomer = null;    // kasvatettu kortin klooni
+let diveTimer = null;       // ajastin: koska sukellus alkaa
+let portalRAF = null;       // portaalianimaation rAF-id
+let diveFallback = null;    // varmistusajastin jos rAF ei pyöri (tausta-välilehti)
 
-function openModal(card) {
-  modalImg.src = card.img;
-  modalImg.alt = card.title;
-  modalTitle.textContent = card.title;
-  modal.hidden = false;
-  document.body.classList.add("modal-open");
-  document.getElementById("modalClose").focus();
+/* ----- PLACEHOLDER-MAAILMA -----
+   Rakennetaan toistaiseksi nykyisistä robottikuvista. Korvaa antamalla
+   kortille oma world-objekti: { cover, title, theme, panels:[{img,text}] }. */
+const IMG_POOL = CARDS.map((c) => c.img);
+function placeholderWorld(card) {
+  const i = Math.max(0, CARDS.indexOf(card));
+  const pick = (n) => IMG_POOL[(((i + n) % IMG_POOL.length) + IMG_POOL.length) % IMG_POOL.length];
+  return {
+    cover: card.img,
+    title: card.title,
+    theme: card.tint,
+    panels: [
+      { img: pick(0), text: "Tähän tulee sarjakuvan ensimmäinen ruutu. (placeholder)" },
+      { img: pick(1), text: "Toinen ruutu – korvaa oikealla kuvalla ja tekstillä." },
+      { img: pick(2), text: "Kolmas ruutu. Lisää ruutuja kortin world.panels-taulukkoon." },
+      { img: pick(3), text: "Neljäs ruutu. Pystyscroll = webtoon-tyylinen sarjakuva." },
+    ],
+  };
 }
+
+const escapeHtml = (s) =>
+  String(s).replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+// Rakentaa maailman sisällön (hero + sarjakuvaruudut) modaaliin.
+function buildWorld(world) {
+  worldEl.style.setProperty("--world-theme", world.theme || "120,200,255");
+  const hero =
+    `<div class="world-hero" style="background-image:url('${encodeURI(world.cover)}')">` +
+      `<h2 class="world-title">${escapeHtml(world.title || "")}</h2>` +
+      `<span class="world-cue">selaa ↓</span>` +
+    `</div>`;
+  const panels = (world.panels || [])
+    .map(
+      (p) =>
+        `<figure class="panel"><img src="${encodeURI(p.img)}" alt="" loading="lazy">` +
+        (p.text ? `<figcaption class="panel-text">${escapeHtml(p.text)}</figcaption>` : "") +
+        `</figure>`
+    )
+    .join("");
+  worldEl.innerHTML = `<div class="world-scroll">${hero}${panels}</div>`;
+  worldEl.scrollTop = 0;
+  observePanels();
+}
+
+// Sarjakuvaruudut feidaavat sisään, kun ne tulevat näkyviin (webtoon).
+let panelObserver = null;
+function observePanels() {
+  const panels = worldEl.querySelectorAll(".panel");
+  if (reduce) { panels.forEach((p) => p.classList.add("in")); return; }
+  if (panelObserver) panelObserver.disconnect();
+  panelObserver = new IntersectionObserver(
+    (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("in"); }),
+    { root: worldEl, threshold: 0.15 }
+  );
+  panels.forEach((p) => panelObserver.observe(p));
+}
+
+// Muunnos, joka vie kortin sen nykyiseltä paikalta täyteen ruutuun (keskelle).
+function zoomTransform(src) {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  // Kasvatetaan niin että kortti täyttää ruudun (mobiilissa reunasta reunaan).
+  const scale = Math.max(vw / src.width, (vh * 0.98) / src.height);
+  const dx = vw / 2 - (src.left + src.width / 2);
+  const dy = vh / 2 - (src.top + src.height / 2);
+  return `translate(${dx}px, ${dy}px) scale(${scale})`;
+}
+
+function openModal(card, sourceEl, ev) {
+  modalSource = sourceEl || null;
+  const world = card.world || placeholderWorld(card);
+  buildWorld(world);
+
+  modal.hidden = false;
+  document.body.classList.add("modal-open");   // karuselli vetäytyy taustalle
+  requestAnimationFrame(() => modal.classList.add("open"));   // tausta + sulkunappi esiin
+
+  // Portaalin keskipiste = klikkauskohta (fallback: ruudun keskus).
+  const px = ev && ev.clientX ? ev.clientX : window.innerWidth / 2;
+  const py = ev && ev.clientY ? ev.clientY : window.innerHeight / 2;
+  modal.style.setProperty("--px", px + "px");
+  modal.style.setProperty("--py", py + "px");
+
+  // Ilman animaatiota (reduced motion / ei lähde-elementtiä): näytä maailma suoraan.
+  if (!modalSource || reduce) {
+    worldEl.style.opacity = "1";
+    worldEl.style.webkitMaskImage = "none";
+    worldEl.style.maskImage = "none";
+    modal.classList.add("opened");
+    modalClose.focus();
+    return;
+  }
+
+  // Vaihe 1: kortin klooni kasvaa täyteen ruutuun.
+  const src = modalSource.getBoundingClientRect();
+  const z = document.createElement("div");
+  z.className = "zoomer";
+  z.style.cssText = `left:${src.left}px;top:${src.top}px;width:${src.width}px;height:${src.height}px;`;
+  z.innerHTML = `<img src="${encodeURI(card.img)}" alt="">`;
+  modal.appendChild(z);
+  activeZoomer = z;
+  z.getBoundingClientRect();                 // pakota reflow
+  z.style.transition =
+    "transform 0.62s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.5s ease";
+  z.style.transform = zoomTransform(src);
+  z.style.borderRadius = "0px";
+
+  // Vaihe 2: sukellus kortin läpi (~zoomin loppupuolella).
+  diveTimer = window.setTimeout(startDive, 430);
+  modalClose.focus();
+}
+
+// Vaihe 2: vesiportaali avautuu klikkauskohdasta ja paljastaa maailman.
+function startDive() {
+  diveTimer = null;
+  worldEl.style.opacity = "1";                 // näkyy portaalin maskin läpi
+  worldEl.style.filter = "url(#waterRipple)";  // vesimäinen taittuma reunaan
+  modal.classList.add("diving");               // valonvälähdys
+
+  let finished = false;
+  const finish = () => {
+    if (finished) return;
+    finished = true;
+    if (portalRAF) { cancelAnimationFrame(portalRAF); portalRAF = null; }
+    if (diveFallback) { clearTimeout(diveFallback); diveFallback = null; }
+    // Valmis → poista raskaat efektit ja jätä selattava maailma.
+    worldEl.style.filter = "";
+    worldEl.style.webkitMaskImage = "none";
+    worldEl.style.maskImage = "none";
+    modal.classList.remove("diving");
+    modal.classList.add("opened");
+    if (activeZoomer) { activeZoomer.remove(); activeZoomer = null; }
+  };
+  animatePortal(finish);
+  // Varmistus: jos rAF ei pyöri (esim. tausta-välilehti), avaa silti.
+  diveFallback = window.setTimeout(finish, 720 + 300);
+}
+
+// Animoi portaalin säteen (--rip) + vesivääristymän (rAF, ~0.72 s).
+function animatePortal(onDone) {
+  const DUR = 720;
+  const start = performance.now();
+  // Maskiympyrän loppusäde: ruudun lävistäjä (+ marginaali) → peittää koko ruudun.
+  const target = Math.hypot(window.innerWidth, window.innerHeight) * 1.1;
+  const easeOut = (t) => 1 - Math.pow(1 - t, 3);
+  function frame(now) {
+    const t = Math.min(1, (now - start) / DUR);
+    const e = easeOut(t);
+    worldEl.style.setProperty("--rip", (e * target).toFixed(1) + "px");
+    if (dispEl) dispEl.setAttribute("scale", ((1 - e) * 38).toFixed(1));   // taittuma laantuu
+    if (turbEl) {
+      const bf = 0.01 + (1 - e) * 0.016;   // kohina hieman tihenee → laantuu
+      turbEl.setAttribute("baseFrequency", bf.toFixed(4) + " " + (bf * 1.6).toFixed(4));
+    }
+    if (t < 1) portalRAF = requestAnimationFrame(frame);
+    else { portalRAF = null; if (onDone) onDone(); }
+  }
+  portalRAF = requestAnimationFrame(frame);
+}
+
 function closeModal() {
-  modal.hidden = true;
-  document.body.classList.remove("modal-open");
+  if (diveTimer) { clearTimeout(diveTimer); diveTimer = null; }
+  if (diveFallback) { clearTimeout(diveFallback); diveFallback = null; }
+  if (portalRAF) { cancelAnimationFrame(portalRAF); portalRAF = null; }
+  modal.classList.remove("open", "diving", "opened");
+  document.body.classList.remove("modal-open");   // karuselli palaa
+  if (activeZoomer) { activeZoomer.remove(); activeZoomer = null; }
+
+  // Maailma feidaa pois, sitten modaali piiloon ja tilat nollataan.
+  worldEl.style.transition = "opacity 0.4s ease";
+  worldEl.style.opacity = "0";
+  window.setTimeout(() => {
+    modal.hidden = true;
+    if (panelObserver) { panelObserver.disconnect(); panelObserver = null; }
+    worldEl.style.cssText = "";   // nollaa maski/opacity/suodatin/--rip seuraavaa avausta varten
+    worldEl.innerHTML = "";
+    if (dispEl) dispEl.setAttribute("scale", "0");
+  }, 460);
+  modalSource = null;
 }
 document.getElementById("modalClose").addEventListener("click", closeModal);
 modal.querySelectorAll("[data-close]").forEach((el) => el.addEventListener("click", closeModal));

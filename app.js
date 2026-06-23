@@ -35,7 +35,8 @@ const CONFIG = {
   parallax: 0.9,        // hiiriparallaksin voimakkuus (kamera)
   // bloom hillitymmäksi: pienempi voimakkuus + korkeampi kynnys → ei isoa hehkua keskelle
   bloom: { strength: 0.32, radius: 0.6, threshold: 0.85 },
-  card: { w: 2.7, h: 3.5, corner: 0.22, depth: 0.42 }, // kortin koko + kulman pyöristys + PAKSUUS (3D)
+  card: { w: 2.7, h: 3.5, corner: 0.22, depth: 0.42, // kortin koko + kulman pyöristys + PAKSUUS (3D)
+    frame: { width: 0.09, glow: 0.6, hoverGlow: 2.6, metalness: 0.9, roughness: 0.25 } }, // hohtava kehys + hover-hehku
   exposure: 1.12,
 };
 
@@ -511,6 +512,9 @@ function buildCards() {
   const quadAspect = W / H;
   const faceGeo = new THREE.PlaneGeometry(W, H, 40, 40);
   const bodyGeo = new RoundedBoxGeometry(W, H, D, 4, CONFIG.card.corner);
+  // hohtava kehys: hieman isompi pyöristetty laatikko rungon ympärillä → reuna kurkistaa esiin
+  const fw = CONFIG.card.frame.width;
+  const frameGeo = new RoundedBoxGeometry(W + fw * 2, H + fw * 2, D * 0.92, 4, CONFIG.card.corner + fw);
 
   CARDS.forEach((c, i) => {
     const group = new THREE.Group();
@@ -518,6 +522,18 @@ function buildCards() {
 
     // 1) paksu runko (pyöristetty laatikko) → näkyvät reunat = 3D, KIINTEÄ (peittää tähdet)
     const tcol = colRGB255(c.tint);
+    // 0) hohtava kehys rungon ympärille (oma emissiivinen mesh → menee bloomiin)
+    const frameMat = new THREE.MeshStandardMaterial({
+      color: tcol.clone().multiplyScalar(0.12),  // tumma runko → vain emissive hohtaa
+      emissive: tcol.clone(),
+      emissiveIntensity: CONFIG.card.frame.glow,
+      metalness: CONFIG.card.frame.metalness,
+      roughness: CONFIG.card.frame.roughness,
+    });
+    const frame = new THREE.Mesh(frameGeo, frameMat);
+    frame.position.z = -0.02;                   // hieman rungon taakse → reuna näkyy ympärillä
+    group.add(frame);
+
     const bodyMat = new THREE.MeshStandardMaterial({
       color: tcol.clone().multiplyScalar(0.5),     // elävä teemaväri (robotti istuu kortissa)
       emissive: tcol.clone().multiplyScalar(0.28),
@@ -556,7 +572,7 @@ function buildCards() {
     group.add(face);
 
     ringGroup.add(group);
-    const card = { mesh: group, mat, body, bodyMat, index: i, hover: 0 };
+    const card = { mesh: group, mat, body, bodyMat, frameMat, index: i, hover: 0 };
     cards.push(card);
     cardMeshes.push(face);              // raycast osuu tekstuuripintaan
   });
@@ -977,6 +993,9 @@ function animate() {
     c.hover += (target - c.hover) * 0.15;
     c.mat.uniforms.uHover.value = c.hover;
     c.mat.uniforms.uTime.value = time;
+    // kehyksen hehku voimistuu hoverissa
+    c.frameMat.emissiveIntensity = CONFIG.card.frame.glow +
+      (CONFIG.card.frame.hoverGlow - CONFIG.card.frame.glow) * c.hover;
   }
 
   // post + hiukkasten aika

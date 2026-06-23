@@ -24,7 +24,10 @@
 const CONFIG = {
   pixelsPerCard: 1300,   // kuinka paljon scrollia kortista seuraavaan
   anglePerCard: 46,      // putken kierto astetta / kortti – iso = enemmän väliä, kortit näyttävät selkänsä aiemmin
-  levelStep: 180,        // pystyporras (px) / kortti – tekee spiraalin
+  tiltPerCard: 10,       // taustakorttien YLIMÄÄRÄINEN kallistus astetta / kortti – iso = enemmän 3D-tunnelmaa (keskikortti pysyy suorassa)
+  tiltMax: 34,           // kallistuksen katto astetta – ettei kaukaiset kortit käänny liikaa / katoa
+  levelStep: 180,        // pystyporras (px) / kortti – tekee spiraalin (työpöytä)
+  levelStepMobile: 110,  // sama mobiililla (kapea ruutu, max-width 640px) – pienempi = kortit lähempänä toisiaan
   snapThreshold: 0.26,   // snap aktivoituu vasta kun kortti on näin lähellä keskustaa (0–0.5). Pienempi = snäppää vain lähempänä
   snapVelocity: 0.5,     // px/ms – alle tämän vauhdin snäppi sallitaan; kovempi vauhti liukuu vapaasti kortin ohi
   snapEnabled: true,     // false = pelkkä liukuva scroll ilman snäppiä; true = snäppi päällä
@@ -108,6 +111,9 @@ if (reduce) document.body.classList.add("reduced");
 // liuku tuntuu paremmalta ilman snäppiä. Vain hiirellä/levyllä snäppi käytössä.
 const isTouch = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
 
+// Kapea ruutu = mobiili: käytetään CONFIG.levelStepMobile (kortit lähempänä).
+const mobileMq = window.matchMedia("(max-width: 640px)");
+
 /* ----- KORTTIEN LUONTI ----- */
 const ring = document.getElementById("ring");
 CARDS.forEach((c, i) => {
@@ -163,11 +169,17 @@ function update() {
   const p = clamp((window.scrollY - trackTop) / scrollable, 0, 1);
   const t = p * (CARDS.length - 1);
 
+  // Kapealla ruudulla (mobiili) pienempi pystyporras → kortit lähempänä.
+  const levelStep = mobileMq.matches ? CONFIG.levelStepMobile : CONFIG.levelStep;
+
   slots.forEach((slot, i) => {
     const off = i - t;                       // <0 = jo nähty (yläviistoon), >0 = tuleva (alhaalta)
     slot.style.setProperty("--angle", off * CONFIG.anglePerCard + "deg");
-    slot.style.setProperty("--level", off * CONFIG.levelStep + "px");
+    slot.style.setProperty("--level", off * levelStep + "px");
     const d = Math.abs(off);
+    // Taustakorttien ylimääräinen kallistus → enemmän 3D-tunnelmaa. off=0 (keski) → 0°.
+    const tilt = clamp(off * CONFIG.tiltPerCard, -CONFIG.tiltMax, CONFIG.tiltMax);
+    slot.firstElementChild.style.setProperty("--tilt", tilt + "deg");
     slot.firstElementChild.style.setProperty("--focus", String(Math.max(0, 1 - Math.min(d, 3.5) / 3.5)));
   });
 

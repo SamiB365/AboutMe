@@ -134,17 +134,31 @@ body.reduced .snap { display: none; }
 .card {
   /* keskitetään kortti slotin origoon; 3D-säiliö = paksu laatta (etu, taka, reunat) */
   --card-w: clamp(280px, 54vw, 620px);
-  --card-h: calc(var(--card-w) * 440 / 600);
-  transform: translate(-50%, -50%);
+  --card-h: calc(var(--card-w) * 440 / 600);   /* oletus = sama kuvasuhde; voi yliajaa erikseen */
+  /* --tilt = taustakorttien ylimääräinen kierto (site.js); keskikortti 0° */
+  transform: translate(-50%, -50%) rotateY(var(--tilt, 0deg));
   transform-style: preserve-3d;
   width: var(--card-w);
-  aspect-ratio: 600 / 440;
+  height: var(--card-h);
   padding: 0;
   border: none;
   background: none;
   cursor: pointer;
   opacity: calc(0.32 + 0.68 * var(--focus, 0));
   transition: opacity 0.15s linear;
+}
+
+/* ====== MOBIILIN MANUAALISET SÄÄDÖT ======
+   Kortin koko ja sivu-/syvyysetäisyys kapealla ruudulla (max-width: 640px).
+   PYSTYETÄISYYS korttien välillä säädetään site.js → CONFIG.levelStepMobile. */
+@media (max-width: 640px) {
+  :root {
+    --radius: 450px;   /* putken säde mobiilissa – pienennä = kortit lähemmäs (sivu/syvyys) */
+  }
+  .card {
+    --card-w: 300px;    /* kortin LEVEYS (px) mobiilissa */
+    --card-h: 420px;    /* kortin KORKEUS (px) mobiilissa – säädä erikseen leveydestä */
+  }
 }
 /* etu- ja takapinta – kumpikin oma pintansa, näkyy vain kameraan päin oleva */
 .card-face {

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Duobotit – mobiiliesikatselu</title>
+  <style>
+    :root { --phone-w: 390px; --phone-h: 844px; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      padding: 28px 16px 48px;
+      background: radial-gradient(120% 80% at 50% 0%, #16182c, #05060c 70%), #05060c;
+      color: #f4ead7;
+      font-family: "Nunito", system-ui, sans-serif;
+    }
+    h1 { font-size: 1.1rem; font-weight: 800; margin: 0; letter-spacing: 0.02em; }
+    .hint { margin: 0; color: #9a93ad; font-size: 0.85rem; text-align: center; max-width: 40ch; }
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+    .controls button {
+      font: inherit; font-weight: 700; font-size: 0.85rem;
+      color: #f4ead7; background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.16); border-radius: 999px;
+      padding: 8px 16px; cursor: pointer; transition: background 0.15s;
+    }
+    .controls button:hover { background: rgba(255,255,255,0.12); }
+    .controls button.active { background: #ffb24c; border-color: #ffb24c; color: #1a1206; }
+
+    /* Puhelinkehys */
+    .phone {
+      position: relative;
+      width: calc(var(--phone-w) + 24px);
+      height: calc(var(--phone-h) + 24px);
+      padding: 12px;
+      border-radius: 44px;
+      background: linear-gradient(160deg, #2a2c3f, #14151f);
+      box-shadow: 0 24px 70px rgba(0,0,0,0.6), inset 0 0 0 2px rgba(255,255,255,0.05);
+      transition: width 0.25s ease, height 0.25s ease;
+    }
+    /* kaiutin/lovi */
+    .phone::before {
+      content: "";
+      position: absolute; top: 18px; left: 50%; transform: translateX(-50%);
+      width: 120px; height: 7px; border-radius: 999px;
+      background: rgba(0,0,0,0.5); z-index: 2;
+    }
+    .phone iframe {
+      width: var(--phone-w); height: var(--phone-h);
+      border: none; border-radius: 32px; background: #05060c;
+      display: block;
+    }
+    .phone.landscape { width: calc(var(--phone-h) + 24px); height: calc(var(--phone-w) + 24px); }
+    .phone.landscape iframe { width: var(--phone-h); height: var(--phone-w); }
+
+    .dims { color: #9a93ad; font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <h1>Duobotit – mobiiliesikatselu</h1>
+  <p class="hint">
+    Tämä näyttää oikean <strong>index.html</strong>:n puhelimen kokoisessa kehyksessä.
+    Leveyspohjaiset säädöt (kortin koko, etäisyydet) näkyvät oikein.
+    Huom: pelkkä kosketus-logiikka (snäpin poisto, vaakakehote) näkyy vain oikealla puhelimella.
+  </p>
+
+  <div class="controls">
+    <button id="btnPortrait" class="active" type="button">Pysty</button>
+    <button id="btnLandscape" type="button">Vaaka</button>
+    <button id="btnReload" type="button">Lataa uudelleen ↻</button>
+    <button id="btnOpen" type="button">Avaa erikseen ↗</button>
+  </div>
+
+  <div class="phone" id="phone">
+    <iframe id="frame" src="index.html" title="Duobotit mobiili"></iframe>
+  </div>
+  <div class="dims" id="dims">390 × 844</div>
+
+  <script>
+    const phone = document.getElementById("phone");
+    const frame = document.getElementById("frame");
+    const dims = document.getElementById("dims");
+    const btnP = document.getElementById("btnPortrait");
+    const btnL = document.getElementById("btnLandscape");
+
+    function setOrientation(landscape) {
+      phone.classList.toggle("landscape", landscape);
+      btnP.classList.toggle("active", !landscape);
+      btnL.classList.toggle("active", landscape);
+      dims.textContent = landscape ? "844 × 390" : "390 × 844";
+    }
+    btnP.addEventListener("click", () => setOrientation(false));
+    btnL.addEventListener("click", () => setOrientation(true));
+    document.getElementById("btnReload").addEventListener("click", () => {
+      frame.src = frame.src;
+    });
+    document.getElementById("btnOpen").addEventListener("click", () => {
+      window.open("index.html", "_blank");
+    });
+  </script>
+</body>
+</html>

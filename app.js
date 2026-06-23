@@ -20,6 +20,9 @@ import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js"
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { LineSegments2 } from "three/addons/lines/LineSegments2.js";
+import { LineSegmentsGeometry } from "three/addons/lines/LineSegmentsGeometry.js";
+import { LineMaterial } from "three/addons/lines/LineMaterial.js";
 
 /* ====== TÄRKEIMMÄT SÄÄDÖT ====== */
 const CONFIG = {
@@ -37,6 +40,30 @@ const CONFIG = {
   bloom: { strength: 0.32, radius: 0.6, threshold: 0.85 },
   card: { w: 2.7, h: 3.5, corner: 0.22, depth: 0.42, // kortin koko + kulman pyöristys + PAKSUUS (3D)
     frame: { width: 0.09, glow: 0.6, hoverGlow: 2.6, metalness: 0.9, roughness: 0.25 } }, // hohtava kehys + hover-hehku
+  // DIGITAALINEN PIIRILEVYPUU keskellä (kortit kiertävät sitä)
+  tree: {
+    enabled: true,
+    baseY: -4.5,         // rungan tyven korkeus (kasvaa tästä ylöspäin)
+    trunkH: 2.6,         // rungon korkeus ennen ensimmäistä haaraa
+    depth: 5,            // rekursion syvyys (haarautumiskerrat)
+    branches: 2,         // lapsia per haara
+    segLen: 1.3,         // perussegmentin pituus
+    shrink: 0.78,        // pituus kutistuu per syvyys
+    spread: 2.0,         // vaakalevitys (90° mutkat)
+    spreadX: 1.35,       // X-painotus (näytöllä leveämpi → näkyy korttien ympärillä)
+    depthZ: 1.0,         // kuinka paljon haarat leviävät Z-syvyyteen (→ 3D joka kulmasta)
+    color: "120,210,255",     // syaani-sininen trace
+    nodeColor: "190,235,255", // hohtavat solmut
+    packetColor: "210,245,255", // datapaketit (kirkkaat)
+    width: 0.06,         // trace-paksuus (world-yksikötä)
+    glow: 1.7,           // trace-värin kirkkaus (→ bloom)
+    nodeGlow: 1.15,      // solmujen kirkkaus (pieni → ei sokaise bloomissa)
+    scale: 1.5,          // koko (latva nousee korttien yläpuolelle)
+    rotSpeed: 0.06,      // hidas pyörintä (paljastaa 3D-syvyyden)
+    packets: 30,         // datapakettien määrä
+    packetSpeed: 0.55,   // datan virtausnopeus
+    seed: 7,             // satunnaissiemen (vakaa puu reloadissa)
+  },
   exposure: 1.12,
 };
 
@@ -226,6 +253,8 @@ const CARD_VERT = /* glsl */ `
   uniform float uTime;
   uniform float uDive;
   uniform float uHover;
+  uniform vec2  uMouse;      // hiiren osumakohta kortin UV:ssä
+  uniform float uQuadAspect; // kortin leveys/korkeus
   varying vec2 vUv;
   varying vec3 vViewNormal;
   varying vec3 vViewPos;
@@ -235,10 +264,10 @@ const CARD_VERT = /* glsl */ `
     // litteä etupinta → istuu KIINNI paksussa rungossa (ei irrallaan)
     float k = 0.0;
     pos.z -= pos.x * pos.x * k;
-    // hover: pieni nosto + pehmeä liikkuva väre (ei sokaisevaa hehkua)
+    // hover: pieni nosto + paikallinen aalto hiiren kohdalla (seuraa hiirtä)
     pos.z += uHover * 0.05;
-    float hr = length(uv - 0.5);
-    pos.z += sin(hr * 26.0 - uTime * 5.0) * 0.03 * uHover;
+    float hr = length((uv - uMouse) * vec2(uQuadAspect, 1.0));
+    pos.z += sin(hr * 26.0 - uTime * 6.0) * 0.05 * uHover * smoothstep(0.7, 0.0, hr);
     // sukelluksen aaltoileva pinta (radiaalinen)
     float r = length(uv - 0.5);
     pos.z += sin(r * 28.0 - uTime * 6.0) * 0.14 * uDive;
@@ -262,6 +291,7 @@ const CARD_FRAG = /* glsl */ `
   uniform float uImgAspect; // kuvan leveys/korkeus
   uniform float uQuadAspect;// kortin leveys/korkeus
   uniform float uCorner;    // kulman pyöristys
+  uniform vec2  uMouse;     // hiiren osumakohta kortin UV:ssä
   varying vec2 vUv;
   varying vec3 vViewNormal;
   varying vec3 vViewPos;
@@ -319,9 +349,10 @@ const CARD_FRAG = /* glsl */ `
     float border = smoothstep(0.012, 0.0, abs(d));
     col += uTint * border * (0.4 + uHover * 0.3);
 
-    // hover: pehmeä liikkuva valorengas (ripple) ison hehkun sijaan → ei sokaise
-    float ring = 0.5 + 0.5 * sin(length(vUv - 0.5) * 30.0 - uTime * 5.0);
-    col += uTint * ring * uHover * 0.12;
+    // hover: paikallinen aalto hiiren osumakohdassa (seuraa hiirtä, vaimenee etäisyydellä)
+    float md = length((vUv - uMouse) * vec2(uQuadAspect, 1.0));
+    float wave = 0.5 + 0.5 * sin(md * 34.0 - uTime * 6.0);
+    col += uTint * wave * uHover * 0.5 * smoothstep(0.55, 0.0, md);
 
     // hover kirkastaa hieman
     // (poistettu iso kirkastus → ei sokaise; liike tulee ripple-renkaasta yllä)
@@ -337,7 +368,7 @@ const CARD_FRAG = /* glsl */ `
   }
 `;
 
-// --- Post: kromaattinen aberraatio + vinjetti + grain + sukellusväre + välähdys ---
+// --- Post: CMYK-aberraatio + vinjetti + grain + SARJAKUVASUKELLUS (Spider-Verse) ---
 const POST_FRAG = /* glsl */ `
   uniform sampler2D tDiffuse;
   uniform float uTime;
@@ -346,26 +377,65 @@ const POST_FRAG = /* glsl */ `
   uniform float uGrain;
   uniform float uFlash;
   uniform float uRipple;
-  uniform vec3  uFlashColor;
-  uniform vec2  uCenter;
+  uniform float uComic;      // 0..1 sarjakuvasukellus (halftone + muste-roiske)
+  uniform float uAspect;     // ruudun leveys/korkeus
+  uniform vec3  uFlashColor; // teeman painoväri (muste)
+  uniform vec2  uCenter;     // klikkikohta = roiskeen keskipiste
   varying vec2 vUv;
+
   void main(){
     vec2 uv = vUv;
     vec2 dir = uv - uCenter;
     float dist = length(dir);
-    // sukelluksen rengasvääristymä keskipisteestä
-    uv += normalize(dir + 1e-6) * sin(dist * 20.0 - uTime * 8.0) * 0.02 * uRipple;
-    // radiaalinen kromaattinen aberraatio
-    vec2 off = (uv - 0.5) * (uAberration + 0.06 * uRipple) * (0.4 + dist);
+    vec2 ar = vec2(uAspect, 1.0);
+    float bd = length(dir * ar);           // aspektikorjattu etäisyys klikkikohdasta
+    float ang = atan(dir.y, dir.x);
+
+    // CMYK-painovirhe: kanavasiirto, voimistuu sukelluksessa
+    float reg = uAberration + 0.018 * uComic;
+    vec2 off = (uv - 0.5) * reg * (0.4 + dist) + vec2(0.0016, 0.0009) * uComic;
     float r = texture2D(tDiffuse, uv - off).r;
     float g = texture2D(tDiffuse, uv).g;
     float b = texture2D(tDiffuse, uv + off).b;
     vec3 col = vec3(r, g, b);
+
     // pehmeä värillinen välähdys (läpäisy)
     col += uFlashColor * uFlash;
+
+    // --- SARJAKUVASUKELLUS: orgaaninen muste-roiske + Ben-Day halftone ---
+    if (uComic > 0.0001) {
+      float ph = uTime * 3.0;
+      // wobbly reuna → musteroiskeen orgaaninen muoto
+      float wob = 1.0 + 0.16 * sin(ang * 6.0 + ph)
+                      + 0.09 * sin(ang * 11.0 - ph * 1.3)
+                      + 0.05 * sin(ang * 19.0 + ph * 0.7);
+      float rad = uComic * 2.3 * wob;
+      // rikotaan säteittäiset rengaskontuurit kohinalla → orgaaninen muste, EI ympyröitä
+      vec2 nc = floor(uv * vec2(uAspect, 1.0) * 30.0);
+      float nz = fract(sin(dot(nc, vec2(12.9898, 78.233))) * 43758.5453);
+      float bdn = bd + (nz - 0.5) * 0.18;
+      // sävygradientti: 0 reunan ulkona → 1 syvällä roiskeen sisällä
+      float tone = smoothstep(rad, rad - 0.8, bdn);
+      // Ben-Day halftone: säteittäinen pistemaski ruudukossa, pisteet kasvavat sävyn mukaan
+      vec2 cell = fract(uv * vec2(uAspect, 1.0) * 78.0) - 0.5;
+      float patt = length(cell) / 0.5;
+      float thr  = tone * 1.35;
+      float inked = 1.0 - smoothstep(thr - 0.10, thr + 0.10, patt);
+      // täysi peitto syvällä sisällä (ei aukkoja lopussa)
+      float cover = max(inked, smoothstep(0.55, 0.95, tone));
+      vec3 ink = uFlashColor * 1.25;
+      col = mix(col, ink, clamp(cover, 0.0, 1.0));
+      // action-vauhtiviivat roiskeen ulkopuolelle
+      float outside = smoothstep(rad, rad + 0.06, bd);
+      float lines = pow(0.5 + 0.5 * sin(ang * 80.0), 6.0);
+      col = mix(col, col * 0.32, lines * outside * uComic * 0.5);
+      // valkoinen "punch" aivan lopussa → läpäisy maailmaan
+      col += vec3(1.0) * smoothstep(0.82, 1.0, uComic) * 0.55;
+    }
+
     // vinjetti
     col *= smoothstep(0.95, 0.32, dist * uVignette);
-    // hienovarainen filmigrain
+    // hienovarainen filmigrain / paperirae
     float n = fract(sin(dot(uv * (uTime + 1.0), vec2(12.9898, 78.233))) * 43758.5453);
     col += (n - 0.5) * uGrain;
     gl_FragColor = vec4(col, 1.0);
@@ -378,6 +448,9 @@ const POST_FRAG = /* glsl */ `
 let renderer, scene, camera, composer, bloomPass, postPass;
 let ringGroup, particleGroup;
 let bgMat = null;             // taustashaderin materiaali (uTime-päivitys)
+let treeGroup = null;         // digitaalinen piirilevypuu (keskellä)
+let treeData = null;          // { segA, segB, packets, pkAttr, mats[] } datavirtaa varten
+let treeT = 0;                // edellinen aika (dt-laskentaan)
 const cards = [];          // { mesh, mat, index, hover }
 const cardMeshes = [];
 let textures = {};
@@ -412,6 +485,7 @@ function initThree(canvas) {
   buildBackground();
   buildParticles();
   buildLights();
+  buildCircuitTree();
   buildCards();
   buildComposer();
 
@@ -501,6 +575,189 @@ function buildLights() {
   scene.add(rim);
 }
 
+/* =====================================================================
+   DIGITAALINEN PIIRILEVYPUU (proseduraalinen, keskellä → kortit kiertävät)
+   - PCB-tyyli: suorakulmaiset (90°) "tracet", haarautuvat 3D:nä joka suuntaan
+   - hohtavat solmut (vias) + datapaketit virtaavat oksia pitkin (matrix-henki)
+   ===================================================================== */
+function buildCircuitTree() {
+  if (!CONFIG.tree.enabled) return;
+  const T = CONFIG.tree;
+  treeGroup = new THREE.Group();
+  treeGroup.position.y = T.baseY;       // tyvi tähän → kasvaa ylös, skaalaus pohjasta
+  treeGroup.visible = false;            // näkyviin vasta introsta (enter)
+  scene.add(treeGroup);
+
+  // pieni siemennetty RNG → puu on vakaa joka reloadissa
+  let s = T.seed >>> 0;
+  const rnd = () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
+
+  const segA = [], segB = [];           // segmenttien päätepisteet (lerp datapaketeille)
+  const mainPos = [], twigPos = [];     // fat-line positiot (paksu runko / ohuet oksat)
+  const nodes = [];                     // { p, big } hohtavat solmut
+
+  function pushSeg(a, b, main) {
+    segA.push(a.clone()); segB.push(b.clone());
+    const arr = main ? mainPos : twigPos;
+    arr.push(a.x, a.y, a.z, b.x, b.y, b.z);
+  }
+
+  // rekursiivinen haara: PCB-tyyli (vaakamutka 90° → pystysegmentti ylös)
+  function grow(pos, len, depth) {
+    if (depth > T.depth || len < 0.18) {
+      nodes.push({ p: pos.clone(), big: true });   // lehtipää = kirkas solmu
+      return;
+    }
+    const main = depth <= 1;
+    const nB = depth === 0 ? 1 : T.branches + (rnd() < 0.3 ? 1 : 0);
+    for (let k = 0; k < nB; k++) {
+      // levityssuunta vaakatasossa (XZ) → 3D-syvyys joka kulmasta
+      const ang = rnd() * Math.PI * 2;
+      const spreadAmt = (depth === 0 ? 0 : T.spread * (0.5 + rnd() * 0.5)) * (len / T.segLen);
+      const dx = Math.cos(ang) * spreadAmt * (T.spreadX || 1);
+      const dz = Math.sin(ang) * spreadAmt * (T.depthZ / T.spread);
+      // 1) vaakasegmentti (90° mutka) — paitsi rungon ensimmäinen joka menee suoraan ylös
+      const corner = pos.clone();
+      if (depth > 0) {
+        corner.add(new THREE.Vector3(dx, 0, dz));
+        pushSeg(pos, corner, main);
+        nodes.push({ p: corner.clone(), big: false });   // mutkasolmu (vias)
+      }
+      // 2) pystysegmentti ylös
+      const up = depth === 0 ? T.trunkH : len * (0.7 + rnd() * 0.5);
+      const top = corner.clone().add(new THREE.Vector3(0, up, 0));
+      pushSeg(corner, top, main);
+      grow(top, len * T.shrink, depth + 1);
+    }
+  }
+
+  grow(new THREE.Vector3(0, 0, 0), T.segLen, 0);
+
+  const res = new THREE.Vector2(window.innerWidth, window.innerHeight);
+  const traceCol = colRGB255(T.color).multiplyScalar(T.glow);
+
+  // paksu runko + ohuet oksat = kaksi fat-line-objektia
+  function makeLines(posArr, width) {
+    if (!posArr.length) return null;
+    const g = new LineSegmentsGeometry();
+    g.setPositions(posArr);
+    const m = new LineMaterial({
+      color: 0xffffff,
+      worldUnits: true,
+      linewidth: width,
+      transparent: true,
+      opacity: 0,
+      depthTest: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+    m.color.copy(traceCol);
+    m.resolution.copy(res);
+    const ls = new LineSegments2(g, m);
+    ls.computeLineDistances();
+    treeGroup.add(ls);
+    return m;
+  }
+  const matMain = makeLines(mainPos, T.width * 1.8);
+  const matTwig = makeLines(twigPos, T.width);
+
+  // hohtavat solmut (Points, additiivinen pyöreä sprite)
+  const nPos = new Float32Array(nodes.length * 3);
+  const nSize = new Float32Array(nodes.length);
+  nodes.forEach((n, i) => {
+    nPos[i * 3] = n.p.x; nPos[i * 3 + 1] = n.p.y; nPos[i * 3 + 2] = n.p.z;
+    nSize[i] = n.big ? 0.7 : 0.32 + rnd() * 0.16;
+  });
+  const nGeo = new THREE.BufferGeometry();
+  nGeo.setAttribute("position", new THREE.BufferAttribute(nPos, 3));
+  nGeo.setAttribute("aSize", new THREE.BufferAttribute(nSize, 1));
+  const nodeMat = glowPoints(colRGB255(T.nodeColor).multiplyScalar(T.nodeGlow), 1.7);
+  treeGroup.add(new THREE.Points(nGeo, nodeMat));
+
+  // datapaketit: kirkkaat pisteet liukuvat satunnaisia tracoja pitkin ylös
+  const pk = Math.min(T.packets, segA.length);
+  const packets = [];
+  for (let i = 0; i < pk; i++) {
+    packets.push({ i: Math.floor(rnd() * segA.length), t: rnd(), sp: (0.5 + rnd()) * T.packetSpeed });
+  }
+  const pkPos = new Float32Array(pk * 3);
+  const pkSize = new Float32Array(pk).fill(0.6);
+  const pkGeo = new THREE.BufferGeometry();
+  pkGeo.setAttribute("position", new THREE.BufferAttribute(pkPos, 3));
+  pkGeo.setAttribute("aSize", new THREE.BufferAttribute(pkSize, 1));
+  const pkMat = glowPoints(colRGB255(T.packetColor).multiplyScalar(2.0), 2.2);
+  treeGroup.add(new THREE.Points(pkGeo, pkMat));
+
+  treeData = {
+    segA, segB, packets,
+    pkAttr: pkGeo.getAttribute("position"),
+    mats: [matMain, matTwig, nodeMat, pkMat].filter(Boolean),
+  };
+}
+
+// pieni apufunktio: additiivinen hohtava pyöreä piste-materiaali
+function glowPoints(colorVec, sizeScale) {
+  return new THREE.ShaderMaterial({
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    uniforms: { uColor: { value: colorVec }, uSize: { value: sizeScale }, uOpacity: { value: 0 } },
+    vertexShader: /* glsl */ `
+      attribute float aSize;
+      uniform float uSize;
+      varying float vA;
+      void main(){
+        vec4 mv = modelViewMatrix * vec4(position, 1.0);
+        gl_PointSize = aSize * uSize * (150.0 / -mv.z);
+        gl_Position = projectionMatrix * mv;
+        vA = aSize;
+      }
+    `,
+    fragmentShader: /* glsl */ `
+      uniform vec3 uColor; uniform float uOpacity;
+      varying float vA;
+      void main(){
+        vec2 c = gl_PointCoord - 0.5;
+        float d = length(c);
+        float a = smoothstep(0.5, 0.0, d);
+        gl_FragColor = vec4(uColor, a * uOpacity);
+      }
+    `,
+  });
+}
+
+// puun päivitys joka frame: hidas pyörintä, datavirta, paljastus (revealP)
+function updateTree(time) {
+  if (!treeGroup || !treeData) return;
+  const dt = Math.min(0.05, Math.max(0, time - treeT));
+  treeT = time;
+  const T = CONFIG.tree;
+  treeGroup.rotation.y = time * T.rotSpeed;
+  // paljastus: kasva tyvestä ylös + feidaa sisään
+  const r = revealP;
+  const sxz = T.scale * (0.9 + 0.1 * r);
+  treeGroup.scale.set(sxz, T.scale * Math.max(0.0001, r), sxz);
+  for (const m of treeData.mats) {
+    if (m.uniforms && m.uniforms.uOpacity) m.uniforms.uOpacity.value = r;
+    else m.opacity = r;
+  }
+  // datapaketit liukuvat tracoja pitkin
+  const { segA, segB, packets, pkAttr } = treeData;
+  const arr = pkAttr.array;
+  for (let j = 0; j < packets.length; j++) {
+    const p = packets[j];
+    const a = segA[p.i], b = segB[p.i];
+    const len = a.distanceTo(b) || 1;
+    p.t += (p.sp * dt) / len;
+    if (p.t > 1) { p.t -= 1; p.i = Math.floor(Math.random() * segA.length); }
+    const a2 = segA[p.i], b2 = segB[p.i], tt = p.t;
+    arr[j * 3] = a2.x + (b2.x - a2.x) * tt;
+    arr[j * 3 + 1] = a2.y + (b2.y - a2.y) * tt;
+    arr[j * 3 + 2] = a2.z + (b2.z - a2.z) * tt;
+  }
+  pkAttr.needsUpdate = true;
+}
+
 // Kortit sylinterin kehälle — paksuja (3D-runko + tekstuuripinta)
 function buildCards() {
   ringGroup = new THREE.Group();
@@ -564,6 +821,7 @@ function buildCards() {
         uImgAspect: { value: ia },
         uQuadAspect: { value: quadAspect },
         uCorner: { value: CONFIG.card.corner },
+        uMouse: { value: new THREE.Vector2(0.5, 0.5) },  // aalto seuraa hiirtä
       },
     });
     const face = new THREE.Mesh(faceGeo, mat);
@@ -598,6 +856,8 @@ function buildComposer() {
       uGrain: { value: reduce ? 0.0 : 0.045 },
       uFlash: { value: 0 },
       uRipple: { value: 0 },
+      uComic: { value: 0 },
+      uAspect: { value: window.innerWidth / window.innerHeight },
       uFlashColor: { value: new THREE.Color(1, 1, 1) },
       uCenter: { value: new THREE.Vector2(0.5, 0.5) },
     },
@@ -717,9 +977,11 @@ function startDive(i) {
     dur: reduce ? 10 : 1150,
     ease: easeInOut,
     onUpdate: (e) => {
-      card.mat.uniforms.uDive.value = e;
+      card.mat.uniforms.uDive.value = 0;   // ei kortin omaa refraktio/whiteout-rengasta → vain sarjakuva
       postPass.uniforms.uRipple.value = Math.sin(e * Math.PI);
       postPass.uniforms.uAberration.value = 0.0035 + 0.05 * e;
+      // sarjakuvasukellus roiskahtaa klikkikohdasta ja täyttää ruudun ennen maailmaa
+      postPass.uniforms.uComic.value = smoothstep(0.0, 0.78, e);
       bloomPass.strength = baseBloom + e * 1.3;
       // kortti kohti kameraa + kasvaa → täyttää ruudun
       card.mesh.position.lerpVectors(card.mesh.userData.home, camFront, e * 0.9);
@@ -745,6 +1007,7 @@ function finishDive(i) {
   modal.classList.add("open", "opened");
   postPass.uniforms.uFlash.value = 0;
   postPass.uniforms.uRipple.value = 0;
+  postPass.uniforms.uComic.value = 0;
   postPass.uniforms.uAberration.value = 0.0035;
   bloomPass.strength = CONFIG.bloom.strength;
   card.mat.uniforms.uDive.value = 0;
@@ -773,7 +1036,7 @@ function closeModal() {
   // tuo sukeltava kortti takaisin näkyviin (täyttää ruudun kuten maailma)
   if (card) {
     card.mat.uniforms.uOpacity.value = revealP;
-    card.mat.uniforms.uDive.value = 1;
+    card.mat.uniforms.uDive.value = 0;
     card.mesh.position.copy(camFront);
     card.mesh.scale.setScalar(3.8);
     postPass.uniforms.uFlashColor.value.copy(colRGB255(CARDS[i].tint));
@@ -786,13 +1049,15 @@ function closeModal() {
     onUpdate: (e) => {
       const back = 1 - e;             // 1→0 (sukellus takaperin)
       if (card && home) {
-        card.mat.uniforms.uDive.value = back;
+        card.mat.uniforms.uDive.value = 0;
         card.mesh.position.lerpVectors(home, camFront, back * 0.9);
         card.mesh.scale.setScalar(1 + back * 2.8);
       }
       const puls = Math.sin(e * Math.PI);
       postPass.uniforms.uRipple.value = puls;
       postPass.uniforms.uAberration.value = 0.0035 + 0.05 * puls;
+      // sarjakuvasukellus kutistuu takaisin klikkikohtaan
+      postPass.uniforms.uComic.value = smoothstep(0.0, 0.78, 1 - e);
       bloomPass.strength = baseBloom + puls * 1.0;
       // välähdys heti paluun alussa
       postPass.uniforms.uFlash.value = smoothstep(0.0, 0.22, e) * (1 - smoothstep(0.22, 0.55, e)) * 0.65;
@@ -819,6 +1084,7 @@ function finishClose(i) {
   // nollaa efektit + kortit
   postPass.uniforms.uFlash.value = 0;
   postPass.uniforms.uRipple.value = 0;
+  postPass.uniforms.uComic.value = 0;
   postPass.uniforms.uAberration.value = 0.0035;
   bloomPass.strength = CONFIG.bloom.strength;
   for (const o of cards) { o.mesh.scale.setScalar(1); o.mat.uniforms.uDive.value = 0; }
@@ -932,6 +1198,7 @@ function enter() {
   introEl.setAttribute("hidden", "");
   document.body.classList.add("entered");
   ringGroup.visible = true;           // kortit näkyviin (emergoituvat sumusta kameran lentäessä)
+  if (treeGroup) treeGroup.visible = true; // digitaalinen puu näkyviin (kasvaa esiin revealP:n myötä)
   if (reduce) {
     revealP = 1; camera.position.z = CONFIG.cameraZ; scrollEnabled = true; layoutCarousel(true); return;
   }
@@ -964,18 +1231,16 @@ function animate() {
   layoutCarousel(false);
   updateLabel();
 
-  // parallaksi-kamera + renkaan kallistus
+  // kamera pysyy paikallaan (ei hiiriparallaksia) – aalto seuraa hiirtä kortissa
   if (!reduce) {
-    const px = mouseX * CONFIG.parallax;
-    const py = mouseY * CONFIG.parallax * 0.6;
-    camera.position.x += (px - camera.position.x) * 0.05;
-    if (!diving) camera.position.y += (py + 0.4 - camera.position.y) * 0.05;
+    if (!diving) {
+      camera.position.x += (0 - camera.position.x) * 0.05;
+      camera.position.y += (0.4 - camera.position.y) * 0.05;
+    }
     camera.lookAt(0, 0.2, 0);
-    ringGroup.rotation.y = mouseX * 0.05;
-    ringGroup.rotation.x = -0.07 + mouseY * 0.03;
+    ringGroup.rotation.y = 0;
+    ringGroup.rotation.x = -0.07;
     particleGroup.rotation.y = time * 0.01;
-    particleGroup.position.x = -mouseX * 0.6;
-    particleGroup.position.y = -mouseY * 0.4;
   }
 
   // hover-raycast (vain kun ei sukelleta)
@@ -983,6 +1248,11 @@ function animate() {
     raycaster.setFromCamera(pointer, camera);
     const hits = raycaster.intersectObjects(cardMeshes, false);
     hovered = hits.length ? hits[0].object.userData.index : -1;
+    // siirrä aalto hiiren osumakohtaan kortin pinnalla
+    if (hits.length && hits[0].uv) {
+      const hc = cards[hovered];
+      if (hc) hc.mat.uniforms.uMouse.value.copy(hits[0].uv);
+    }
     const front = Math.round(tCurrent);
     renderer.domElement.style.cursor = hovered === front && Math.abs(tCurrent - front) < 0.35 ? "pointer" : "default";
   } else {
@@ -1002,6 +1272,7 @@ function animate() {
   postPass.uniforms.uTime.value = time;
   if (bgMat) bgMat.uniforms.uTime.value = time;
   if (particleGroup.userData.mat) particleGroup.userData.mat.uniforms.uTime.value = time;
+  updateTree(time);
 
   composer.render();
 }
@@ -1017,6 +1288,8 @@ function onResize() {
   composer.setSize(w, h);
   bloomPass.setSize(w, h);
   if (bgMat) bgMat.uniforms.uAspect.value = w / h;
+  if (postPass) postPass.uniforms.uAspect.value = w / h;
+  if (treeData) for (const m of treeData.mats) { if (m.resolution) m.resolution.set(w, h); }
 }
 
 /* =====================================================================
@@ -1050,8 +1323,10 @@ async function boot() {
       enter,
       reveal(v) { revealP = clamp(v, 0, 1); },
       setCam(z) { camera.position.z = z; },
-      frame() { layoutCarousel(true); composer.render(); },
-      goto(i) { tCurrent = tTarget = clamp(i, 0, CARDS.length - 1); layoutCarousel(true); composer.render(); },
+      frame() { layoutCarousel(true); updateTree(clock.getElapsedTime()); composer.render(); },
+      goto(i) { tCurrent = tTarget = clamp(i, 0, CARDS.length - 1); layoutCarousel(true); updateTree(clock.getElapsedTime()); composer.render(); },
+      tree(v) { if (treeGroup) treeGroup.visible = v !== false; },
+      ring(v) { if (ringGroup) ringGroup.visible = v !== false; composer.render(); },
       inspect() {
         const c = cards[3];
         const t = c.mat.uniforms.uTex.value;

@@ -144,11 +144,22 @@ body.page-home .topbar {
   -webkit-backdrop-filter: blur(10px);
 }
 
-/* Oikean reunan navigaatioryhmä */
+/* topbar-nav täyttää koko palkin leveyden: nav-center keskitetään, nav-right ankkuroidaan oikeaan reunaan */
 .topbar-nav {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: clamp(7px, 1vw, 15px);
+  width: 100%;
+}
+/* Keskitetty ryhmä: nav-linkit + erotinviiva + some-ikonit */
+.nav-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: clamp(10px, 1.2vw, 20px);
 }
 .nav-links {
   display: flex;
@@ -157,6 +168,18 @@ body.page-home .topbar {
   margin: 0;
   padding: 0;
   list-style: none;
+}
+.nav-sep {
+  color: rgba(244, 234, 215, 0.3);
+  font-size: 1rem;
+  line-height: 1;
+}
+/* Oikean reunan ryhmä (Pelaa demoa + kielivalitsin) */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: clamp(7px, 1vw, 15px);
+  margin-left: auto;
 }
 .nav-links a {
   pointer-events: auto;
@@ -275,17 +298,36 @@ body.page-home .topbar {
 }
 
 /* ====== BRÄNDI (logo palkin vasemmassa reunassa) ====== */
-/* position: absolute → logo ei enää venytä .topbar-laatikon korkeutta,
-   vaan kelluu oman kokoisena palkin päällä ja voi pilkistää sen alareunan yli */
+/* position: absolute → logo ei enää venytä .topbar-laatikon korkeutta.
+   Logo on kooltaan istutettu palkin sisään (pystysuunnassa keskitetty). */
 .brand {
   position: absolute;
   left: clamp(4px, 0.6vw, 10px);
-  top: -6px;                 /* ankkuroitu palkin yläreunaan, roikkuu alaspäin */
+  top: 50%;
+  transform: translateY(-50%);
   z-index: 30;
   display: block;
-  width: clamp(130px, 13vw, 150px);   /* logon koko palkissa */
+  width: clamp(36px, 5.5vw, 52px);   /* logon koko palkissa: mahtuu palkin sisään */
   pointer-events: auto;
   text-decoration: none;
+}
+
+/* "Duobotit" nimi logon oikealla puolella: sama tyyli kuin logo-nauhan teksti, ilman keinunta-animaatiota */
+.brand-name {
+  position: absolute;
+  left: calc(clamp(4px, 0.6vw, 10px) + clamp(36px, 5.5vw, 52px) + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 30;
+  font-family: "Fredoka", sans-serif;
+  font-weight: 700;
+  font-size: clamp(15px, 1.8vw, 20px);
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: #fff;
+  text-decoration: none;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 .brand-img {
@@ -293,78 +335,8 @@ body.page-home .topbar {
   width: 100%;
   height: auto;
 }
-.brand-text {
-  position: absolute;
-  left: 49.2%;
-  top: 78%;                 /* bannerin mitattu keskikohta kuvassa */
-  transform: translate(-50%, -50%);
-  width: 50%;
-  text-align: center;
-  font-family: "Fredoka", sans-serif;
-  font-weight: 700;
-  font-size: clamp(10px, 1.2vw, 9px);   /* tekstin koko: skaalautuu logon mukaan */
-  letter-spacing: 0.02em;
-  line-height: 1;
-  color: #fff;
-}
 
-/* ---- tavu-animaatio: "Duo-bot-it" käynnistyy ---- */
-.brand-text .syl {
-  display: inline-block;
-  transform-origin: 50% 100%;
-}
-.brand-text .syl-in {
-  display: inline-block;
-  opacity: 0;
-  transform-origin: 50% 100%;
-  will-change: transform, opacity;
-}
-/* käynnistyy kun sivu avataan (body.entered) */
-body.entered .brand-text .syl-in {
-  animation: sylPop 0.62s cubic-bezier(0.22, 1.5, 0.4, 1) both;
-}
-body.entered .brand-text .syl {
-  animation: sylBob 3.2s ease-in-out infinite;
-}
-/* porrastus: tavu kerrallaan sisään */
-body.entered .brand-text .syl:nth-child(1) .syl-in { animation-delay: 0.18s; }
-body.entered .brand-text .syl:nth-child(2) .syl-in { animation-delay: 0.34s; }
-body.entered .brand-text .syl:nth-child(3) .syl-in { animation-delay: 0.50s; }
-/* idle-keinunta: vaihesiirto niin että tavut aaltoilevat */
-body.entered .brand-text .syl:nth-child(1) { animation-delay: 0s; }
-body.entered .brand-text .syl:nth-child(2) { animation-delay: -1.05s; }
-body.entered .brand-text .syl:nth-child(3) { animation-delay: -2.1s; }
 
-@keyframes sylPop {
-  0% {
-    opacity: 0;
-    transform: translateY(9px) scale(0.45) rotate(-6deg);
-    text-shadow: 0 0 0 rgba(255, 210, 130, 0);
-  }
-  55% {
-    opacity: 1;
-    transform: translateY(-3px) scale(1.22) rotate(2deg);
-    text-shadow: 0 0 16px rgba(255, 214, 140, 0.95), 0 0 6px rgba(255, 255, 255, 0.9);
-  }
-  75% {
-    transform: translateY(0) scale(0.94) rotate(0deg);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1) rotate(0deg);
-    text-shadow: 0 0 6px rgba(255, 255, 255, 0.28);
-  }
-}
-@keyframes sylBob {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-2px); }
-}
-@media (prefers-reduced-motion: reduce) {
-  body.entered .brand-text .syl-in { animation: none; opacity: 1; }
-  body.entered .brand-text .syl { animation: none; }
-}
-
-body.entered .brand { opacity: 1; }
 
 .ui {
   position: fixed;

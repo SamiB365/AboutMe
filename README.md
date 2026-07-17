@@ -18,9 +18,13 @@ intro → idle ⇄ wave → (click here) → hiding → hidden → peeking → i
 
 ```
 duobotit/
-├─ index.html          ← etusivu
-├─ styles.css          ← ulkoasu
-├─ animation.js        ← frame-soitin + tilakone (asetukset täällä)
+├─ index.html          ← ETUSIVU: kevyt 2D-sivu (hero, nostot, ei WebGL:ää)
+├─ sarjakuva.html      ← 3D-karuselli/sarjakuvakokemus (entinen index.html)
+├─ styles.css          ← ulkoasu (molemmat sivut)
+├─ app.js              ← 3D-sovellus (Three.js), käytössä vain sarjakuva.html:ssä
+├─ frame-player.js     ← jaettu robotin frame-soitin (ANIM + framePlayer),
+│                         käytössä sekä index.html:ssä että app.js:ssä
+├─ mobile.html         ← mobiiliesikatselu (iframettaa sarjakuva.html)
 ├─ assets/
 │  └─ duobotit/
 │     ├─ intro/        001.webp 002.webp ...
@@ -48,8 +52,11 @@ heti. Korvaa ne omilla — yksi kansio kerrallaan jos haluat.
 
 ## Esikatselu omalla koneella
 
-Avaa `index.html` selaimessa. (VS Codessa kätevin on **Live Server**
--laajennus: oikea klikkaus `index.html` → *Open with Live Server*.)
+`index.html` (2D-etusivu) toimii suoraan tiedostona selaimessa.
+`sarjakuva.html` (3D-karuselli, ES-moduulit) vaatii HTTP-palvelimen — pelkkä
+`file://` ei lataa moduuleja. Käynnistä esim. `python -m http.server 8000`
+projektin juuressa ja avaa `http://localhost:8000/`. VS Codessa käy myös
+**Live Server**-laajennus (oikea klikkaus tiedostoon → *Open with Live Server*).
 
 ## Julkaisu (git)
 

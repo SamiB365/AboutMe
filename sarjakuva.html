@@ -8,19 +8,24 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Caveat:wght@700&family=Space+Mono:wght@400;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=11" />
-    <!-- EI Three.js / WebGL -importmappia tällä sivulla — kevyt 2D-etusivu. -->
+    <link rel="stylesheet" href="styles.css?v=10" />
+
+    <!-- Three.js (CDN, ESM importmap) – ei buildiä -->
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+      }
+    </script>
   </head>
 
-  <body class="page-home">
-    <!-- ====== ALOITUSANIMAATIO (robotti, kerran) ====== -->
-    <div class="intro" id="intro">
-      <button class="intro-btn" id="introBtn" type="button" aria-label="Ohita aloitusanimaatio">
-        <img id="introFrame" class="intro-frame" alt="" />
-      </button>
-    </div>
+  <body>
+    <!-- ====== WEBGL-NÄKYMÄ (3D-karuselli) ====== -->
+    <canvas id="gl" aria-label="3D-näkymä"></canvas>
 
-    <!-- ====== YLÄPALKKI (identtinen sarjakuva.html:n kanssa) ====== -->
+    <!-- ====== YLÄPALKKI ====== -->
     <header class="topbar" id="topbar">
       <a class="brand" href="index.html" aria-label="Duobotit – etusivu">
         <img class="brand-img" src="assets/duobotit/Transparent_testi_logo.png" alt="Duobotit" />
@@ -58,17 +63,26 @@
       </nav>
     </header>
 
-    <main>
-      <!-- ====== HERO (vain taustakuva; teksti/sisältö poistettu toistaiseksi) ====== -->
-      <section class="hero" aria-label="Esittely"></section>
-    </main>
+    <!-- ====== UI-OVERLAY ====== -->
+    <div class="ui" id="ui">
+      <div class="card-label" id="cardLabel" aria-live="polite"></div>
+      <div class="scroll-hint" id="scrollHint">scrollaa&nbsp;↕&nbsp;&middot;&nbsp;klikkaa korttia</div>
+    </div>
+    <footer class="credit" aria-hidden="true">© Duobotit — tekninen tuki · ohjelmistokehitys · pelit · sarjakuva</footer>
+
+    <!-- ====== MODAALI: sarjakuvamaailma (DOM) ====== -->
+    <div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-label="Kortin näkymä">
+      <div class="modal-backdrop" data-close></div>
+      <!-- Avautuva maailma (sarjakuva); sisältö rakennetaan app.js:ssä -->
+      <section class="world" id="world" aria-label="Maailma"></section>
+      <button class="modal-close" id="modalClose" type="button" aria-label="Sulje">×</button>
+    </div>
 
     <!-- ====== KIELIVAIHTO (FI/EN) ====== -->
     <script>
       (function () {
         // Käännösrakenne: lisää tänne uudet avaimet + kielet.
-        // Käytä HTML:ssä data-i18n="avain" niin teksti vaihtuu automaattisesti,
-        // data-i18n-placeholder="avain" vaihtaa input-placeholderin.
+        // Käytä HTML:ssä data-i18n="avain" niin teksti vaihtuu automaattisesti.
         const I18N = {
           fi: {
             "nav.kartta": "Kartta",
@@ -92,20 +106,14 @@
         function applyLang(lang) {
           if (!I18N[lang]) lang = "fi";
           const dict = I18N[lang];
-          const fallback = I18N.fi;
 
-          // Vaihda tekstit; tyhjä/EN-placeholder kaatuu takaisin suomeen ettei sisältö katoa.
+          // Vaihda kaikkien merkittyjen elementtien tekstit.
           document.querySelectorAll("[data-i18n]").forEach((el) => {
             const key = el.getAttribute("data-i18n");
-            const val = dict[key];
-            el.textContent = val || fallback[key] || el.textContent;
-          });
-          document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
-            const key = el.getAttribute("data-i18n-placeholder");
-            const val = dict[key];
-            el.setAttribute("placeholder", val || fallback[key] || el.getAttribute("placeholder"));
+            if (dict[key] != null) el.textContent = dict[key];
           });
 
+          // Korosta aktiivinen kielipainike.
           btns.forEach((b) => {
             const on = b.dataset.lang === lang;
             b.classList.toggle("is-active", on);
@@ -124,37 +132,6 @@
       })();
     </script>
 
-    <!-- ====== ROBOTIN SPRITE-ANIMAATIO (jaettu frame-player.js) ====== -->
-    <script type="module">
-      import { framePlayer } from "./frame-player.js";
-
-      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      const introEl = document.getElementById("intro");
-      const introBtn = document.getElementById("introBtn");
-      const introFrame = document.getElementById("introFrame");
-
-      let revealed = false;
-      function revealHome() {
-        if (revealed) return;
-        revealed = true;
-        introPlayer.stop();
-        introEl.setAttribute("hidden", "");
-        document.body.classList.add("entered");
-      }
-
-      // Aloitusanimaatio soitetaan kerran ("intro"-tila); kun se päättyy, etusivu paljastuu
-      // automaattisesti. Klikkaus ennen loppua ohittaa animaation ja paljastaa etusivun heti.
-      const introPlayer = framePlayer(introFrame, {
-        onStateEnd: (name) => { if (name === "intro") revealHome(); },
-      });
-      introBtn.addEventListener("click", revealHome);
-
-      if (reduce) {
-        introPlayer.static();
-        revealHome();
-      } else {
-        introPlayer.start();
-      }
-    </script>
+    <script type="module" src="app.js"></script>
   </body>
 </html>

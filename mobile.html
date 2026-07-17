@@ -63,7 +63,7 @@
 <body>
   <h1>Duobotit – mobiiliesikatselu</h1>
   <p class="hint">
-    Tämä näyttää oikean <strong>index.html</strong>:n puhelimen kokoisessa kehyksessä.
+    Tämä näyttää oikean <strong>sarjakuva.html</strong>:n (3D-karuselli) puhelimen kokoisessa kehyksessä.
     Leveyspohjaiset säädöt (kortin koko, etäisyydet) näkyvät oikein.
     Huom: pelkkä kosketus-logiikka (snäpin poisto, vaakakehote) näkyy vain oikealla puhelimella.
   </p>
@@ -76,7 +76,7 @@
   </div>
 
   <div class="phone" id="phone">
-    <iframe id="frame" src="index.html" title="Duobotit mobiili"></iframe>
+    <iframe id="frame" src="sarjakuva.html" title="Duobotit mobiili"></iframe>
   </div>
   <div class="dims" id="dims">390 × 844</div>
 
@@ -99,7 +99,7 @@
       frame.src = frame.src;
     });
     document.getElementById("btnOpen").addEventListener("click", () => {
-      window.open("index.html", "_blank");
+      window.open("sarjakuva.html", "_blank");
     });
   </script>
 </body>

@@ -280,7 +280,7 @@ body.page-home .topbar {
 .brand {
   position: absolute;
   left: clamp(4px, 0.6vw, 10px);
-  top: -4px;                 /* ankkuroitu palkin yläreunaan, roikkuu alaspäin */
+  top: -6px;                 /* ankkuroitu palkin yläreunaan, roikkuu alaspäin */
   z-index: 30;
   display: block;
   width: clamp(130px, 13vw, 150px);   /* logon koko palkissa */

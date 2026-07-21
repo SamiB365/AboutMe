@@ -20,15 +20,17 @@ import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js"
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
-import { LineSegments2 } from "three/addons/lines/LineSegments2.js";
-import { LineSegmentsGeometry } from "three/addons/lines/LineSegmentsGeometry.js";
-import { LineMaterial } from "three/addons/lines/LineMaterial.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 /* ====== TÄRKEIMMÄT SÄÄDÖT ====== */
 const CONFIG = {
   radius: 6.8,          // putken säde (isompi → loivempi kaari, enemmän kortteja näkyvissä)
   anglePerCard: 28,     // astetta korttien välillä kehällä
   helix: 1.1,           // pystyporras / kortti ≈ 1/3 kortin korkeudesta (selvä spiraali)
-  cameraZ: 13.0,        // kameran lepoetäisyys (taempana → isompi rengas mahtuu)
+  ringYOffset: -3.0,    // koko kierteen (kortit+kuplat+kamera) yleinen lasku — n. puhekuplan koon (3.0)
+                        // verran, jotta aloituspiste (indeksi 0) osuu juuri gridin tasolle (baseY -3)
+  slotYOffset: 1.0,     // kortin OMA "slot"-korkeus nostettu hieman ylemmäs — EI vaikuta kameran
+                        // katselukohteeseen (h), joten kortti näkyy hieman ruudun keskiön yläpuolella
+  cameraZ: 15.0,        // kameran lepoetäisyys (taempana → isompi rengas mahtuu)
   cameraEnterZ: 21,     // mistä kamera lentää sisään introssa
   fov: 55,
   scrollSensitivity: 0.0017, // wheel → karusellin pyöritys
@@ -53,6 +55,10 @@ const CONFIG = {
     rippleAmp: 0.06,            // halftone-ruudukon radiaalisiirto aallossa (UV-yksiköissä)
     rippleFalloff: 2.0,         // vaimeneminen osumakohdasta ulospäin (suuri = paikallinen)
     hoverScale: 0.12,           // kuinka paljon kupla kasvaa hoverissa (0.12 = +12 %)
+    radiusOffset: 1.5,          // lisäetäisyys CONFIG.radius:n päälle → kuplat kauemmas puusta/keskeltä
+    yRestore: -0.1,             // NETTO-Y kortin päälle (ringY + yRestore = 0.2) — täsmää kameran
+                                // katselukohteen korkeuden kanssa (h+0.2, ks. animate()), jotta kupla
+                                // näkyy tarkalleen ruudun pystykeskellä fokusoituna
   },
   card: { w: 2.2, h: 3.0, corner: 0.09, depth: 0.22, // mitat (PORTRAIT-lasi). HUOM: corner <= depth/2 → rungon (RoundedBox) ja facen kulmat täsmäävät (ei tuplareunaa)
     frame: { width: 0.06, glow: 0.45, hoverGlow: 2.2, edgePow: 3.5 }, // ohut neonreuna (fresnel-siluetti, ei pastellislabia) + hover-hehku
@@ -82,29 +88,52 @@ const CONFIG = {
     halo: { size: 1.3, intensity: 0.5 }, // hehkuhalo kortin takana (ankkuroi avaruuteen, bloom nappaa)
     hoverLift: 0.05,     // kortin nousu hoverissa
   },
-  // DIGITAALINEN PIIRILEVYPUU keskellä (kortit kiertävät sitä)
+  // UUSI 3D-MALLI keskellä (GLB, korvaa vanhan proseduraalisen piirilevypuun) — kortit kiertävät sitä
   tree: {
     enabled: true,
-    baseY: -4.5,         // rungan tyven korkeus (kasvaa tästä ylöspäin)
-    trunkH: 2.6,         // rungon korkeus ennen ensimmäistä haaraa
-    depth: 5,            // rekursion syvyys (haarautumiskerrat)
-    branches: 2,         // lapsia per haara
-    segLen: 1.3,         // perussegmentin pituus
-    shrink: 0.78,        // pituus kutistuu per syvyys
-    spread: 2.0,         // vaakalevitys (90° mutkat)
-    spreadX: 1.35,       // X-painotus (näytöllä leveämpi → näkyy korttien ympärillä)
-    depthZ: 1.0,         // kuinka paljon haarat leviävät Z-syvyyteen (→ 3D joka kulmasta)
-    color: "120,210,255",     // syaani-sininen trace
-    nodeColor: "190,235,255", // hohtavat solmut
-    packetColor: "210,245,255", // datapaketit (kirkkaat)
-    width: 0.06,         // trace-paksuus (world-yksikötä)
-    glow: 1.7,           // trace-värin kirkkaus (→ bloom)
-    nodeGlow: 1.15,      // solmujen kirkkaus (pieni → ei sokaise bloomissa)
-    scale: 1.5,          // koko (latva nousee korttien yläpuolelle)
-    rotSpeed: 0.06,      // hidas pyörintä (paljastaa 3D-syvyyden)
-    packets: 30,         // datapakettien määrä
-    packetSpeed: 0.55,   // datan virtausnopeus
-    seed: 7,             // satunnaissiemen (vakaa puu reloadissa)
+    url: "assets/models/cherry_tree.glb", // GLB-tiedoston polku
+    baseY: -3,       // tyven korkeus (kortit kiertävät tämän ympärillä) — myös gridin "reunan" korkeus
+    scale: 3,        // koko (säädä mallin omien mittojen mukaan)
+    rotSpeed: 0,     // pyörintänopeus (0 = ei pyöri)
+    sinkIntoWell: 1.7, // kuinka paljon puu laskeutuu baseY:n ALAPUOLELLE, jotta se istuu kuopan pohjalla
+  },
+  // NEONGRIDI-ALUSTA puun alla (synkkywave-lattia, kuten referenssikuvan hehkuva ruudukko + rengas)
+  grid: {
+    enabled: true,
+    size: 60,                 // lattiatason koko (world-yksikköä)
+    cellSize: 1.2,             // ruudukon solun koko
+    lineWidth: 0.02,           // viivan paksuus (world-yksikköä)
+    color: "80,200,255",       // ruudukon väri (syaäni)
+    glow: 1.6,                 // ruudukon kirkkaus (bloom nappaa)
+    ringColor: "255,120,220",  // hehkuva rengas puun tyven ympärillä
+    ringRadius: 4.2,           // renkaan säde (isompi → näkyy rungon/kiven ulkopuolella)
+    ringWidth: 0.18,           // renkaan paksuus
+    fadeRadius: 22,            // etäisyys jolloin ruudukko häipyy näkyvistä (horisontti)
+    wellDepth: 2.4,            // kuinka syvälle ruudukko "uppoaa" puun kohdalla (massakuoppa)
+    wellRadius: 5,             // uppouman leveys (isompi → loivempi/laajempi kuoppa)
+    gradientRadius: 9,         // etäisyys jolloin ruudukon väri siirtyy kokonaan rengasväristä (pinkki)
+                               // perusväriin (syaani) — referenssikuvan liukuvärinen lattia
+    pulseSpeed: 1.3,           // renkaiden sykkeen (hengityksen) nopeus
+    pulseAmount: 0.35,         // sykkeen voimakkuus (0..1, kirkkauden vaihteluväli)
+    ring2Radius: 3.0,          // sisemmän renkaan säde (kerroksellinen hehku, kuten referenssikuvassa)
+    ring2Width: 0.12,          // sisemmän renkaan paksuus
+
+    // VALOEFEKTI: N hehkuvaa "käärmettä" (snakeCount kpl) kulkee pitkin ruudukkoviivoja eteenpäin,
+    // kääntyen aina risteyksessä satunnaiseen suuntaan (ei koskaan käänny takaisin). Jos käärme
+    // ylittäisi gridin näkyvyysrajan (uFadeRadius), se poistetaan ja luodaan uudelleen satunnaiseen
+    // kohtaan näkyvällä alueella — CPU puolella simuloitu polku (ks. snakes-tila animate()-silmukassa).
+    // SUORITUSKYKY (kevyt/tekstuuripohjainen toteutus): kiinteä häntä bakataan CPU:lla pieneen
+    // tekstuuriin, shader tekee vain 2 texture2D-hakua per pikseli riippumatta käärmeiden määrästä
+    // (O(1)) — vain käärmeiden liikkuvat pääsegmentit lasketaan per-pikseli (O(snakeCount), halpaa).
+    // snakeCount voi siis olla iso ilman raskasta GPU-kuormaa (max SNAKE_MAX_COUNT=100, ks. app.js).
+    snakeEnabled: false,       // POIS KÄYTÖSTÄ tähän versioon (käyttäjän pyynnöstä) — true ottaa takaisin
+    snakeCount: 50,            // kuinka monta käärmettä kentällä liikkuu samaan aikaan
+    snakeSpeed: 3.0,           // kaikkien käärmeiden nopeus (world-yksikköä/s)
+    snakeThickness: 0.08,      // hehkun puoliskoleveys (world-yksikköä) — ohuempi, helposti seurattava
+    snakeTailLength: 6,        // kuinka monta pistettä (segmenttiä) näkyy hehkuvana hännässä
+    // Väripaletti, josta käärmeet saavat värinsä kierrättäen (indeksi % paletin pituus) — antaa
+    // visuaalista vaihtelua kun monta käärmettä liikkuu yhtä aikaa.
+    snakeColors: ["255,120,220", "150,90,255", "80,200,255"],
   },
   // SARJAKUVATAUSTA (Spider-Verse-printti): halftone-pisteet + litteät väritasot + terävät hiukkaset
   comicBg: {
@@ -1059,9 +1088,184 @@ let bubbleMeshes = [], bubbleMat = null;  // VAIHE 1: 7 proseduraalista puhekupl
 let bgMat = null;             // taustashaderin materiaali (uTime-päivitys)
 let bgMesh = null;            // kaareva avaruus-dome (pallon sisäpinta)
 let bgLayers = [];            // sisäkkäiset läpinäkyvät pallokerrokset (parallaksi)
-let treeGroup = null;         // digitaalinen piirilevypuu (keskellä)
-let treeData = null;          // { segA, segB, packets, pkAttr, mats[] } datavirtaa varten
-let treeT = 0;                // edellinen aika (dt-laskentaan)
+let treeGroup = null;         // ladattu GLB-3D-malli (korvaa vanhan piirilevypuun) — kortit kiertävät sitä
+let treeMixer = null;         // AnimationMixer, jos GLB sisältää animaatioita (esim. tuulessa heiluminen)
+let treeT = 0;                // edellinen aika (dt AnimationMixerille)
+let gridMesh = null, gridMat = null; // neongridi-lattia puun alla
+
+// KÄÄRME-VALOEFEKTI (KEVYT, TEKSTUURIPOHJAINEN): N hehkuvaa viivaa (CONFIG.grid.snakeCount kpl)
+// kulkee ruudukon linjoja pitkin eteenpäin, kääntyen risteyksissä satunnaiseen suuntaan (ei
+// koskaan takaisin). Aiempi malli laski JOKAISELLE PIKSELILLE etäisyyden jokaisen käärmeen
+// jokaiseen hännän segmenttiin (O(snakeCount * tailLength) per pikseli) — kallista jos käärmeitä
+// on paljon (esim. 15). UUSI, HALVEMPI TAPA: jo kuljettu (kiinteä) häntä BAKATAAN CPU:lla pieneen
+// tekstuuriin kerran per frame (muutama texel per käärme — halpaa), ja shader tekee sen jälkeen
+// VAIN 2 texture2D-hakua per pikseli RIIPPUMATTA käärmeiden määrästä (O(1) GPU-kustannus). Vain
+// käärmeen NYKYINEN liikkuva pääsegmentti (sub-cell-tarkka, ei voi bakata ilman nykimistä)
+// lasketaan edelleen suoraan per-pikseli-etäisyytenä, mutta se on vain YKSI segmentti per käärme
+// eli O(snakeCount) halpaa laskentaa, ei O(snakeCount * tailLength). Ks. buildGroundGrid().
+const SNAKE_AXES = [{ x: 1, z: 0 }, { x: -1, z: 0 }, { x: 0, z: 1 }, { x: 0, z: -1 }];
+const SNAKE_MAX_COUNT = 100;  // sama luku kuin GLSL:n MAX_SNAKES #define (pää-uniformitaulukoiden koko)
+const SNAKE_LIFETIME = 10;   // sekuntia (perusarvo) — jokainen käärme lähtee puun kehältä uudelleen tämän ajan jälkeen
+const SNAKE_LIFETIME_JITTER = 0.4; // ±40% satunnaisvaihtelu per käärme, jotta lähdöt rytmittyvät epätahtiin
+let snakes = [];              // [{ dir, points:[{x,z}], headDist, lastTime }, ...] — yksi per käärme
+let snakePalette = [];        // esilasketut LINEAARISET värit (THREE.Color) paletista, kierrätetään
+let snakeTexN = 48, snakeTexHalf = 24; // tekstuurin resoluutio + origon offset (lasketaan buildGroundGrid:ssä)
+let snakeTexV = null, snakeTexH = null;   // DataTexture: pystyreunat (vakio X) / vaakareunat (vakio Z)
+let snakeDataV = null, snakeDataH = null; // Uint8Array-puskurit joita kirjoitetaan CPU:lla joka frame
+
+function clamp01(v) { return Math.min(1, Math.max(0, v)); }
+function smoothstep01(t) { return t * t * (3 - 2 * t); }
+
+// Luo yhden käärmeen tiiviisti puun tyven ALUEELTA (lähellä origoa, jossa puu seisoo) —
+// käärmeet lähtevät liikkeelle kuin "pulssi" puusta ulospäin, kukin satunnaiseen suuntaansa —
+// käytetään sekä alkualustuksessa että kun käärme "poistetaan ja luodaan uudelleen" ylitettyään
+// näkyvyysrajan.
+function snakeSpawn(G, time) {
+  const cell = G.cellSize;
+  const spawnR = cell * 2; // tiukasti puun tyven kohdalla/lähellä, ei hajallaan koko kentällä
+  const gx = Math.round((Math.random() * 2 - 1) * spawnR / cell);
+  const gz = Math.round((Math.random() * 2 - 1) * spawnR / cell);
+  const t0 = time == null ? 0 : time;
+  // Jokaisella käärmeellä oma, hieman satunnainen elinikä (~10s ±40%) — näin ne eivät kaikki
+  // lähde uudelleen liikkeelle täsmälleen samalla hetkellä vaan rytmi hajoaa luonnollisesti ajan myötä.
+  const lifetime = SNAKE_LIFETIME * (1 + (Math.random() * 2 - 1) * SNAKE_LIFETIME_JITTER);
+  return {
+    dir: SNAKE_AXES[Math.floor(Math.random() * SNAKE_AXES.length)],
+    points: [{ x: gx * cell, z: gz * cell }],
+    headDist: 0,
+    lastTime: null,
+    straightCount: 0, // kuinka monta solua on jo kuljettu suoraan nykyiseen suuntaan (kiinteä 2+1-kaava)
+    birthTime: t0,
+    lifetime, // tämän yksilön oma elinikä (sekuntia) ennen uudelleensyntymää
+  };
+}
+// Palauttaa annettuun suuntaan nähden KOHTISUORAT vaihtoehdot (vasen/oikea) — käytetään kiinteässä
+// "kaksi eteenpäin, sitten yksi sivulle" -liikekaavassa (ei koskaan suoraan jatkoa eikä peruutusta).
+function snakePerp(dir) {
+  return dir.x !== 0
+    ? [{ x: 0, z: 1 }, { x: 0, z: -1 }]
+    : [{ x: 1, z: 0 }, { x: -1, z: 0 }];
+}
+function snakeInit() {
+  const G = CONFIG.grid;
+  const n = G.snakeEnabled ? Math.min(G.snakeCount, SNAKE_MAX_COUNT) : 0; // pois käytöstä → 0 käärmettä
+  // Alkutilanteessa jokaisen käärmeen "syntymä" siirretään satunnaisesti taaksepäin ajassa
+  // (0..lifetime), jotta ensimmäinenkin uudelleensyntymäkierros on heti rytmillisesti hajautettu
+  // eikä kaikki 50 käärmettä lähde uudelleen liikkeelle samanaikaisesti.
+  snakes = Array.from({ length: n }, () => {
+    const s = snakeSpawn(G, 0);
+    s.birthTime = -Math.random() * s.lifetime;
+    return s;
+  });
+  snakePalette = G.snakeColors.map(colRGB255); // linear THREE.Color per paletin väri
+  if (gridMat) gridMat.uniforms.uSnakeTotal.value = n;
+}
+// Piirtää yhden (aina tasan yhden solun mittaisen) reunasegmentin oikeaan tekstuuripuskuriin.
+// Väri tallennetaan iällä ESIKERROTTUNA (premultiplied) suoraan additiiviseksi — jos kaksi
+// käärmettä sattuisi samalle reunalle, kirkkaudet vain lasketaan yhteen (harvinaista, ok).
+function snakeWriteEdge(a, b, cell, col, age) {
+  if (age <= 0.002) return;
+  const dx = Math.round((b.x - a.x) / cell);
+  let cx, cy, arr;
+  if (dx !== 0) { // vaakareuna (X vaihtuu, Z vakio)
+    cx = Math.round(Math.min(a.x, b.x) / cell) + snakeTexHalf;
+    cy = Math.round(a.z / cell) + snakeTexHalf;
+    arr = snakeDataH;
+  } else { // pystyreuna (Z vaihtuu, X vakio)
+    cx = Math.round(a.x / cell) + snakeTexHalf;
+    cy = Math.round(Math.min(a.z, b.z) / cell) + snakeTexHalf;
+    arr = snakeDataV;
+  }
+  if (cx < 0 || cx >= snakeTexN || cy < 0 || cy >= snakeTexN) return;
+  const idx = (cy * snakeTexN + cx) * 4;
+  arr[idx]     = Math.min(255, arr[idx]     + col.r * 255 * age);
+  arr[idx + 1] = Math.min(255, arr[idx + 1] + col.g * 255 * age);
+  arr[idx + 2] = Math.min(255, arr[idx + 2] + col.b * 255 * age);
+  arr[idx + 3] = Math.min(255, arr[idx + 3] + 255 * age);
+}
+// Kutsutaan joka framessa (animate()): siirtää jokaisen käärmeen päätä eteenpäin kiinteän
+// "kaksi solua eteenpäin, sitten yksi sivulle (vasen/oikea)" -kaavan mukaan, respawnaa jos
+// näkyvyysraja ylittyy, bakkaa kiinteän hännän tekstuuriin (halpaa: enintään ~tailLength
+// kirjoitusta per käärme) ja
+// päivittää pienen pää-uniformitaulukon (vain nykyinen liikkuva segmentti per käärme).
+function snakeUpdate(time) {
+  if (!snakes.length || !gridMat) return;
+  const G = CONFIG.grid;
+  const cell = G.cellSize;
+  const visLimit = G.fadeRadius; // gridin oma näkyvyysraja (uFadeRadius) — sen jälkeen ruudukkokin on jo näkymätön
+  const softBound = visLimit * 0.85; // suositaan suuntia jotka pysyvät mukavasti näkyvällä alueella
+  const tailLen = G.snakeTailLength;
+  const capLen = tailLen + 3; // pieni marginaali pehmeälle sisäänhäivytykselle
+  snakeDataV.fill(0);
+  snakeDataH.fill(0);
+  const headA = gridMat.uniforms.uHeadA.value;
+  const headB = gridMat.uniforms.uHeadB.value;
+  const headColor = gridMat.uniforms.uHeadColor.value;
+  for (let s = 0; s < snakes.length; s++) {
+    let snake = snakes[s];
+    if (snake.lastTime === null) snake.lastTime = time;
+    const dt = Math.min(0.1, Math.max(0, time - snake.lastTime));
+    snake.lastTime = time;
+    snake.headDist += G.snakeSpeed * dt;
+    while (snake.headDist >= cell) {
+      snake.headDist -= cell;
+      const last = snake.points[snake.points.length - 1];
+      const nv = { x: last.x + snake.dir.x * cell, z: last.z + snake.dir.z * cell };
+      snake.points.push(nv);
+      if (snake.points.length > capLen) snake.points.shift(); // varaa tilaa liikkuvalle päälle
+      // Kiinteä liikekaava: kaksi solua eteenpäin nykyiseen suuntaan, sitten yksi solu sivulle
+      // (aina siihen suuntaan joka vie kauemmas puusta — ei koskaan suoraan jatkoa, peruutusta
+      // eikä takaisin puuta kohti kääntymistä).
+      snake.straightCount++;
+      if (snake.straightCount < 2) {
+        continue; // vielä kesken "kaksi eteenpäin" -vaihe, sama suunta jatkuu
+      }
+      snake.straightCount = 0;
+      const perp = snakePerp(snake.dir);
+      // Valitaan AINA se kohtisuora vaihtoehto (vasen TAI oikea) joka vie käärmeen KAUEMMAS
+      // puun tyvestä (origosta) — ei koskaan sitä joka veisi lähemmäs tai kiertäisi käärmeen
+      // takaisin itsensä ympäri. Näin etäisyys origosta kasvaa monotonisesti eikä käärme koskaan
+      // palaa takaisinpäin puuta kohti.
+      const cands = perp
+        .map((d) => ({ d, dist: Math.hypot(nv.x + d.x * cell, nv.z + d.z * cell) }))
+        .sort((a, b) => b.dist - a.dist);
+      const withinBound = cands.filter((c) => c.dist < softBound);
+      const best = (withinBound.length ? withinBound : cands)[0];
+      snake.dir = best.d;
+    }
+    let last = snake.points[snake.points.length - 1];
+    let head = { x: last.x + snake.dir.x * snake.headDist, z: last.z + snake.dir.z * snake.headDist };
+    // Näkyvyysraja ylittyi (esim. useita käännöksiä ei onnistunut pysymään pehmeän rajan sisällä)
+    // → käärme poistetaan ja luodaan uudelleen satunnaiseen kohtaan näkyvällä alueella sen sijaan
+    // että se jäisi näkymättömiin kauas horisonttiin.
+    // Kiinteä (mutta yksilöllisesti satunnaistettu) elinikä: jokainen käärme elää enintään
+    // snake.lifetime sekuntia (~10s ± satunnaisvaihtelu), jonka jälkeen se lähtee puun kehältä
+    // uudelleen liikkeelle (uusi satunnaissuunta) — riippumatta siitä ehtikö se ylittää
+    // näkyvyysrajan vai ei. Yksilöllinen elinikä pitää lähdöt rytmillisesti hajautettuina.
+    if (Math.hypot(head.x, head.z) > visLimit || (time - snake.birthTime) >= snake.lifetime) {
+      snake = snakeSpawn(G, time);
+      snakes[s] = snake;
+      last = snake.points[0];
+      head = { x: last.x, z: last.z };
+    }
+    const col = snakePalette[s % snakePalette.length];
+    // Bakkaa kiinteät (jo kuljetut) segmentit tekstuuriin — sama ikä/haalistuvuuslaskenta kuin
+    // aiemmin shaderissa, mutta nyt CPU:lla kerran per frame per segmentti (halpaa).
+    const n = snake.points.length;
+    for (let i = 0; i < n - 1; i++) {
+      const ageRaw = (i - (n - 1 - tailLen)) / Math.max(tailLen, 1);
+      const age = smoothstep01(clamp01(ageRaw));
+      snakeWriteEdge(snake.points[i], snake.points[i + 1], cell, col, age);
+    }
+    // Käärmeen PÄÄSEGMENTTI (viimeisimmästä kiinteästä pisteestä nykyiseen sub-cell-tarkkaan
+    // päähän) piirretään suoraan shaderissa (ei bakata) jotta liike näyttää sulavalta.
+    headA[s].set(last.x, last.z);
+    headB[s].set(head.x, head.z);
+    headColor[s].copy(col);
+  }
+  snakeTexV.needsUpdate = true;
+  snakeTexH.needsUpdate = true;
+}
 let flowPrev = 0;             // hiukkasvirran edellinen aika (CPU-integroinnin dt)
 const cards = [];          // { mesh, mat, index, hover }
 const cardMeshes = [];
@@ -1101,7 +1305,8 @@ function initThree(canvas) {
   buildBackground();
   buildParticles();
   buildLights();
-  buildCircuitTree();
+  loadTreeModel();
+  buildGroundGrid();
   buildCards();
   buildBubble();
   buildComposer();
@@ -1450,186 +1655,229 @@ function buildLights() {
 }
 
 /* =====================================================================
-   DIGITAALINEN PIIRILEVYPUU (proseduraalinen, keskellä → kortit kiertävät)
-   - PCB-tyyli: suorakulmaiset (90°) "tracet", haarautuvat 3D:nä joka suuntaan
-   - hohtavat solmut (vias) + datapaketit virtaavat oksia pitkin (matrix-henki)
+   UUSI 3D-MALLI (GLB) keskellä — korvaa vanhan proseduraalisen piirilevypuun
    ===================================================================== */
-function buildCircuitTree() {
+function loadTreeModel() {
   if (!CONFIG.tree.enabled) return;
   const T = CONFIG.tree;
-  treeGroup = new THREE.Group();
-  treeGroup.position.y = T.baseY;       // tyvi tähän → kasvaa ylös, skaalaus pohjasta
-  treeGroup.visible = false;            // näkyviin vasta introsta (enter)
-  scene.add(treeGroup);
-
-  // pieni siemennetty RNG → puu on vakaa joka reloadissa
-  let s = T.seed >>> 0;
-  const rnd = () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
-
-  const segA = [], segB = [];           // segmenttien päätepisteet (lerp datapaketeille)
-  const mainPos = [], twigPos = [];     // fat-line positiot (paksu runko / ohuet oksat)
-  const nodes = [];                     // { p, big } hohtavat solmut
-
-  function pushSeg(a, b, main) {
-    segA.push(a.clone()); segB.push(b.clone());
-    const arr = main ? mainPos : twigPos;
-    arr.push(a.x, a.y, a.z, b.x, b.y, b.z);
-  }
-
-  // rekursiivinen haara: PCB-tyyli (vaakamutka 90° → pystysegmentti ylös)
-  function grow(pos, len, depth) {
-    if (depth > T.depth || len < 0.18) {
-      nodes.push({ p: pos.clone(), big: true });   // lehtipää = kirkas solmu
-      return;
-    }
-    const main = depth <= 1;
-    const nB = depth === 0 ? 1 : T.branches + (rnd() < 0.3 ? 1 : 0);
-    for (let k = 0; k < nB; k++) {
-      // levityssuunta vaakatasossa (XZ) → 3D-syvyys joka kulmasta
-      const ang = rnd() * Math.PI * 2;
-      const spreadAmt = (depth === 0 ? 0 : T.spread * (0.5 + rnd() * 0.5)) * (len / T.segLen);
-      const dx = Math.cos(ang) * spreadAmt * (T.spreadX || 1);
-      const dz = Math.sin(ang) * spreadAmt * (T.depthZ / T.spread);
-      // 1) vaakasegmentti (90° mutka) — paitsi rungon ensimmäinen joka menee suoraan ylös
-      const corner = pos.clone();
-      if (depth > 0) {
-        corner.add(new THREE.Vector3(dx, 0, dz));
-        pushSeg(pos, corner, main);
-        nodes.push({ p: corner.clone(), big: false });   // mutkasolmu (vias)
+  new GLTFLoader().load(
+    T.url,
+    (gltf) => {
+      treeGroup = gltf.scene;
+      // Puu laskeutuu hieman baseY:n alle, jotta tyvi istuu ruudukon painovoimakuopan (uWellDepth)
+      // pohjalla eikä jää "kelluman" kuopan reunan yläpuolelle.
+      treeGroup.position.y = T.baseY - (T.sinkIntoWell || 0);
+      treeGroup.scale.setScalar(T.scale);
+      treeGroup.visible = entered;         // jos enter() jo ajettu ennen latauksen valmistumista → näytä heti
+      if (gltf.animations && gltf.animations.length) {
+        treeMixer = new THREE.AnimationMixer(treeGroup);
+        gltf.animations.forEach((clip) => treeMixer.clipAction(clip).play());
       }
-      // 2) pystysegmentti ylös
-      const up = depth === 0 ? T.trunkH : len * (0.7 + rnd() * 0.5);
-      const top = corner.clone().add(new THREE.Vector3(0, up, 0));
-      pushSeg(corner, top, main);
-      grow(top, len * T.shrink, depth + 1);
-    }
-  }
-
-  grow(new THREE.Vector3(0, 0, 0), T.segLen, 0);
-
-  const res = new THREE.Vector2(window.innerWidth, window.innerHeight);
-  const traceCol = colRGB255(T.color).multiplyScalar(T.glow);
-
-  // paksu runko + ohuet oksat = kaksi fat-line-objektia
-  function makeLines(posArr, width) {
-    if (!posArr.length) return null;
-    const g = new LineSegmentsGeometry();
-    g.setPositions(posArr);
-    const m = new LineMaterial({
-      color: 0xffffff,
-      worldUnits: true,
-      linewidth: width,
-      transparent: true,
-      opacity: 0,
-      depthTest: true,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
-    });
-    m.color.copy(traceCol);
-    m.resolution.copy(res);
-    const ls = new LineSegments2(g, m);
-    ls.computeLineDistances();
-    treeGroup.add(ls);
-    return m;
-  }
-  const matMain = makeLines(mainPos, T.width * 1.8);
-  const matTwig = makeLines(twigPos, T.width);
-
-  // hohtavat solmut (Points, additiivinen pyöreä sprite)
-  const nPos = new Float32Array(nodes.length * 3);
-  const nSize = new Float32Array(nodes.length);
-  nodes.forEach((n, i) => {
-    nPos[i * 3] = n.p.x; nPos[i * 3 + 1] = n.p.y; nPos[i * 3 + 2] = n.p.z;
-    nSize[i] = n.big ? 0.7 : 0.32 + rnd() * 0.16;
-  });
-  const nGeo = new THREE.BufferGeometry();
-  nGeo.setAttribute("position", new THREE.BufferAttribute(nPos, 3));
-  nGeo.setAttribute("aSize", new THREE.BufferAttribute(nSize, 1));
-  const nodeMat = glowPoints(colRGB255(T.nodeColor).multiplyScalar(T.nodeGlow), 1.7);
-  treeGroup.add(new THREE.Points(nGeo, nodeMat));
-
-  // datapaketit: kirkkaat pisteet liukuvat satunnaisia tracoja pitkin ylös
-  const pk = Math.min(T.packets, segA.length);
-  const packets = [];
-  for (let i = 0; i < pk; i++) {
-    packets.push({ i: Math.floor(rnd() * segA.length), t: rnd(), sp: (0.5 + rnd()) * T.packetSpeed });
-  }
-  const pkPos = new Float32Array(pk * 3);
-  const pkSize = new Float32Array(pk).fill(0.6);
-  const pkGeo = new THREE.BufferGeometry();
-  pkGeo.setAttribute("position", new THREE.BufferAttribute(pkPos, 3));
-  pkGeo.setAttribute("aSize", new THREE.BufferAttribute(pkSize, 1));
-  const pkMat = glowPoints(colRGB255(T.packetColor).multiplyScalar(2.0), 2.2);
-  treeGroup.add(new THREE.Points(pkGeo, pkMat));
-
-  treeData = {
-    segA, segB, packets,
-    pkAttr: pkGeo.getAttribute("position"),
-    mats: [matMain, matTwig, nodeMat, pkMat].filter(Boolean),
-  };
+      scene.add(treeGroup);
+    },
+    undefined,
+    (err) => console.error("3D-mallin (puu) lataus epäonnistui:", err)
+  );
 }
 
-// pieni apufunktio: additiivinen hohtava pyöreä piste-materiaali
-function glowPoints(colorVec, sizeScale) {
-  return new THREE.ShaderMaterial({
+/* =====================================================================
+   NEONGRIDI-ALUSTA puun alla (staattinen proseduraalinen lattia)
+   - hehkuva ruudukko (grid) + kirkas rengas puun tyven ympärillä
+   - häipyy horisonttiin (uFadeRadius), feidaa sisään revealP:n mukaan (kuten muu UI)
+   ===================================================================== */
+const GRID_VERT = /* glsl */ `
+  varying vec2 vXZ;
+  uniform float uWellDepth;
+  uniform float uWellRadius;
+  void main(){
+    vXZ = position.xy; // ennen rotaatiota plane on XY-tasossa → tämä vastaa maailman XZ:tä pyörityksen jälkeen
+
+    // Painovoimakuoppa (kuten planeetta kangaslattialla): paikallinen Z vastaa maailman Y:tä
+    // (ylös/alas) sen jälkeen kun mesh on kierretty -90° X-akselin ympäri. Painamalla Z:aa
+    // negatiiviseksi keskustan lähellä ruudukko "uppoaa" puun tyven kohdalla ja tasoittuu reunoilla.
+    float d = length(vXZ);
+    float dip = uWellDepth / (1.0 + (d * d) / (uWellRadius * uWellRadius));
+    vec3 pos = position;
+    pos.z -= dip;
+
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+  }
+`;
+const GRID_FRAG = /* glsl */ `
+  precision highp float;
+  #define MAX_SNAKES 100
+  varying vec2 vXZ;
+  uniform vec3  uColor;
+  uniform vec3  uRingColor;
+  uniform float uCellSize;
+  uniform float uLineWidth;
+  uniform float uGlow;
+  uniform float uRingRadius;
+  uniform float uRingWidth;
+  uniform float uRing2Radius;
+  uniform float uRing2Width;
+  uniform float uFadeRadius;
+  uniform float uGradientRadius;
+  uniform float uPulseSpeed;
+  uniform float uPulseAmount;
+  uniform float uTime;
+  uniform float uOpacity;
+  uniform float uEffectsOn; // 0/1 — prefers-reduced-motion sammuttaa virtauksen + renkaiden hengityksen (staattinen grid)
+  uniform sampler2D uSnakeTexV;   // bakattu pystyreunojen (vakio X) hehku: rgb = väri*ikä, a = ikä
+  uniform sampler2D uSnakeTexH;   // bakattu vaakareunojen (vakio Z) hehku
+  uniform float uSnakeTexN;       // tekstuurin resoluutio (NxN)
+  uniform float uSnakeTexHalf;    // origon offset tekstuurikoordinaateissa
+  uniform vec2  uHeadA[MAX_SNAKES];     // käärmeen viimeisin KIINTEÄ piste ennen liikkuvaa päätä
+  uniform vec2  uHeadB[MAX_SNAKES];     // käärmeen nykyinen (sub-cell-tarkka) pää
+  uniform vec3  uHeadColor[MAX_SNAKES]; // käärmeen väri (pääsegmentille, aina täysi kirkkaus)
+  uniform float uSnakeTotal;      // kuinka monta käärmettä on käytössä (<= MAX_SNAKES)
+  uniform float uSnakeThickness;  // hehkun puoliskoleveys (world-yksikköä) — jaettu kaikille
+
+  // Robusti derivaatta-pohjainen ruudukkoviiva (ei "räjähdä" loivissa kulmissa/horisontissa,
+  // koska fwidth() skaalaa viivan leveyden aina näytön yhden pikselin mukaiseksi).
+  float gridLine(vec2 p, float cell, float lineW){
+    vec2 coord = p / cell;
+    vec2 g = abs(fract(coord - 0.5) - 0.5) / (fwidth(coord) * max(lineW, 0.6));
+    return 1.0 - clamp(min(g.x, g.y), 0.0, 1.0);
+  }
+
+  void main(){
+    float dist = length(vXZ);
+    // Ulkoreunan häivytys OKTAGONIN (8-kulmion) muotoisena piirin sijaan: sekoitetaan L∞-normi
+    // (neliö, akselien suuntaiset sivut) ja L1-normi/sqrt(2) (timantti, viistot kulmat) — niiden
+    // maksimi tuottaa säännöllisen 8-kulmion tasa-arvokäyrät. Renkaat/väriliuku puun ympärillä
+    // pysyvät pyöreinä (dist), vain koko gridin näkyvyysreuna on oktagoninen.
+    vec2 aXZ = abs(vXZ);
+    float distOct = max(aXZ.x, aXZ.y);
+    distOct = max(distOct, (aXZ.x + aXZ.y) * 0.7071067812);
+    float fade = 1.0 - smoothstep(uFadeRadius * 0.35, uFadeRadius, distOct);
+
+    // Väriliuku: rengasväri (pinkki) lähellä keskustä/kuoppaa → perusväri (syaani) kauempana
+    // (referenssikuvan liukuvärinen lattia).
+    float grad = smoothstep(0.0, uGradientRadius, dist);
+    vec3 gridColor = mix(uRingColor, uColor, grad);
+
+    float grid = gridLine(vXZ, uCellSize, uLineWidth);
+
+    // Sykkivä (hengittävä) hehku renkaille (jäätyy tasaiseksi, jos prefers-reduced-motion).
+    float pulse = 1.0 + uPulseAmount * sin(uTime * uPulseSpeed) * uEffectsOn;
+
+    // HUOM: puun tyven ympärillä olevat hehkurenkaat (ring1/ring2) on POISTETTU käytöstä
+    // (käyttäjän pyynnöstä) — muuttujat lasketaan edelleen (uniformit pysyvät ennallaan
+    // buildGroundGrid():ssä), mutta niitä ei enää lisätä lopulliseen väriin/alphaan alla.
+    float ring1 = 1.0 - smoothstep(0.0, uRingWidth, abs(dist - uRingRadius));
+    float ring2 = 1.0 - smoothstep(0.0, uRing2Width, abs(dist - uRing2Radius));
+    float ring = 0.0; // max(ring1, ring2 * 0.8) * pulse; — pois käytöstä
+
+    // VALOEFEKTI (KEVYT): kiinteä (jo kuljettu) häntä on BAKATTU CPU:lla pieneen tekstuuriin —
+    // TÄSSÄ vain 2 texture2D-hakua, O(1) kustannus RIIPPUMATTA käärmeiden määrästä. Vain
+    // käärmeiden NYKYISET liikkuvat pääsegmentit lasketaan vielä suoraan (halpaa: yksi segmentti
+    // per käärme, O(snakeCount) ei O(snakeCount * tailLength)).
+    vec2 coord = vXZ / uCellSize;
+    float colIdx = floor(coord.x + 0.5);
+    float rowIdx = floor(coord.y + 0.5);
+    vec2 vUV = (vec2(colIdx, floor(coord.y)) + uSnakeTexHalf + 0.5) / uSnakeTexN;
+    vec2 hUV = (vec2(floor(coord.x), rowIdx) + uSnakeTexHalf + 0.5) / uSnakeTexN;
+    vec4 vSample = texture2D(uSnakeTexV, vUV);
+    vec4 hSample = texture2D(uSnakeTexH, hUV);
+    float distV = abs(vXZ.x - colIdx * uCellSize);
+    float distH = abs(vXZ.y - rowIdx * uCellSize);
+    float maskV = 1.0 - smoothstep(0.0, uSnakeThickness, distV);
+    float maskH = 1.0 - smoothstep(0.0, uSnakeThickness, distH);
+    vec3 flowGlow = vSample.rgb * maskV + hSample.rgb * maskH;
+    float flowMask = vSample.a * maskV + hSample.a * maskH;
+
+    int total = int(uSnakeTotal);
+    for (int s = 0; s < MAX_SNAKES; s++) {
+      if (s >= total) break;
+      vec2 a = uHeadA[s];
+      vec2 b = uHeadB[s];
+      vec2 pa = vXZ - a, ba = b - a;
+      float h = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-6), 0.0, 1.0);
+      float d = length(pa - ba * h);
+      float m = 1.0 - smoothstep(0.0, uSnakeThickness, d);
+      flowGlow += uHeadColor[s] * m;
+      flowMask += m;
+    }
+    flowGlow *= uEffectsOn;
+    flowMask *= uEffectsOn;
+
+    // Yhdistelmä: perusviiva + kaikkien käärmeiden hehku (additiivinen lisävalo) + hengittävä rengas.
+    vec3 col = gridColor * grid * uGlow * fade + flowGlow * fade * 1.8 + uRingColor * ring * 1.2;
+    float alpha = clamp(grid * fade * 0.85 + flowMask * fade + ring, 0.0, 1.0) * uOpacity;
+    if (alpha < 0.004) discard;
+    gl_FragColor = vec4(col, alpha);
+  }
+`;
+
+function buildGroundGrid() {
+  const G = CONFIG.grid;
+  if (!G.enabled) return;
+  // Riittävästi segmenttejä, jotta painovoimakuoppa (uWellDepth/uWellRadius) taipuu pehmeästi
+  // eikä jää kulmikkaaksi (litteä 1x1-taso ei voisi taipua ollenkaan).
+  const segs = Math.max(64, Math.round(G.size / 0.6));
+  const geo = new THREE.PlaneGeometry(G.size, G.size, segs, segs);
+
+  // Käärmeiden bakattu hännän tekstuuri (ks. kommentit snakeUpdate():n yllä): resoluutio riittää
+  // kattamaan koko näkyvyysalueen (fadeRadius) + pieni marginaali, origon offset (HALF) hoitaa
+  // negatiiviset ruudukkokoordinaatit.
+  snakeTexN = Math.max(16, 2 * Math.ceil(G.fadeRadius / G.cellSize) + 8);
+  snakeTexHalf = Math.floor(snakeTexN / 2);
+  snakeDataV = new Uint8Array(snakeTexN * snakeTexN * 4);
+  snakeDataH = new Uint8Array(snakeTexN * snakeTexN * 4);
+  snakeTexV = new THREE.DataTexture(snakeDataV, snakeTexN, snakeTexN, THREE.RGBAFormat, THREE.UnsignedByteType);
+  snakeTexH = new THREE.DataTexture(snakeDataH, snakeTexN, snakeTexN, THREE.RGBAFormat, THREE.UnsignedByteType);
+  for (const tex of [snakeTexV, snakeTexH]) {
+    tex.magFilter = THREE.NearestFilter;
+    tex.minFilter = THREE.NearestFilter;
+    tex.wrapS = THREE.ClampToEdgeWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
+    tex.needsUpdate = true;
+  }
+
+  gridMat = new THREE.ShaderMaterial({
     transparent: true,
     depthWrite: false,
+    side: THREE.DoubleSide,
     blending: THREE.AdditiveBlending,
-    uniforms: { uColor: { value: colorVec }, uSize: { value: sizeScale }, uOpacity: { value: 0 } },
-    vertexShader: /* glsl */ `
-      attribute float aSize;
-      uniform float uSize;
-      varying float vA;
-      void main(){
-        vec4 mv = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = aSize * uSize * (150.0 / -mv.z);
-        gl_Position = projectionMatrix * mv;
-        vA = aSize;
-      }
-    `,
-    fragmentShader: /* glsl */ `
-      uniform vec3 uColor; uniform float uOpacity;
-      varying float vA;
-      void main(){
-        vec2 c = gl_PointCoord - 0.5;
-        float d = length(c);
-        float a = smoothstep(0.5, 0.0, d);
-        gl_FragColor = vec4(uColor, a * uOpacity);
-      }
-    `,
+    uniforms: {
+      uColor: { value: colRGB255(G.color) },
+      uRingColor: { value: colRGB255(G.ringColor) },
+      uCellSize: { value: G.cellSize },
+      uLineWidth: { value: G.lineWidth },
+      uGlow: { value: G.glow },
+      uRingRadius: { value: G.ringRadius },
+      uRingWidth: { value: G.ringWidth },
+      uRing2Radius: { value: G.ring2Radius },
+      uRing2Width: { value: G.ring2Width },
+      uFadeRadius: { value: G.fadeRadius },
+      uGradientRadius: { value: G.gradientRadius },
+      uPulseSpeed: { value: G.pulseSpeed },
+      uPulseAmount: { value: G.pulseAmount },
+      uTime: { value: 0 },
+      uWellDepth: { value: G.wellDepth },
+      uWellRadius: { value: G.wellRadius },
+      uOpacity: { value: 0 },
+      uSnakeTexV: { value: snakeTexV },
+      uSnakeTexH: { value: snakeTexH },
+      uSnakeTexN: { value: snakeTexN },
+      uSnakeTexHalf: { value: snakeTexHalf },
+      uHeadA: { value: Array.from({ length: SNAKE_MAX_COUNT }, () => new THREE.Vector2(0, 0)) },
+      uHeadB: { value: Array.from({ length: SNAKE_MAX_COUNT }, () => new THREE.Vector2(0, 0)) },
+      uHeadColor: { value: Array.from({ length: SNAKE_MAX_COUNT }, () => new THREE.Color(0, 0, 0)) },
+      uSnakeTotal: { value: 0 },
+      uSnakeThickness: { value: G.snakeThickness },
+      uEffectsOn: { value: reduce ? 0 : 1 }, // prefers-reduced-motion → staattinen grid
+    },
+    vertexShader: GRID_VERT,
+    fragmentShader: GRID_FRAG,
   });
-}
-
-// puun päivitys joka frame: hidas pyörintä, datavirta, paljastus (revealP)
-function updateTree(time) {
-  if (!treeGroup || !treeData) return;
-  const dt = Math.min(0.05, Math.max(0, time - treeT));
-  treeT = time;
-  const T = CONFIG.tree;
-  treeGroup.rotation.y = time * T.rotSpeed;
-  // paljastus: kasva tyvestä ylös + feidaa sisään
-  const r = revealP;
-  const sxz = T.scale * (0.9 + 0.1 * r);
-  treeGroup.scale.set(sxz, T.scale * Math.max(0.0001, r), sxz);
-  for (const m of treeData.mats) {
-    if (m.uniforms && m.uniforms.uOpacity) m.uniforms.uOpacity.value = r;
-    else m.opacity = r;
-  }
-  // datapaketit liukuvat tracoja pitkin
-  const { segA, segB, packets, pkAttr } = treeData;
-  const arr = pkAttr.array;
-  for (let j = 0; j < packets.length; j++) {
-    const p = packets[j];
-    const a = segA[p.i], b = segB[p.i];
-    const len = a.distanceTo(b) || 1;
-    p.t += (p.sp * dt) / len;
-    if (p.t > 1) { p.t -= 1; p.i = Math.floor(Math.random() * segA.length); }
-    const a2 = segA[p.i], b2 = segB[p.i], tt = p.t;
-    arr[j * 3] = a2.x + (b2.x - a2.x) * tt;
-    arr[j * 3 + 1] = a2.y + (b2.y - a2.y) * tt;
-    arr[j * 3 + 2] = a2.z + (b2.z - a2.z) * tt;
-  }
-  pkAttr.needsUpdate = true;
+  gridMesh = new THREE.Mesh(geo, gridMat);
+  gridMesh.rotation.x = -Math.PI / 2;     // makaamaan XZ-tasoon
+  gridMesh.position.y = CONFIG.tree.baseY; // sama korkeus kuin puun tyvi
+  gridMesh.renderOrder = -1;
+  scene.add(gridMesh);
+  snakeInit();
 }
 
 // Kortit sylinterin kehälle — paksuja (3D-runko + tekstuuripinta)
@@ -1846,7 +2094,7 @@ function buildBubble() {
       uOutlineColor:     { value: new THREE.Color(B.outlineColor[0], B.outlineColor[1], B.outlineColor[2]) },
       uOpacity:          { value: B.opacity },
       uQuadAspect:       { value: 1.0 },
-      uBendRadius:       { value: CONFIG.radius },   // taivutus renkaan säteen mukaan
+      uBendRadius:       { value: CONFIG.radius + B.radiusOffset },   // taivutus renkaan säteen mukaan (kuplien todellinen etäisyys)
       uBend:             { value: B.bend },
       uHover:            { value: 0 },
       uHitUv:            { value: new THREE.Vector2(0.5, 0.5) },
@@ -1859,10 +2107,11 @@ function buildBubble() {
   // porrastetusti ylöspäin korttien/tekstien paikoille (sama spiraali kuin korteilla)
   // → näkyvät taustalla kun kamera etenee ylös spiraalia pitkin (DoubleSide + ei sumua)
   const A = THREE.MathUtils.degToRad(CONFIG.anglePerCard);
+  const bR = CONFIG.radius + B.radiusOffset; // kuplat hieman kauempana kuin kortit/puu
   for (let i = 0; i < CARDS.length; i++) {
     const ang = i * A;
     const m = new THREE.Mesh(geo, bubbleMat);
-    m.position.set(Math.sin(ang) * CONFIG.radius, i * CONFIG.helix + B.ringY, Math.cos(ang) * CONFIG.radius);
+    m.position.set(Math.sin(ang) * bR, i * CONFIG.helix + B.ringY + CONFIG.ringYOffset + B.yRestore, Math.cos(ang) * bR);
     m.rotation.y = ang;        // sama orientaatio kuin korteilla (osoittaa ulos), EI billboardia
     // per-mesh hover-tila (jaettu materiaali → asetetaan uniformit juuri ennen tämän piirtoa)
     m.userData.hover = 0;
@@ -1885,7 +2134,7 @@ function layoutCarousel(force) {
   for (const c of cards) {
     // kortit KIINTEÄSTI radallaan (kamera kiertää niiden ympäri, eivät kortit liiku)
     const ang = c.index * angleRad;
-    c.mesh.position.set(Math.sin(ang) * CONFIG.radius, c.index * CONFIG.helix, Math.cos(ang) * CONFIG.radius);
+    c.mesh.position.set(Math.sin(ang) * CONFIG.radius, c.index * CONFIG.helix + CONFIG.ringYOffset + CONFIG.slotYOffset, Math.cos(ang) * CONFIG.radius);
     c.mesh.rotation.y = ang;
     // fokus/läpinäkyvyys edelleen etäisyydestä katselukulmaan (tCurrent)
     const dist = Math.abs(c.index - tCurrent);
@@ -2168,7 +2417,7 @@ function enter() {
   entered = true;
   document.body.classList.add("entered");
   ringGroup.visible = true;           // kortit näkyviin (emergoituvat sumusta kameran lentäessä)
-  if (treeGroup) treeGroup.visible = true; // digitaalinen puu näkyviin (kasvaa esiin revealP:n myötä)
+  if (treeGroup) treeGroup.visible = true; // GLB-malli näkyviin (jos jo ladattu)
   if (reduce) {
     revealP = 1; camOrbitR = CONFIG.cameraZ; camera.position.z = CONFIG.cameraZ; scrollEnabled = true; layoutCarousel(true); return;
   }
@@ -2207,7 +2456,7 @@ function animate() {
     if (!diving) {
       const A = THREE.MathUtils.degToRad(CONFIG.anglePerCard);
       const v = tCurrent * A;                 // katselukulma = fokusoitu kortti
-      const h = tCurrent * CONFIG.helix;       // fokusoidun kortin korkeus
+      const h = tCurrent * CONFIG.helix + CONFIG.ringYOffset; // fokusoidun kortin korkeus (sama lasku kuin korteilla/kuplilla)
       // kameran rata lasketaan RENKAAN paikallisessa kehyksessä → sama kallistus kuin korteilla
       _camLocal.set(Math.sin(v) * camOrbitR, h + 0.4, Math.cos(v) * camOrbitR);
       _camTarget.set(0, h + 0.2, 0);
@@ -2247,9 +2496,18 @@ function animate() {
     let bHover = null;
     if (entered && !diving && !modalOpen && bubbleMeshes.length) {
       const bHits = raycaster.intersectObjects(bubbleMeshes, false);
-      if (bHits.length) {
-        bHover = bHits[0].object;
-        if (bHits[0].uv) bHover.userData.hitUv.copy(bHits[0].uv);
+      // Kuplat ovat DoubleSide (jotta renkaan TAKAPUOLEN kuplat näkyvät taustakoristeena),
+      // mutta hover-ripple on tarkoitettu vain etupuolelle — takapuolelta katsottuna UV on
+      // peilikuva, jolloin aalto tuntuisi etenevän "väärään suuntaan" hiireen nähden (outo efekti).
+      // Siksi hylätään osumat joissa säde tulee kuplan takaa (normaali osoittaa säteen suuntaan).
+      const frontHit = bHits.find((h) => {
+        if (!h.face) return true;
+        const n = h.face.normal.clone().transformDirection(h.object.matrixWorld);
+        return raycaster.ray.direction.dot(n) < 0;   // < 0 = säde osuu etupuolelle
+      });
+      if (frontHit) {
+        bHover = frontHit.object;
+        if (frontHit.uv) bHover.userData.hitUv.copy(frontHit.uv);
       }
     }
     for (const m of bubbleMeshes) {
@@ -2289,7 +2547,16 @@ function animate() {
   if (bubbleMat) bubbleMat.uniforms.uTime.value = time;
   if (!CONFIG.legacyBg && !reduce) updateFlow(time - flowPrev);  // CPU-integroitu curl-virta
   flowPrev = time;
-  updateTree(time);
+
+  // GLB-malli: hidas pyörintä + animaatiomixer (jos GLB:ssä on animaatioita)
+  if (treeGroup) treeGroup.rotation.y = time * CONFIG.tree.rotSpeed;
+  if (treeMixer) treeMixer.update(Math.min(0.05, Math.max(0, time - treeT)));
+  treeT = time;
+  if (gridMat) {
+    gridMat.uniforms.uOpacity.value = revealP; // neongridi feidaa sisään introssa
+    gridMat.uniforms.uTime.value = time;        // renkaiden sykintä
+    if (!reduce && CONFIG.grid.snakeEnabled) snakeUpdate(time); // käärme-valoefekti (pois käytöstä tähän versioon)
+  }
 
   composer.render();
 }
@@ -2306,7 +2573,6 @@ function onResize() {
   bloomPass.setSize(w, h);
   if (bgMat) bgMat.uniforms.uResolution.value.set(w, h);
   if (postPass) postPass.uniforms.uAspect.value = w / h;
-  if (treeData) for (const m of treeData.mats) { if (m.resolution) m.resolution.set(w, h); }
 }
 
 /* =====================================================================
@@ -2338,8 +2604,8 @@ async function boot() {
       enter,
       reveal(v) { revealP = clamp(v, 0, 1); },
       setCam(z) { camera.position.z = z; },
-      frame() { layoutCarousel(true); updateTree(clock.getElapsedTime()); composer.render(); },
-      goto(i) { tCurrent = tTarget = clamp(i, 0, CARDS.length - 1); layoutCarousel(true); updateTree(clock.getElapsedTime()); composer.render(); },
+      frame() { layoutCarousel(true); composer.render(); },
+      goto(i) { tCurrent = tTarget = clamp(i, 0, CARDS.length - 1); layoutCarousel(true); composer.render(); },
       tree(v) { if (treeGroup) treeGroup.visible = v !== false; },
       ring(v) { if (ringGroup) ringGroup.visible = v !== false; composer.render(); },
       inspect() {

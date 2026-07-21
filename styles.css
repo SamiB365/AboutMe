@@ -127,8 +127,7 @@ body.modal-open { overflow: hidden; }
   z-index: 40;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
+  gap: clamp(20px, 3vw, 48px);
   padding: 15px clamp(8px, 1.5vw, 20px);
   /* palkki itse ei nappaa klikkejä → canvas-scroll toimii tyhjän kohdalta */
   pointer-events: none;
@@ -144,21 +143,14 @@ body.page-home .topbar {
   -webkit-backdrop-filter: blur(10px);
 }
 
-/* topbar-nav täyttää koko palkin leveyden: nav-center keskitetään, nav-right ankkuroidaan oikeaan reunaan */
+/* topbar-nav täyttää jäljellä olevan tilan brandin ja nav-rightin välissä ja keskittää
+   nav-linkit + erotinviivan + some-ikonit siihen tilaan (oma, brandista irrallinen ryhmä) */
 .topbar-nav {
-  position: relative;
   display: flex;
   align-items: center;
-  width: 100%;
-}
-/* Keskitetty ryhmä: nav-linkit + erotinviiva + some-ikonit */
-.nav-center {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  align-items: center;
+  justify-content: center;
+  flex: 1 1 auto;
+  min-width: 0;
   gap: clamp(10px, 1.2vw, 20px);
 }
 .nav-links {
@@ -174,12 +166,12 @@ body.page-home .topbar {
   font-size: 1rem;
   line-height: 1;
 }
-/* Oikean reunan ryhmä (Pelaa demoa + kielivalitsin) */
+/* Oikean reunan ryhmä (Pelaa demoa + kielivalitsin): kiinteä leveys, sama reunaetäisyys kuin brandilla vasemmalla */
 .nav-right {
   display: flex;
   align-items: center;
   gap: clamp(7px, 1vw, 15px);
-  margin-left: auto;
+  flex: 0 0 auto;
 }
 .nav-links a {
   pointer-events: auto;
@@ -298,14 +290,13 @@ body.page-home .topbar {
 }
 
 /* ====== BRÄNDI (logo palkin vasemmassa reunassa) ====== */
-/* position: absolute → logo ei enää venytä .topbar-laatikon korkeutta.
-   Logo on kooltaan istutettu palkin sisään (pystysuunnassa keskitetty). */
+.brand-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
 .brand {
-  position: absolute;
-  left: clamp(4px, 0.6vw, 10px);
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 30;
   display: block;
   width: clamp(36px, 5.5vw, 52px);   /* logon koko palkissa: mahtuu palkin sisään */
   pointer-events: auto;
@@ -314,11 +305,6 @@ body.page-home .topbar {
 
 /* "Duobotit" nimi logon oikealla puolella: sama tyyli kuin logo-nauhan teksti, ilman keinunta-animaatiota */
 .brand-name {
-  position: absolute;
-  left: calc(clamp(4px, 0.6vw, 10px) + clamp(36px, 5.5vw, 52px) + 8px);
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 30;
   font-family: "Fredoka", sans-serif;
   font-weight: 700;
   font-size: clamp(15px, 1.8vw, 20px);
@@ -542,5 +528,240 @@ body.page-home:not(.entered) { overflow: hidden; }
   background:
     linear-gradient(180deg, rgba(5,6,12,0.3), rgba(5,6,12,0.72)),
     url("assets/hero/rausku-hero.png") center / cover no-repeat;
+}
+
+/* Hero-tekstipino: keskitetty vaakasuunnassa, ylhäällä taivaan/vuorten rauhallisella
+   alueella (n. 18-22% korkeudelta) — EI pystykeskellä, jotta teksti ei kilpaile
+   taustakuvan oikean alakulman liekin kanssa. Napit lisätään myöhemmin subtitlen alle
+   (flex-column jättää niille luontevasti tilaa). */
+.hero-content {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+  max-width: 900px;
+  padding: 0 20px;
+}
+.hero-title {
+  margin: 0;
+  font-family: "Fredoka", sans-serif;
+  font-weight: 700;
+  font-size: clamp(56px, 8vw, 96px);
+  line-height: 1.05;
+  letter-spacing: 0.01em;
+  color: #fff;
+  white-space: nowrap;   /* estää "DuBaRa":n katkeamisen kahdelle riville kapealla ruudulla */
+  text-shadow: 0 4px 26px rgba(0,0,0,0.5), 0 1px 4px rgba(0,0,0,0.35);
+}
+.hero-subtitle {
+  margin: 14px 0 0;
+  font-family: "Nunito", sans-serif;
+  font-weight: 400;
+  font-size: clamp(16px, 2vw, 20px);
+  letter-spacing: 0.02em;
+  color: rgba(255,255,255,0.85);
+  text-shadow: 0 2px 14px rgba(0,0,0,0.4);
+}
+
+/* ---- hahmot (tumma violetti hehkutausta + 5 tyhjää korttipaikkaa aaltomuodossa;
+   kuvat/liike lisätään näihin kortteihin myöhemmin, nyt vain paikka + ulkoasu) ---- */
+.characters {
+  position: relative;
+  z-index: 1;
+  scroll-margin-top: 90px; /* nav-ankkuri: ei jää kiinteän topbarin alle */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: clamp(64px, 10vh, 120px) 20px clamp(48px, 8vh, 96px);
+  background:
+    radial-gradient(70% 65% at 50% 25%, rgba(107, 63, 160, 0.55), transparent 72%),
+    radial-gradient(85% 60% at 50% 100%, rgba(255, 122, 176, 0.12), transparent 70%),
+    linear-gradient(180deg, #1c1230 0%, var(--bg-0) 75%);
+  overflow: hidden;
+}
+.characters-title {
+  flex: 0 0 auto;
+  margin: 0 0 clamp(16px, 3vw, 32px);
+  text-align: center;
+  font-family: "Fredoka", sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  color: var(--cream);
+}
+/* Infokenttä: täyttää tilan otsikon ja korttien välissä, kortit pysyvät
+   sivun/section-alueen alareunassa vaikka infoteksti vaihtuu pituudeltaan */
+.character-info {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 12px 16px;
+}
+.character-info-name {
+  margin: 0 0 8px;
+  font-family: "Fredoka", sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.1rem, 2vw, 1.4rem);
+  color: var(--cream);
+}
+.character-info-desc {
+  margin: 0;
+  color: var(--muted);
+  font-size: clamp(0.9rem, 1.4vw, 1.05rem);
+  line-height: 1.5;
+}
+.characters-row {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: var(--char-card-gap);
+  /* kiinteä leveys = tasan 5 näkyvää korttia + välit; kaikki tämän ulkopuolelle
+     asettuvat kortit (haamut, data-slot -3/3) rajautuvat pois näkyvistä juuri
+     nuolten kohdalta eivätkä siis mene niitä pidemmälle */
+  width: calc(5 * var(--char-card-w) + 4 * var(--char-card-gap));
+  max-width: 100%;
+  /* puskuri ylös/alas, ettei aaltomuodon pystysiirtymä (--wave-y) leikkaudu
+     overflow: hidden -rajauksessa */
+  padding: clamp(50px, 6vw, 64px) 0 clamp(36px, 5vw, 44px);
+  overflow: hidden;
+}
+.characters-carousel {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(10px, 2vw, 28px);
+  margin: 0 auto;
+  /* korttien ja rivin yhteiset mitat: yksi totuuden lähde .char-card-leveydelle
+     ja väleille, jotta .characters-row voi laskea tarkan näkyvyysalueen levey */
+  --char-card-w: clamp(120px, 13.5vw, 200px);
+  --char-card-gap: clamp(12px, 2vw, 28px);
+  /* nosto n. kortin korkeuden verran ylemmäs sivun alareunasta */
+  margin-bottom: clamp(144px, 16.2vw, 240px);
+}
+.carousel-arrow {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid rgba(244, 234, 215, 0.25);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--cream);
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease, transform 150ms ease;
+}
+.carousel-arrow svg {
+  width: 20px;
+  height: 20px;
+}
+.carousel-arrow:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(244, 234, 215, 0.5);
+}
+.carousel-arrow:active {
+  transform: scale(0.92);
+}
+.carousel-arrow:focus-visible {
+  outline: 2px solid var(--marigold);
+  outline-offset: 3px;
+}
+.char-card {
+  flex: 0 0 auto;
+  position: relative;
+  width: var(--char-card-w);
+  aspect-ratio: 5 / 6; /* referenssikuvan mukaan hieman neliömäisempi (oli 4/5) */
+  border-radius: 20px;
+  /* tasapaksu 2px reuna, jonka väri vain vaihtuu ympäri korttia (border-box/
+     padding-box background-clip -tekniikka; EI mask-composite, joka aiheutti
+     pikselöityneen/rosoisen reunan pyöristetyissä kulmissa) */
+  border: 2px solid transparent;
+  background-origin: padding-box, padding-box, padding-box, border-box;
+  background-clip: padding-box, padding-box, padding-box, border-box;
+  /* väritys + himmeä tasainen viistovalo, joka kulkee samaa 135deg-akselia
+     kuin reunan väri (OIKEA ALAKULMA -> VASEN YLÄKULMA), ei keskeltä
+     pullistuva "blobi"; lisäksi pehmeä "valospotti" kortin yläosassa
+     (referenssikuvan hahmon takana näkyvä hehku, ilman itse hahmoa) */
+  background-image:
+    radial-gradient(58% 42% at 50% 38%, rgba(178, 150, 230, 0.28), transparent 72%),
+    linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.07) 100%),
+    linear-gradient(160deg, #2a2440 0%, #16121f 100%),
+    linear-gradient(135deg, rgba(206, 199, 224, 0.55) 0%, rgba(255, 255, 255, 1) 100%);
+  box-shadow: 0 24px 48px rgba(0,0,0,0.45);
+  cursor: pointer;
+  /* --wave-y ja järjestys tulevat data-slot-attribuutista (ks. säännöt alla).
+     JS asettaa data-slot:n karusellin pyöriessä/klikatessa ja käyttää
+     FLIP-tekniikkaa (vanha sijainti -> uusi), joten transform-transition
+     tässä on se, mikä tekee liikkeestä sulavan/lerp-tyylisen (kesto puolitettu
+     hitaammaksi/pehmeämmäksi käyttäjän pyynnöstä). */
+  --wave-y: 0px;
+  transform: translateY(var(--wave-y));
+  /* HUOM: JS:n FLIP-animaatio (hahmot.html) asettaa tämän suoraan (korvaa koko
+     transformin) siirtymän ajaksi - se laskee --wave-y:n pystysiirtymän MUKAAN
+     dx/dy-arvoihinsa (lukemalla senhetkisen translateY-komponentin ennen
+     korvaamista), jotta aaltomuodon korkeusero ei katoa/litisty kesken
+     siirtymän. EI käytetä custom property -pohjaista yhdistämistä
+     transform-arvon sisällä (translate(var(--a),var(--b)) translateY(var(--c)))
+     - todettu epäluotettavaksi: selain ei aina invalidoi/animoi transformia
+     luotettavasti kun vain sen sisällä oleva custom property muuttuu
+     attribuuttiselektorin kautta (havaittu Playwright-testeissä: transitio
+     ei animoinut ollenkaan, hyppäsi suoraan lopputilaan). */
+  transition: transform 900ms cubic-bezier(0.22, 0.61, 0.36, 1), filter 150ms ease, box-shadow 150ms ease;
+  /* HUOM: kortin klikkaus liikuttaa karusellia VAIN kun klikattu kortti on keskikortin
+     välittömästi vieressä (yksi slotti) - siis aina täsmälleen yhden slotin siirtymä,
+     sama kesto/käyrä kuin nuolinäppäimellä, ei erillistä ylikirjoitusta. Kauempana
+     olevien (uloimpien) korttien klikkaus ei tee mitään (ks. hahmot.html selectCard). */
+}
+.char-card--ghost {
+  pointer-events: none;
+}
+.char-card:focus-visible {
+  outline: 2px solid var(--marigold);
+  outline-offset: 4px;
+}
+/* aaltomuoto + järjestys data-slot-arvon mukaan: keskikortti (0) ylimpänä,
+   viereinen pari (±1) hieman alempana, uloin pari (±2) vielä alempana.
+   Slotit -3/3 ovat haamukorttien pysyvä piilopaikka rivin näkyvyysalueen
+   ulkopuolella (ks. .characters-row overflow: hidden). Slotit -4/4 ovat
+   VÄLIAIKAINEN piilopaikka sille oikealle kortille joka on juuri kiertymässä
+   pois näkyvistä (ei sama slotti kuin pysyvä haamu, jotta ne eivät koskaan
+   ole samassa order-arvossa yhtä aikaa – kaksi samaa order-arvoa saavaa
+   elementtiä asettuisivat vierekkäin, ei päällekkäin). JS päivittää
+   data-slot:n kun karuselli pyörii tai korttia klikataan. */
+.char-card[data-slot="-4"] { --wave-y: clamp(18px, 3vw, 34px); z-index: 0; order: 0; }
+.char-card[data-slot="-3"] { --wave-y: clamp(18px, 3vw, 34px); z-index: 0; order: 1; }
+.char-card[data-slot="-2"] { --wave-y: clamp(18px, 3vw, 34px); z-index: 1; order: 2; }
+.char-card[data-slot="-1"] { --wave-y: 0px; z-index: 2; order: 3; }
+.char-card[data-slot="0"]  { --wave-y: clamp(-46px, -6vw, -26px); z-index: 3; order: 4; }
+.char-card[data-slot="1"]  { --wave-y: 0px; z-index: 2; order: 5; }
+.char-card[data-slot="2"]  { --wave-y: clamp(18px, 3vw, 34px); z-index: 1; order: 6; }
+.char-card[data-slot="3"]  { --wave-y: clamp(18px, 3vw, 34px); z-index: 0; order: 7; }
+.char-card[data-slot="4"]  { --wave-y: clamp(18px, 3vw, 34px); z-index: 0; order: 8; }
+
+@media (max-width: 640px) {
+  .characters-carousel {
+    --char-card-w: 84px;
+    --char-card-gap: 10px;
+  }
+  .char-card[data-slot="0"] { --wave-y: -20px; }
+  .char-card[data-slot="-2"],
+  .char-card[data-slot="2"],
+  .char-card[data-slot="-3"],
+  .char-card[data-slot="3"],
+  .char-card[data-slot="-4"],
+  .char-card[data-slot="4"] { --wave-y: 14px; }
 }
 

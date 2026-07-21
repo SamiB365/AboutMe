@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Caveat:wght@700&family=Space+Mono:wght@400;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=17" />
+    <link rel="stylesheet" href="styles.css?v=25" />
     <!-- EI Three.js / WebGL -importmappia tällä sivulla — kevyt 2D-etusivu. -->
   </head>
 
@@ -22,52 +22,57 @@
 
     <!-- ====== YLÄPALKKI (identtinen sarjakuva.html:n kanssa) ====== -->
     <header class="topbar" id="topbar">
-      <a class="brand" href="index.html" aria-label="Duobotit – etusivu">
-        <img class="brand-img" src="assets/duobotit/duobotit-logo.png" alt="Duobotit" />
-      </a>
-
-      <a class="brand-name" href="index.html" aria-hidden="true" tabindex="-1">Duobotit</a>
+      <div class="brand-group">
+        <a class="brand" href="index.html" aria-label="Duobotit – etusivu">
+          <img class="brand-img" src="assets/duobotit/duobotit-logo.png" alt="Duobotit" />
+        </a>
+        <a class="brand-name" href="index.html" aria-hidden="true" tabindex="-1">Duobotit</a>
+      </div>
 
       <nav class="topbar-nav" aria-label="Päävalikko">
-        <div class="nav-center">
-          <ul class="nav-links">
-            <li><a href="#kartta" data-i18n="nav.kartta">Kartta</a></li>
-            <li><a href="#hahmot" data-i18n="nav.hahmot">Hahmot</a></li>
-            <li><a href="sarjakuva.html" data-i18n="nav.sarjakuva">Sarjakuva</a></li>
-            <li><a href="#tietoa" data-i18n="nav.tietoa">Tietoa</a></li>
-          </ul>
+        <ul class="nav-links">
+          <li><a href="#kartta" data-i18n="nav.kartta">Kartta</a></li>
+          <li><a href="hahmot.html" data-i18n="nav.hahmot">Hahmot</a></li>
+          <li><a href="sarjakuva.html" data-i18n="nav.sarjakuva">Sarjakuva</a></li>
+          <li><a href="#tietoa" data-i18n="nav.tietoa">Tietoa</a></li>
+        </ul>
 
-          <span class="nav-sep" aria-hidden="true">|</span>
+        <span class="nav-sep" aria-hidden="true">|</span>
 
-          <div class="nav-social" aria-label="Sosiaalinen media">
-            <a class="social-btn" href="#" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
-                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.207 11.387.6.113.82-.26.82-.577 0-.285-.01-1.04-.016-2.04-3.338.725-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.756-1.333-1.756-1.09-.744.083-.729.083-.729 1.205.085 1.84 1.238 1.84 1.238 1.07 1.834 2.807 1.304 3.492.997.108-.775.42-1.305.762-1.605-2.665-.303-5.466-1.333-5.466-5.93 0-1.31.468-2.382 1.235-3.222-.124-.303-.535-1.523.117-3.176 0 0 1.008-.322 3.303 1.23A11.5 11.5 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.293-1.552 3.3-1.23 3.3-1.23.653 1.653.242 2.873.118 3.176.77.84 1.233 1.912 1.233 3.222 0 4.61-2.807 5.624-5.48 5.92.43.372.814 1.103.814 2.223 0 1.605-.014 2.898-.014 3.293 0 .32.216.694.825.576C20.565 21.795 24 17.297 24 12c0-6.63-5.373-12-12-12Z"/>
-              </svg>
-            </a>
-            <a class="social-btn" href="#" target="_blank" rel="noopener noreferrer" aria-label="Discord">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
-                <path d="M20.317 4.369A19.79 19.79 0 0 0 15.885 3c-.211.375-.457.88-.63 1.282a18.27 18.27 0 0 0-5.51 0A12.6 12.6 0 0 0 9.115 3 19.74 19.74 0 0 0 4.68 4.372C1.234 9.42.31 14.35.77 19.213A19.9 19.9 0 0 0 6.822 22c.487-.657.921-1.354 1.293-2.087a12.9 12.9 0 0 1-2.036-.967c.171-.123.338-.252.5-.384 3.927 1.788 8.18 1.788 12.061 0 .163.132.33.261.5.384-.646.385-1.331.71-2.04.968.373.732.806 1.43 1.293 2.086a19.85 19.85 0 0 0 6.055-2.787c.541-5.638-.92-10.523-3.93-14.844ZM9.68 16.257c-1.18 0-2.148-1.078-2.148-2.403 0-1.325.947-2.404 2.148-2.404 1.21 0 2.169 1.088 2.148 2.404 0 1.325-.947 2.403-2.148 2.403Zm6.65 0c-1.18 0-2.148-1.078-2.148-2.403 0-1.325.947-2.404 2.148-2.404 1.21 0 2.168 1.088 2.148 2.404 0 1.325-.938 2.403-2.148 2.403Z"/>
-              </svg>
-            </a>
-          </div>
-        </div>
-
-        <div class="nav-right">
-          <a class="nav-demo" href="#demo" data-i18n="nav.demo">Pelaa demoa</a>
-
-          <div class="lang-switch" role="group" aria-label="Kieli / Language">
-            <button type="button" class="lang-btn is-active" data-lang="fi" aria-pressed="true">FI</button>
-            <span class="lang-sep" aria-hidden="true">/</span>
-            <button type="button" class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
-          </div>
+        <div class="nav-social" aria-label="Sosiaalinen media">
+          <a class="social-btn" href="#" onclick="return false;" aria-label="GitHub">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.207 11.387.6.113.82-.26.82-.577 0-.285-.01-1.04-.016-2.04-3.338.725-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.756-1.333-1.756-1.09-.744.083-.729.083-.729 1.205.085 1.84 1.238 1.84 1.238 1.07 1.834 2.807 1.304 3.492.997.108-.775.42-1.305.762-1.605-2.665-.303-5.466-1.333-5.466-5.93 0-1.31.468-2.382 1.235-3.222-.124-.303-.535-1.523.117-3.176 0 0 1.008-.322 3.303 1.23A11.5 11.5 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.293-1.552 3.3-1.23 3.3-1.23.653 1.653.242 2.873.118 3.176.77.84 1.233 1.912 1.233 3.222 0 4.61-2.807 5.624-5.48 5.92.43.372.814 1.103.814 2.223 0 1.605-.014 2.898-.014 3.293 0 .32.216.694.825.576C20.565 21.795 24 17.297 24 12c0-6.63-5.373-12-12-12Z"/>
+            </svg>
+          </a>
+          <a class="social-btn" href="#" onclick="return false;" aria-label="Discord">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+              <path d="M20.317 4.369A19.79 19.79 0 0 0 15.885 3c-.211.375-.457.88-.63 1.282a18.27 18.27 0 0 0-5.51 0A12.6 12.6 0 0 0 9.115 3 19.74 19.74 0 0 0 4.68 4.372C1.234 9.42.31 14.35.77 19.213A19.9 19.9 0 0 0 6.822 22c.487-.657.921-1.354 1.293-2.087a12.9 12.9 0 0 1-2.036-.967c.171-.123.338-.252.5-.384 3.927 1.788 8.18 1.788 12.061 0 .163.132.33.261.5.384-.646.385-1.331.71-2.04.968.373.732.806 1.43 1.293 2.086a19.85 19.85 0 0 0 6.055-2.787c.541-5.638-.92-10.523-3.93-14.844ZM9.68 16.257c-1.18 0-2.148-1.078-2.148-2.403 0-1.325.947-2.404 2.148-2.404 1.21 0 2.169 1.088 2.148 2.404 0 1.325-.947 2.403-2.148 2.403Zm6.65 0c-1.18 0-2.148-1.078-2.148-2.403 0-1.325.947-2.404 2.148-2.404 1.21 0 2.168 1.088 2.148 2.404 0 1.325-.938 2.403-2.148 2.403Z"/>
+            </svg>
+          </a>
         </div>
       </nav>
+
+      <div class="nav-right">
+        <a class="nav-demo" href="#demo" data-i18n="nav.demo">Pelaa demoa</a>
+
+        <div class="lang-switch" role="group" aria-label="Kieli / Language">
+          <button type="button" class="lang-btn is-active" data-lang="fi" aria-pressed="true">FI</button>
+          <span class="lang-sep" aria-hidden="true">/</span>
+          <button type="button" class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+        </div>
+      </div>
     </header>
 
     <main>
-      <!-- ====== HERO (vain taustakuva; teksti/sisältö poistettu toistaiseksi) ====== -->
-      <section class="hero" aria-label="Esittely"></section>
+      <!-- ====== HERO (taustakuva + keskitetty otsikkoteksti) ====== -->
+      <section class="hero" aria-label="Esittely">
+        <div class="hero-content">
+          <h1 class="hero-title">DuBaRa</h1>
+          <p class="hero-subtitle" data-i18n="hero.subtitle">Lue sarjakuvaa, tutki maailmaa, pelaa peliä.</p>
+          <!-- Napit (Lue sarjakuvaa / Tutki karttaa) lisätään tähän myöhemmin -->
+        </div>
+      </section>
     </main>
 
     <!-- ====== KIELIVAIHTO (FI/EN) ====== -->
@@ -83,6 +88,7 @@
             "nav.sarjakuva": "Sarjakuva",
             "nav.tietoa": "Tietoa",
             "nav.demo": "Pelaa demoa",
+            "hero.subtitle": "Lue sarjakuvaa, tutki maailmaa, pelaa peliä.",
           },
           en: {
             "nav.kartta": "Map",
@@ -90,6 +96,7 @@
             "nav.sarjakuva": "Comic",
             "nav.tietoa": "About",
             "nav.demo": "Play demo",
+            "hero.subtitle": "Read the comic, explore the world, play the game.",
           },
         };
 
@@ -162,6 +169,27 @@
       } else {
         introPlayer.start();
       }
+
+      // Logon klikkaus toistaa aloitusanimaation UUDESTAAN, vaikka ollaan jo etusivulla.
+      // HUOM: pelkkä <a href="index.html">-linkki EI luotettavasti lataa sivua uudelleen kun
+      // nykyinen URL eroaa vain ankkurista (esim. "index.html#tietoa" -> "index.html") -
+      // selain käsittelee tätä pelkkänä "hyppää ankkuriin" -siirtymänä ilman uudelleenlatausta,
+      // jolloin animaatio ei toistuisi. Siksi klikkaus estetään (preventDefault) ja
+      // aloitusanimaatio käynnistetään suoraan JS:llä sen sijaan että luotettaisiin navigointiin.
+      document.querySelectorAll("a.brand, a.brand-name").forEach((link) => {
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          revealed = false;
+          document.body.classList.remove("entered");
+          introEl.removeAttribute("hidden");
+          if (reduce) {
+            introPlayer.static();
+            revealHome();
+          } else {
+            introPlayer.start();
+          }
+        });
+      });
     </script>
   </body>
 </html>

@@ -2639,6 +2639,9 @@ async function boot() {
     };
 
     window.__APP_READY = true;
+    // Ilmoittaa sivunlataus-overlaylle (index.html/sarjakuva.html-tyyppinen #pageLoader-skripti)
+    // että 3D-scene on valmis piirtämään, jotta overlay ei feidaa pois liian aikaisin.
+    window.dispatchEvent(new Event("duo:ready"));
   } catch (err) {
     window.__APP_ERROR = String(err && err.stack || err);
     console.error(err);
@@ -2646,6 +2649,9 @@ async function boot() {
     msg.style.cssText = "position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;color:#ff9;background:#05060c;font-family:sans-serif;";
     msg.innerHTML = "Virhe ladattaessa 3D-näkymää.<br>" + escapeHtml(String(err));
     document.body.appendChild(msg);
+    // Sama tapahtuma virheestä, ettei sivunlataus-overlay jää ikuisesti näkyviin virhetilanteessa
+    // (turvaverkko FORCE_MS hoitaisi tämän joka tapauksessa 10s viiveellä, tämä on nopeampi reitti).
+    window.dispatchEvent(new Event("duo:error"));
   }
 }
 boot();

@@ -78,6 +78,151 @@ body.modal-open { overflow: hidden; }
   color: var(--muted);
 }
 
+/* ====== SIVUNLATAUS-OVERLAY (teksti-loader, pohjana Uiverse.io / andrew-manzyk) ======
+   Näkyy heti sivun avautuessa (ensimmäinen elementti bodyssa) ja feidaa pois kun sivu
+   (ja WebGL-sivuilla myös 3D-sisältö) on oikeasti valmis. Ks. index.html/sarjakuva.html/
+   hahmot.html loppuosan inline-skripti ohjauslogiikalle. */
+.page-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0d0a1a;
+  opacity: 1;
+  transition: opacity 0.5s ease;
+}
+.page-loader.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.text-loader {
+  --main-size: 6em;
+  --text-color: #ffffff;
+  --shine-color: #ffffff40;
+  --shadow-color: #aaaaaa;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  user-select: none;
+  position: relative;
+  font-size: var(--main-size);
+  font-weight: 900;
+  text-transform: uppercase;
+  color: var(--text-color);
+  width: 7.3em;
+  height: 1em;
+  filter: drop-shadow(0 0 0.05em var(--shine-color));
+}
+
+/* Alkuperäinen Uiverse-loader (andrew-manzyk): jokainen .text sisältää KOKO
+   sanan "DUOBOTIT" ja clip-path näyttää siitä eri pystykaistan. Kaistat
+   laatoittuvat luettavaksi sanaksi, ja eri fonttikoot luovat perspektiivin. */
+.text-loader .text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  position: absolute;
+}
+
+.text-loader .text:nth-child(1) { clip-path: polygon(0% 0%, 11.11% 0%, 11.11% 100%, 0% 100%); font-size: calc(var(--main-size) / 20); margin-left: -2.1em; opacity: 0.6; }
+.text-loader .text:nth-child(2) { clip-path: polygon(11.11% 0%, 22.22% 0%, 22.22% 100%, 11.11% 100%); font-size: calc(var(--main-size) / 16); margin-left: -0.98em; opacity: 0.7; }
+.text-loader .text:nth-child(3) { clip-path: polygon(22.22% 0%, 33.33% 0%, 33.33% 100%, 22.22% 100%); font-size: calc(var(--main-size) / 13); margin-left: -0.33em; opacity: 0.8; }
+.text-loader .text:nth-child(4) { clip-path: polygon(33.33% 0%, 44.44% 0%, 44.44% 100%, 33.33% 100%); font-size: calc(var(--main-size) / 11); margin-left: -0.05em; opacity: 0.9; }
+.text-loader .text:nth-child(5) { clip-path: polygon(44.44% 0%, 55.55% 0%, 55.55% 100%, 44.44% 100%); font-size: calc(var(--main-size) / 10); margin-left: 0em; opacity: 1; }
+.text-loader .text:nth-child(6) { clip-path: polygon(55.55% 0%, 66.66% 0%, 66.66% 100%, 55.55% 100%); font-size: calc(var(--main-size) / 11); margin-left: 0.05em; opacity: 0.9; }
+.text-loader .text:nth-child(7) { clip-path: polygon(66.66% 0%, 77.77% 0%, 77.77% 100%, 66.66% 100%); font-size: calc(var(--main-size) / 13); margin-left: 0.33em; opacity: 0.8; }
+.text-loader .text:nth-child(8) { clip-path: polygon(77.77% 0%, 88.88% 0%, 88.88% 100%, 77.77% 100%); font-size: calc(var(--main-size) / 16); margin-left: 0.98em; opacity: 0.7; }
+.text-loader .text:nth-child(9) { clip-path: polygon(88.88% 0%, 100% 0%, 100% 100%, 88.88% 100%); font-size: calc(var(--main-size) / 20); margin-left: 2.1em; opacity: 0.6; }
+
+.text-loader .text span {
+  animation:
+    text-loader-scrolling 2s cubic-bezier(0.1, 0.6, 0.9, 0.4) infinite,
+    text-loader-shadow 2s cubic-bezier(0.1, 0.6, 0.9, 0.4) infinite;
+}
+
+.text-loader .text:nth-child(1) span { background: linear-gradient(to right, var(--text-color) 4%, var(--shadow-color) 7%); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent; }
+.text-loader .text:nth-child(2) span { background: linear-gradient(to right, var(--text-color) 9%, var(--shadow-color) 13%); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent; }
+.text-loader .text:nth-child(3) span { background: linear-gradient(to right, var(--text-color) 15%, var(--shadow-color) 18%); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent; }
+.text-loader .text:nth-child(4) span { background: linear-gradient(to right, var(--text-color) 20%, var(--shadow-color) 23%); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent; }
+.text-loader .text:nth-child(5) span { background: linear-gradient(to right, var(--text-color) 24%, var(--shadow-color) 27%); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent; }
+.text-loader .text:nth-child(6) span { background: linear-gradient(to right, var(--shadow-color) 29%, var(--text-color) 32%); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent; }
+.text-loader .text:nth-child(7) span { background: linear-gradient(to right, var(--shadow-color) 34%, var(--text-color) 37%); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent; }
+.text-loader .text:nth-child(8) span { background: linear-gradient(to right, var(--shadow-color) 39%, var(--text-color) 42%); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent; }
+.text-loader .text:nth-child(9) span { background: linear-gradient(to right, var(--shadow-color) 45%, var(--text-color) 48%); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+.text-loader .line {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  height: 0.05em;
+  width: calc(var(--main-size) / 2);
+  margin-top: 0.9em;
+  border-radius: 0.05em;
+}
+.text-loader .line::before {
+  content: "";
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  background-color: var(--text-color);
+  opacity: 0.3;
+}
+.text-loader .line::after {
+  content: "";
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  background-color: var(--text-color);
+  border-radius: 0.05em;
+  transform: translateX(-90%);
+  animation: text-loader-wobble 2s cubic-bezier(0.5, 0.8, 0.5, 0.2) infinite;
+}
+
+@keyframes text-loader-wobble {
+  0% { transform: translateX(-90%); }
+  50% { transform: translateX(90%); }
+  100% { transform: translateX(-90%); }
+}
+@keyframes text-loader-scrolling {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+@keyframes text-loader-shadow {
+  0% { background-position: -98% 0; }
+  100% { background-position: 102% 0; }
+}
+
+/* prefers-reduced-motion: staattinen teksti ilman shine/wave/wobble-animaatioita.
+   Feidaus pois (.hidden, yllä) toimii silti normaalisti. */
+.page-loader.reduced .text-loader .text {
+  animation: none !important;
+  transform: none !important;
+}
+.page-loader.reduced .text-loader .text span {
+  animation: none !important;
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+  color: var(--text-color) !important;
+}
+.page-loader.reduced .text-loader .line::after {
+  animation: none !important;
+  transform: translateX(0) !important;
+}
+
+@media (max-width: 640px) {
+  .text-loader { --main-size: 4em; }
+}
+
 /* ====== INTRO-PORTTI (robotti) ====== */
 .intro {
   position: fixed;
@@ -320,6 +465,88 @@ body.page-home .topbar {
   display: block;
   width: 100%;
   height: auto;
+}
+
+/* ====== MOBIILIN HAMPURILAISVALIKKO ====== */
+/* Piilossa oletuksena (työpöytä) — näkyy vain alla olevan mediakyselyn kautta mobiililla. */
+.hamburger-btn {
+  display: none;
+  pointer-events: auto;
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(244, 234, 215, 0.16);
+  border-radius: 12px;
+  cursor: pointer;
+}
+.hamburger-btn span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--cream);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+.hamburger-btn.is-open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger-btn.is-open span:nth-child(2) { opacity: 0; }
+.hamburger-btn.is-open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* Pudotusvalikko: Kartta/Hahmot/Sarjakuva/Tietoa + some-ikonit + Pelaa demoa, samassa
+   järjestyksessä kuin työpöytäpalkissa muuten vasemmalta oikealle (paitsi kielivalitsin,
+   joka pysyy näkyvissä palkissa keskellä myös mobiilissa). */
+.mobile-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: clamp(8px, 1.5vw, 20px);
+  min-width: 220px;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 16px;
+  background: rgba(10, 11, 20, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(244, 234, 215, 0.14);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
+}
+.mobile-menu.is-open { display: flex; }
+.mobile-menu-links {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.mobile-menu-links a {
+  font-family: "Nunito", sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--cream);
+  text-decoration: none;
+  opacity: 0.9;
+}
+.mobile-menu-links a:hover,
+.mobile-menu-links a:focus-visible { opacity: 1; color: var(--marigold); }
+.mobile-menu-social {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mobile-menu-demo { text-align: center; }
+
+@media (max-width: 760px) {
+  .topbar-nav { display: none; }           /* nav-linkit + some-ikonit siirtyvät hampurilaisvalikkoon */
+  .nav-right { flex: 1 1 auto; justify-content: center; }
+  .nav-right .nav-demo { display: none; }  /* "Pelaa demoa" siirtyy hampurilaisvalikkoon, kielivalitsin jää keskelle */
+  .hamburger-btn { display: flex; }
 }
 
 
@@ -621,22 +848,32 @@ body.page-home:not(.entered) { overflow: hidden; }
   line-height: 1.5;
 }
 .characters-row {
-  flex: 0 0 auto;
+  /* flex: 1 1 auto + min-width: 0, jotta rivi voi KUTISTUA kapealla näytöllä
+     (esim. mobiili) sen sijaan että se ylivuotaisi säiliönsä ja työntäisi
+     nuolet näkymän ulkopuolelle. max-width pysyy tavoiteleveytenä (tasan 5
+     korttia + välit) - työpöydällä tämä mahtuu aina, joten ulkoasu ei muutu. */
+  flex: 1 1 auto;
+  min-width: 0;
   display: flex;
   align-items: flex-end;
   justify-content: center;
   gap: var(--char-card-gap);
-  /* kiinteä leveys = tasan 5 näkyvää korttia + välit; kaikki tämän ulkopuolelle
+  /* tavoiteleveys = tasan 5 näkyvää korttia + välit; kaikki tämän ulkopuolelle
      asettuvat kortit (haamut, data-slot -3/3) rajautuvat pois näkyvistä juuri
-     nuolten kohdalta eivätkä siis mene niitä pidemmälle */
-  width: calc(5 * var(--char-card-w) + 4 * var(--char-card-gap));
-  max-width: 100%;
+     nuolten kohdalta eivätkä siis mene niitä pidemmälle. Kapealla näytöllä
+     rivi kutistuu pienemmäksi kuin tämä tavoiteleveys ja overflow: hidden
+     näyttää vain sen verran kortteja kuin tilaan mahtuu. */
+  max-width: calc(5 * var(--char-card-w) + 4 * var(--char-card-gap));
   /* puskuri ylös/alas, ettei aaltomuodon pystysiirtymä (--wave-y) leikkaudu
      overflow: hidden -rajauksessa */
   padding: clamp(50px, 6vw, 64px) 0 clamp(36px, 5vw, 44px);
   overflow: hidden;
 }
 .characters-carousel {
+  /* koko leveys = säiliön (.characters) sisäleveys, jotta nuolet (flex: 0 0
+     auto) asettuvat aina säiliön OIKEISIIN reunoihin eivätkä ylivuodon takia
+     valu näkymän ulkopuolelle kapealla näytöllä. */
+  width: 100%;
   flex: 0 0 auto;
   display: flex;
   align-items: center;
@@ -657,6 +894,8 @@ body.page-home:not(.entered) { overflow: hidden; }
   justify-content: center;
   width: 44px;
   height: 44px;
+  /* pysyy aina omassa 44px-kokoisessa palkissaan, ei koskaan kutistu pois */
+  flex-shrink: 0;
   border-radius: 50%;
   border: 1px solid rgba(244, 234, 215, 0.25);
   background: rgba(255, 255, 255, 0.06);

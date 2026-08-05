@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="fi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Duobotit – Loader-testi</title>
+    <meta name="description" content="Testisivu: DUOBOTIT-latausanimaatio looppaa jatkuvasti." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Caveat:wght@700&family=Space+Mono:wght@400;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css?v=31" />
+  </head>
+
+  <!-- TESTISIVU: näyttää VAIN sivunlataus-overlayn (.page-loader) jatkuvasti looppaamassa.
+       EI auto-piilotusskriptiä eikä muuta sisältöä. Avataan "Pelaa demoa" -napista testausta
+       varten. Paluu etusivulle alla olevasta linkistä. -->
+  <body class="page-home">
+    <div class="page-loader" id="pageLoader" role="status" aria-busy="true" aria-label="Sivu latautuu">
+      <div class="text-loader" aria-hidden="true">
+        <div class="text"><span>DUOBOTIT</span></div>
+        <div class="text"><span>DUOBOTIT</span></div>
+        <div class="text"><span>DUOBOTIT</span></div>
+        <div class="text"><span>DUOBOTIT</span></div>
+        <div class="text"><span>DUOBOTIT</span></div>
+        <div class="text"><span>DUOBOTIT</span></div>
+        <div class="text"><span>DUOBOTIT</span></div>
+        <div class="text"><span>DUOBOTIT</span></div>
+        <div class="text"><span>DUOBOTIT</span></div>
+        <div class="line"></div>
+      </div>
+    </div>
+
+    <!-- Pieni paluulinkki testisivulta (overlayn päällä, jotta pääsee pois). -->
+    <a href="index.html"
+       style="position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:10000;
+              font-family:'Space Mono',monospace;font-size:0.8rem;letter-spacing:0.15em;
+              text-transform:uppercase;color:#9a93ad;text-decoration:none;padding:8px 16px;
+              border:1px solid rgba(255,255,255,0.15);border-radius:999px;">
+      ← Takaisin
+    </a>
+
+    <script>
+      // Kunnioita prefers-reduced-motionia myös testisivulla (staattinen teksti).
+      (function () {
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          document.getElementById("pageLoader").classList.add("reduced");
+        }
+      })();
+    </script>
+  </body>
+</html>

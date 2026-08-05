@@ -1091,6 +1091,7 @@ let bgLayers = [];            // sisäkkäiset läpinäkyvät pallokerrokset (pa
 let treeGroup = null;         // ladattu GLB-3D-malli (korvaa vanhan piirilevypuun) — kortit kiertävät sitä
 let treeMixer = null;         // AnimationMixer, jos GLB sisältää animaatioita (esim. tuulessa heiluminen)
 let treeT = 0;                // edellinen aika (dt AnimationMixerille)
+let treeReady = Promise.resolve(); // ratkeaa kun puu-GLB on ladattu (tai epäonnistunut) → sivunlataus-overlay odottaa tätä
 let gridMesh = null, gridMat = null; // neongridi-lattia puun alla
 
 // KÄÄRME-VALOEFEKTI (KEVYT, TEKSTUURIPOHJAINEN): N hehkuvaa viivaa (CONFIG.grid.snakeCount kpl)
@@ -1660,24 +1661,32 @@ function buildLights() {
 function loadTreeModel() {
   if (!CONFIG.tree.enabled) return;
   const T = CONFIG.tree;
-  new GLTFLoader().load(
-    T.url,
-    (gltf) => {
-      treeGroup = gltf.scene;
-      // Puu laskeutuu hieman baseY:n alle, jotta tyvi istuu ruudukon painovoimakuopan (uWellDepth)
-      // pohjalla eikä jää "kelluman" kuopan reunan yläpuolelle.
-      treeGroup.position.y = T.baseY - (T.sinkIntoWell || 0);
-      treeGroup.scale.setScalar(T.scale);
-      treeGroup.visible = entered;         // jos enter() jo ajettu ennen latauksen valmistumista → näytä heti
-      if (gltf.animations && gltf.animations.length) {
-        treeMixer = new THREE.AnimationMixer(treeGroup);
-        gltf.animations.forEach((clip) => treeMixer.clipAction(clip).play());
+  // treeReady ratkeaa kun malli on scenessä — sivunlataus-overlay (sarjakuva.html) odottaa tätä
+  // ennen kuin se feidaa pois, jotta puu on aina näkyvissä heti kun latausruutu poistuu.
+  treeReady = new Promise((resolve) => {
+    new GLTFLoader().load(
+      T.url,
+      (gltf) => {
+        treeGroup = gltf.scene;
+        // Puu laskeutuu hieman baseY:n alle, jotta tyvi istuu ruudukon painovoimakuopan (uWellDepth)
+        // pohjalla eikä jää "kelluman" kuopan reunan yläpuolelle.
+        treeGroup.position.y = T.baseY - (T.sinkIntoWell || 0);
+        treeGroup.scale.setScalar(T.scale);
+        treeGroup.visible = entered;         // jos enter() jo ajettu ennen latauksen valmistumista → näytä heti
+        if (gltf.animations && gltf.animations.length) {
+          treeMixer = new THREE.AnimationMixer(treeGroup);
+          gltf.animations.forEach((clip) => treeMixer.clipAction(clip).play());
+        }
+        scene.add(treeGroup);
+        resolve();
+      },
+      undefined,
+      (err) => {
+        console.error("3D-mallin (puu) lataus epäonnistui:", err);
+        resolve(); // ratkaistaan silti, ettei latausruutu jää jumiin puun latausvirheeseen
       }
-      scene.add(treeGroup);
-    },
-    undefined,
-    (err) => console.error("3D-mallin (puu) lataus epäonnistui:", err)
-  );
+    );
+  });
 }
 
 /* =====================================================================
@@ -2638,9 +2647,12 @@ async function boot() {
       },
     };
 
-    window.__APP_READY = true;
     // Ilmoittaa sivunlataus-overlaylle (index.html/sarjakuva.html-tyyppinen #pageLoader-skripti)
     // että 3D-scene on valmis piirtämään, jotta overlay ei feidaa pois liian aikaisin.
+    // Odotetaan LISÄKSI että keskellä oleva puu-GLB on ladattu, jottei latausruutu poistu ennen
+    // kuin puu on näkyvissä.
+    await treeReady;
+    window.__APP_READY = true;
     window.dispatchEvent(new Event("duo:ready"));
   } catch (err) {
     window.__APP_ERROR = String(err && err.stack || err);

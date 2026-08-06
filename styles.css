@@ -273,7 +273,7 @@ body.modal-open { overflow: hidden; }
   display: flex;
   align-items: center;
   gap: clamp(20px, 3vw, 48px);
-  padding: 15px clamp(8px, 1.5vw, 20px);
+  padding: 5px clamp(8px, 1.5vw, 20px);
   /* palkki itse ei nappaa klikkejä → canvas-scroll toimii tyhjän kohdalta */
   pointer-events: none;
   opacity: 0;
@@ -443,28 +443,88 @@ body.page-home .topbar {
 }
 .brand {
   display: block;
-  width: clamp(36px, 5.5vw, 52px);   /* logon koko palkissa: mahtuu palkin sisään */
+  width:  clamp(20px, 5vw, 70px);  /* logon koko palkissa: mahtuu palkin sisään */
   pointer-events: auto;
   text-decoration: none;
 }
 
-/* "Duobotit" nimi logon oikealla puolella: sama tyyli kuin logo-nauhan teksti, ilman keinunta-animaatiota */
+/* "Duobotit" nimi logon oikealla puolella: kaksirivinen (Duo / Botit), keskitetty */
 .brand-name {
+  position: relative;
+  display: inline-block;
   font-family: "Fredoka", sans-serif;
   font-weight: 700;
-  font-size: clamp(15px, 1.8vw, 20px);
+  font-size: clamp(24px, 2.2vw, 24px);
   letter-spacing: 0.02em;
-  line-height: 1;
-  color: #fff;
+  line-height: 0.82;
+  text-align: center;
   text-decoration: none;
   white-space: nowrap;
   pointer-events: none;
+}
+
+/* Slice-efekti: kaksi päällekkäistä kopiota tunnuksesta leikataan vinosti (viiva
+   kulkee molempien 'o'-kirjainten keskeltä) ja liu'utetaan hieman leikkausviivan
+   suuntaisesti → puoliskot siirtyvät toisiinsa nähden, EI tummaa rakoa. Ei animaatiota. */
+.bn-layer {
+  display: block;
+}
+.bn-bot {
+  position: absolute;
+  inset: 0;
+}
+.bn-top {
+  color: #F0EA68; /* keltainen, ylä-vasen puolisko */
+  clip-path: polygon(0% 0%, 99.5% 0%, 23.6% 100%, 0% 100%);
+  transform: translate(-0.6px, 0.5px);
+}
+.bn-bot {
+  color: #F0AEB4; /* pinkki, ala-oikea puolisko */
+  clip-path: polygon(99.5% 0%, 100% 0%, 100% 100%, 23.6% 100%);
+  transform: translate(0.6px, -0.5px);
+}
+/* "Duo"-rivin hienosäätö ylös/alas (negatiivinen nostaa) */
+.bn-duo {
+  display: inline-block;
+  transform: translateY(-1.5px);
+}
+
+/* Sydän "Botit"-sanan i:n pisteen tilalle (i on pisteetön ı). */
+.i-heart {
+  position: absolute;
+  left: 39.15px;
+  top: 19.359374px;
+  width: 0.5px;
+  height: 0.1px;
+  pointer-events: none;
+}
+.i-heart::before,
+.i-heart::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 4px;
+  height: 6.4px;
+  background: #F0AEB4;
+  border-radius: 4px 4px 0 0;
+}
+.i-heart::before {
+  left: 4px;
+  transform: rotate(-45deg);
+  transform-origin: 0 100%;
+}
+.i-heart::after {
+  left: 0;
+  transform: rotate(45deg);
+  transform-origin: 100% 100%;
 }
 
 .brand-img {
   display: block;
   width: 100%;
   height: auto;
+  /* logon pystysijainti: negatiivinen arvo nostaa ylös, positiivinen laskee alas */
+  transform: translateY(-1%);
 }
 
 /* ====== MOBIILIN HAMPURILAISVALIKKO ====== */

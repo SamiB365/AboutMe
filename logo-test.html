@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Logo-testi – Duobotit</title>
+  <style>
+    :root {
+      --bar-bg: #56475a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Fredoka", system-ui, sans-serif;
+      background: #f4f2f5;
+      color: #231f20;
+      padding-bottom: 60px;
+    }
+    h1 { text-align: center; padding: 24px 16px 8px; }
+    p.sub { text-align: center; margin: 0 0 24px; color: #666; }
+
+    /* Simuloitu yläpalkki – sama tyyli kuin oikeilla sivuilla */
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bar-bg);
+      padding: 10px 18px;
+      margin: 0 auto 32px;
+      max-width: 900px;
+      border-radius: 12px;
+    }
+    .brand { display: block; width: clamp(36px, 5.5vw, 52px); }
+    .brand img, .brand svg { display: block; width: 100%; height: auto; }
+    .brand-name {
+      font-weight: 700;
+      font-size: clamp(15px, 1.8vw, 20px);
+      color: #fff;
+      margin-left: 4px;
+    }
+    .bar-label {
+      margin-left: auto;
+      color: #cbb8d0;
+      font-size: 13px;
+    }
+
+    /* Vertailuruudukko */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.08);
+      text-align: center;
+    }
+    .card h2 { margin: 0 0 16px; font-size: 18px; }
+    .sizes { display: flex; align-items: flex-end; justify-content: center; gap: 20px; flex-wrap: wrap; }
+    .sizes figure { margin: 0; }
+    .sizes img, .sizes .svgwrap { display: block; height: auto; }
+    .s36 { width: 36px; }
+    .s52 { width: 52px; }
+    .s96 { width: 96px; }
+    .s160 { width: 160px; }
+    figcaption { font-size: 11px; color: #888; margin-top: 6px; }
+
+    /* Tummalla taustalla (kuten oikea palkki) */
+    .on-dark { background: var(--bar-bg); }
+    .on-dark h2, .on-dark figcaption { color: #eee; }
+  </style>
+</head>
+<body>
+  <h1>Logo-testi</h1>
+  <p class="sub">Uusi SVG vs. nykyinen PNG – ei muuta mitään oikeilla sivuilla.</p>
+
+  <!-- Palkkisimulaatio: UUSI SVG -->
+  <div class="topbar">
+    <a class="brand" href="#" aria-label="Duobotit">
+      <img src="assets/duobotit/Duobotit_logo.svg" alt="Duobotit (uusi SVG)" />
+    </a>
+    <span class="brand-name">Duobotit</span>
+    <span class="bar-label">↑ Uusi SVG palkissa</span>
+  </div>
+
+  <!-- Palkkisimulaatio: NYKYINEN PNG -->
+  <div class="topbar">
+    <a class="brand" href="#" aria-label="Duobotit">
+      <img src="assets/duobotit/duobotit-logo.png" alt="Duobotit (nykyinen PNG)" />
+    </a>
+    <span class="brand-name">Duobotit</span>
+    <span class="bar-label">↑ Nykyinen PNG palkissa</span>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Uusi SVG</h2>
+      <div class="sizes">
+        <figure><img class="s36"  src="assets/duobotit/Duobotit_logo.svg" alt="" /><figcaption>36px</figcaption></figure>
+        <figure><img class="s52"  src="assets/duobotit/Duobotit_logo.svg" alt="" /><figcaption>52px</figcaption></figure>
+        <figure><img class="s96"  src="assets/duobotit/Duobotit_logo.svg" alt="" /><figcaption>96px</figcaption></figure>
+        <figure><img class="s160" src="assets/duobotit/Duobotit_logo.svg" alt="" /><figcaption>160px</figcaption></figure>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Nykyinen PNG</h2>
+      <div class="sizes">
+        <figure><img class="s36"  src="assets/duobotit/duobotit-logo.png" alt="" /><figcaption>36px</figcaption></figure>
+        <figure><img class="s52"  src="assets/duobotit/duobotit-logo.png" alt="" /><figcaption>52px</figcaption></figure>
+        <figure><img class="s96"  src="assets/duobotit/duobotit-logo.png" alt="" /><figcaption>96px</figcaption></figure>
+        <figure><img class="s160" src="assets/duobotit/duobotit-logo.png" alt="" /><figcaption>160px</figcaption></figure>
+      </div>
+    </div>
+
+    <div class="card on-dark">
+      <h2>Uusi SVG (tumma tausta)</h2>
+      <div class="sizes">
+        <figure><img class="s52"  src="assets/duobotit/Duobotit_logo.svg" alt="" /><figcaption>52px</figcaption></figure>
+        <figure><img class="s96"  src="assets/duobotit/Duobotit_logo.svg" alt="" /><figcaption>96px</figcaption></figure>
+        <figure><img class="s160" src="assets/duobotit/Duobotit_logo.svg" alt="" /><figcaption>160px</figcaption></figure>
+      </div>
+    </div>
+    <div class="card on-dark">
+      <h2>Nykyinen PNG (tumma tausta)</h2>
+      <div class="sizes">
+        <figure><img class="s52"  src="assets/duobotit/duobotit-logo.png" alt="" /><figcaption>52px</figcaption></figure>
+        <figure><img class="s96"  src="assets/duobotit/duobotit-logo.png" alt="" /><figcaption>96px</figcaption></figure>
+        <figure><img class="s160" src="assets/duobotit/duobotit-logo.png" alt="" /><figcaption>160px</figcaption></figure>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

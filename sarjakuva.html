@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Caveat:wght@700&family=Space+Mono:wght@400;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=31" />
+    <link rel="stylesheet" href="styles.css?v=52" />
 
     <!-- Three.js (CDN, ESM importmap) – ei buildiä -->
     <script type="importmap">
@@ -77,10 +77,9 @@
     <!-- ====== YLÄPALKKI ====== -->
     <header class="topbar" id="topbar">
       <div class="brand-group">
-        <a class="brand" href="index.html" aria-label="Duobotit – etusivu">
-          <img class="brand-img" src="assets/duobotit/Duobotit_logo.svg" alt="Duobotit" />
+        <a class="brand-text-logo" href="index.html" aria-label="Duobotit">
+          <img src="assets/duobotit/duobotit-logo_texti.svg?v=1" alt="Duobotit" />
         </a>
-        <a class="brand-name" href="index.html" aria-label="Duobotit" tabindex="-1"><span class="bn-layer bn-top" aria-hidden="true"><span class="bn-duo">Duo</span><br>Botıt</span><span class="bn-layer bn-bot" aria-hidden="true"><span class="bn-duo">Duo</span><br>Botıt</span><span class="i-heart" aria-hidden="true"></span></a>
       </div>
 
       <nav class="topbar-nav" aria-label="Päävalikko">
@@ -108,7 +107,12 @@
       </nav>
 
       <div class="nav-right">
-        <a class="nav-demo" href="loader-original-test.html" data-i18n="nav.demo">Pelaa demoa</a>
+        <span class="demo-wrap">
+          <a class="nav-demo" href="loader-original-test.html" data-i18n="nav.demo">Play</a>
+          <a class="demo-logo" href="index.html" aria-label="Duobotit – etusivu">
+            <img class="brand-img" src="assets/duobotit/Duobotit_logo.svg?v=2" alt="Duobotit" />
+          </a>
+        </span>
 
         <div class="lang-switch" role="group" aria-label="Kieli / Language">
           <button type="button" class="lang-btn is-active" data-lang="fi" aria-pressed="true">FI</button>
@@ -140,7 +144,7 @@
               </svg>
           </a>
         </div>
-        <a class="nav-demo mobile-menu-demo" href="loader-original-test.html" data-i18n="nav.demo">Pelaa demoa</a>
+        <a class="nav-demo mobile-menu-demo" href="loader-original-test.html" data-i18n="nav.demo">Play</a>
       </div>
     </header>
 
@@ -170,14 +174,14 @@
             "nav.hahmot": "Hahmot",
             "nav.sarjakuva": "Sarjakuva",
             "nav.tietoa": "Tietoa",
-            "nav.demo": "Pelaa demoa",
+            "nav.demo": "Play",
           },
           en: {
             "nav.kartta": "Map",
             "nav.hahmot": "Characters",
             "nav.sarjakuva": "Comic",
             "nav.tietoa": "About",
-            "nav.demo": "Play demo",
+            "nav.demo": "Play",
           },
         };
 

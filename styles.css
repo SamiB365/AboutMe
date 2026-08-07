@@ -273,9 +273,7 @@ body.modal-open { overflow: hidden; }
   display: flex;
   align-items: center;
   gap: clamp(20px, 3vw, 48px);
-  /* kiinteä korkeus → logon koko EI kasvata palkkia (iso logo vain ylittää palkin) */
-  height: 52px;
-  padding: 0 clamp(8px, 1.5vw, 20px);
+  padding: 5px clamp(8px, 1.5vw, 20px);
   /* palkki itse ei nappaa klikkejä → canvas-scroll toimii tyhjän kohdalta */
   pointer-events: none;
   opacity: 0;
@@ -503,9 +501,8 @@ body.page-home .topbar {
 }
 .brand-text-logo img {
   display: block;
-  height: clamp(58px, 6vw, 74px);   /* isompi kuin palkki (52px) → ylittää hieman */
+  height: clamp(58px, 6vw, 74px);
   width: auto;
-  transform: translateY(7px);        /* siirtää logoa alemmas (isompi = alemmas) */
 }
 
 /* "Duobotit" nimi logon oikealla puolella: kaksirivinen (Duo / Botit), keskitetty */

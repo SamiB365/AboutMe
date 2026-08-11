@@ -8,11 +8,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Caveat:wght@700&family=Space+Mono:wght@400;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=53" />
+    <link rel="stylesheet" href="styles.css?v=63" />
     <!-- EI Three.js / WebGL -importmappia tällä sivulla — kevyt 2D-etusivu. -->
   </head>
 
-  <body class="page-home">
+  <body class="page-home home-hero">
     <!-- ====== SIVUNLATAUS-OVERLAY (näkyy ensimmäisenä, feidaa pois kun sivu on valmis) ====== -->
     <div class="page-loader" id="pageLoader" role="status" aria-busy="true" aria-label="Sivu latautuu">
       <div class="text-loader" aria-hidden="true">
@@ -66,7 +66,7 @@
     <header class="topbar" id="topbar">
       <div class="brand-group">
         <a class="brand-text-logo" href="index.html" aria-label="Duobotit">
-          <img src="assets/duobotit/duobotit-logo_texti.svg?v=1" alt="Duobotit" />
+          <img src="assets/duobotit/Etusivu kuvat/duobotit-logo-orange.svg?v=1" alt="Duobotit" />
         </a>
       </div>
 
@@ -96,9 +96,8 @@
 
       <div class="nav-right">
         <span class="demo-wrap">
-          <a class="nav-demo" href="loader-original-test.html" data-i18n="nav.demo">Play</a>
-          <a class="demo-logo" href="index.html" aria-label="Duobotit – etusivu">
-            <img class="brand-img" src="assets/duobotit/Duobotit_logo.svg?v=2" alt="Duobotit" />
+          <a class="nav-demo" href="loader-original-test.html" aria-label="Play">
+            <img class="nav-demo-img" src="assets/duobotit/Etusivu kuvat/playbutton-orange.svg?v=1" alt="Play" />
           </a>
         </span>
 
@@ -231,6 +230,22 @@
           if (!menu.classList.contains("is-open")) return;
           if (menu.contains(e.target) || btn.contains(e.target)) return;
           setOpen(false);
+        });
+      })();
+    </script>
+
+    <!-- ====== NAVBAR-LOGON ANIMAATIO (hover CSS, click "imeytyy itseensä") ====== -->
+    <script>
+      (function () {
+        const logo = document.querySelector(".brand-text-logo");
+        const img = logo && logo.querySelector("img");
+        if (!logo || !img) return;
+        logo.addEventListener("click", (e) => {
+          if (img.classList.contains("is-sucking")) return;
+          e.preventDefault();
+          img.classList.add("is-sucking");
+          // avaa etusivu hieman ennen animaation loppua (animaatio 500ms)
+          setTimeout(() => { window.location.href = logo.getAttribute("href"); }, 250);
         });
       })();
     </script>

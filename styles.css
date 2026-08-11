@@ -281,11 +281,40 @@ body.modal-open { overflow: hidden; }
 }
 body.entered .topbar { opacity: 1; }
 
-/* etusivulla topbar kelluu hero-valokuvan päällä → läpikuultava, sumennettu tausta */
+/* etusivulla topbar kelluu hero-valokuvan päällä → ei omaa tummennusta, sulautuu kuvaan */
 body.page-home .topbar {
-  background: rgba(5, 6, 12, 0.35);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: transparent;
+}
+
+/* Etusivun vaalea hero-tausta → tummat palkkitekstit luettavuuden vuoksi */
+.home-hero .nav-links a,
+.home-hero .social-btn,
+.home-hero .nav-demo,
+.home-hero .lang-btn {
+  color: #101a2e;
+}
+.home-hero .nav-demo {
+  border-color: rgba(16, 26, 46, 0.4);
+}
+.home-hero .lang-switch {
+  border-color: rgba(16, 26, 46, 0.3);
+}
+.home-hero .social-btn::before {
+  border-color: rgba(16, 26, 46, 0.3);
+}
+/* Hover- ja FI/EN-korostus oranssiksi (sama kuin nav-alleviivaus) */
+.home-hero .social-btn:hover,
+.home-hero .social-btn:focus-visible {
+  color: var(--marigold);
+}
+.home-hero .social-btn:hover::before,
+.home-hero .social-btn:focus-visible::before {
+  background: rgba(255, 178, 76, 0.14);
+  border-color: rgba(255, 178, 76, 0.6);
+}
+.home-hero .lang-btn.is-active {
+  background: var(--marigold);
+  box-shadow: 0 0 6px var(--marigold), 0 0 14px rgba(255, 178, 76, 0.7), 0 0 24px rgba(255, 178, 76, 0.4);
 }
 
 /* topbar-nav täyttää jäljellä olevan tilan brandin ja nav-rightin välissä ja keskittää
@@ -356,6 +385,7 @@ body.page-home .topbar {
   gap: 10px;
 }
 .social-btn {
+  position: relative;
   pointer-events: auto;
   display: flex;
   align-items: center;
@@ -365,16 +395,30 @@ body.page-home .topbar {
   border-radius: 50%;
   color: var(--cream);
   opacity: 0.8;
+  transition: opacity 0.2s ease, transform 0.2s ease, color 0.2s ease;
+}
+/* Ympyrä (reuna + tausta) omana kerroksenaan ikonin takana → voi aaltoilla ilman että logo vääristyy */
+.social-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(244, 234, 215, 0.14);
-  transition: opacity 0.2s ease, background 0.2s ease, transform 0.2s ease, color 0.2s ease;
+  z-index: -1;
+  transition: background 0.2s ease, border-color 0.2s ease, filter 0.15s ease;
 }
 .social-btn:hover,
 .social-btn:focus-visible {
   opacity: 1;
-  color: var(--marigold);
-  background: rgba(255, 178, 76, 0.12);
-  transform: translateY(-1px);
+  color: #2ec8ff;
+  transform: translateY(-1px) scale(1.15);
+}
+/* Hover: neon-sininen korostus (ei väreilyä) */
+.social-btn:hover::before,
+.social-btn:focus-visible::before {
+  background: rgba(46, 200, 255, 0.12);
+  border-color: rgba(46, 200, 255, 0.55);
 }
 
 /* "Pelaa demoa" -painike (korostettu) */
@@ -391,6 +435,14 @@ body.page-home .topbar {
   border: 1px solid rgba(244, 234, 215, 0.14);
   transition: transform 0.18s ease, border-color 0.18s ease, filter 0.18s ease;
 }
+.nav-demo-img {
+  display: block;
+  height: 45px;
+  width: auto;
+  position: relative;
+  top: -13px;              /* ← negatiivinen arvo siirtää kuvaa ylemmäs, esim. -8px */
+  left: -0.9px;   /* ← negatiivinen arvo siirtää kuvaa vasemmalle, esim. -8px */
+}
 .nav-demo:hover,
 .nav-demo:focus-visible {
   transform: translateY(-1px);
@@ -402,7 +454,9 @@ body.page-home .topbar {
 .nav-right .nav-demo {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   height: 30px;
+  width: 55px;   /* ← kehyksen leveys; suurenna/pienennä tarpeen mukaan */
 }
 .nav-right .lang-switch {
   height: 30px;
@@ -479,6 +533,32 @@ body.page-home .topbar {
   font-size: 0.8rem;
 }
 
+/* ====== HAHMOT-SIVU (body.page-characters): nav-linkkien alleviivaus neon-siniseksi ====== */
+.page-characters .nav-links a::after {
+  background: #2ec8ff;
+}
+
+/* ====== SARJAKUVA-SIVU (body.page-comic): korostukset kirsikkapuun pinkiksi ====== */
+/* Nav-linkkien hover: vain alleviivaus pinkiksi (teksti pysyy ennallaan) */
+.page-comic .nav-links a::after {
+  background: #F0AEB4;
+}
+/* GitHub / Discord -ikonit */
+.page-comic .social-btn:hover,
+.page-comic .social-btn:focus-visible {
+  color: #F0AEB4;
+}
+.page-comic .social-btn:hover::before,
+.page-comic .social-btn:focus-visible::before {
+  background: rgba(240, 174, 180, 0.14);
+  border-color: rgba(240, 174, 180, 0.6);
+}
+/* FI/EN aktiivinen nappi */
+.page-comic .lang-btn.is-active {
+  background: #F0AEB4;
+  box-shadow: 0 0 6px #F0AEB4, 0 0 14px rgba(240, 174, 180, 0.75), 0 0 24px rgba(240, 174, 180, 0.45);
+}
+
 /* ====== BRÄNDI (logo palkin vasemmassa reunassa) ====== */
 .brand-group {
   display: flex;
@@ -495,7 +575,8 @@ body.page-home .topbar {
 
 /* Duobotit-tekstilogo (SVG) palkin vasemmassa yläkulmassa */
 .brand-text-logo {
-  display: block;
+  display: inline-block;
+  position: relative;
   pointer-events: auto;
   text-decoration: none;
 }
@@ -503,6 +584,72 @@ body.page-home .topbar {
   display: block;
   height: clamp(58px, 6vw, 74px);
   width: auto;
+  transform-origin: center;
+  transition: transform 0.2s ease, filter 0.2s ease;
+  /* Sujuva ping-pong -hehku: min -> max -> min saumattomasti. Huippu 50 %:ssa.
+     Sama kesto kuin glitzillä -> efektit synkassa. */
+  animation: logo-glow 6.4s ease-in-out infinite;
+}
+@keyframes logo-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 3px rgba(255, 175, 82, 0.5));
+  }
+  50% {
+    filter:
+      drop-shadow(0 0 6px rgba(255, 175, 82, 0.9))
+      drop-shadow(0 0 16px rgba(255, 145, 40, 0.6));
+  }
+}
+/* Kevyt glitz: kirkas kiiltopyyhkäisy — ajastettu osumaan hohteen huippuun (50 %). */
+.brand-text-logo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 42%, rgba(255, 255, 255, 0.85) 50%, transparent 58%);
+  background-size: 300% 100%;
+  background-position: 150% 0;
+  -webkit-mask: url("assets/duobotit/Etusivu kuvat/duobotit-glow-orange.svg") no-repeat center / contain;
+          mask: url("assets/duobotit/Etusivu kuvat/duobotit-glow-orange.svg") no-repeat center / contain;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  /* Sama kesto kuin hehulla -> pyyhkäisy tulee juuri hohteen ollessa maksimissa. */
+  animation: logo-glitz 6.4s ease-in-out infinite;
+}
+@keyframes logo-glitz {
+  0%, 40% { background-position: 150% 0; }
+  60% { background-position: -50% 0; }
+  100% { background-position: -50% 0; }
+}
+/* Sarjakuva-sivu (page-comic): pinkin sävyinen hohde + glitz-maski pinkin logon muotoon.
+   Sama kesto/tahti -> pysyy synkassa glitzin kanssa. */
+.page-comic .brand-text-logo img {
+  animation-name: logo-glow-pink;
+}
+@keyframes logo-glow-pink {
+  0%, 100% {
+    filter: drop-shadow(0 0 3px rgba(255, 161, 223, 0.5));
+  }
+  50% {
+    filter:
+      drop-shadow(0 0 6px rgba(255, 130, 210, 0.9))
+      drop-shadow(0 0 16px rgba(255, 82, 197, 0.6));
+  }
+}
+.page-comic .brand-text-logo::after {
+  -webkit-mask-image: url("assets/duobotit/Sarjakuva kuvat/duobotit-logo-pink.svg");
+          mask-image: url("assets/duobotit/Sarjakuva kuvat/duobotit-logo-pink.svg");
+}
+/* HOVER: kevyt pyörähdys + suurennos */
+.brand-text-logo:hover img {
+  transform: rotate(8deg) scale(1.1);
+}
+/* CLICK: "imeytyy itseensä" — laukaistaan JS:llä lisäämällä .is-sucking */
+.brand-text-logo img.is-sucking {
+  animation: logo-suck 0.5s ease forwards;
+}
+@keyframes logo-suck {
+  0%   { transform: rotate(0) scale(1); }
+  100% { transform: rotate(720deg) scale(0); }
 }
 
 /* "Duobotit" nimi logon oikealla puolella: kaksirivinen (Duo / Botit), keskitetty */
@@ -870,8 +1017,8 @@ body.page-home:not(.entered) { overflow: hidden; }
   min-height: 100vh;   /* fallback vanhoille selaimille */
   min-height: 100svh;  /* pieni viewport (mobiilin selainpalkit huomioiden) */
   background:
-    linear-gradient(180deg, rgba(5,6,12,0.3), rgba(5,6,12,0.72)),
-    url("assets/hero/rausku-hero.png") center / cover no-repeat;
+    linear-gradient(180deg, rgba(5,6,12,0.3), rgba(5,6,12,0.05)),
+    url("assets/duobotit/Etusivu kuvat/Duobotit_BG_master_copy.webp") center / cover no-repeat;
 }
 
 /* Hero-tekstipino: keskitetty vaakasuunnassa, ylhäällä taivaan/vuorten rauhallisella

@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Caveat:wght@700&family=Space+Mono:wght@400;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=53" />
+    <link rel="stylesheet" href="styles.css?v=63" />
 
     <!-- Three.js (CDN, ESM importmap) – ei buildiä -->
     <script type="importmap">
@@ -21,7 +21,7 @@
     </script>
   </head>
 
-  <body>
+  <body class="page-comic">
     <!-- ====== SIVUNLATAUS-OVERLAY (näkyy kunnes sivu JA 3D-sisältö on valmis) ====== -->
     <div class="page-loader" id="pageLoader" role="status" aria-busy="true" aria-label="Sivu latautuu">
       <div class="text-loader" aria-hidden="true">
@@ -78,7 +78,7 @@
     <header class="topbar" id="topbar">
       <div class="brand-group">
         <a class="brand-text-logo" href="index.html" aria-label="Duobotit">
-          <img src="assets/duobotit/duobotit-logo_texti.svg?v=1" alt="Duobotit" />
+          <img src="assets/duobotit/Sarjakuva kuvat/duobotit-logo-pink.svg?v=1" alt="Duobotit" />
         </a>
       </div>
 
@@ -235,6 +235,22 @@
           if (!menu.classList.contains("is-open")) return;
           if (menu.contains(e.target) || btn.contains(e.target)) return;
           setOpen(false);
+        });
+      })();
+    </script>
+
+    <!-- ====== NAVBAR-LOGON ANIMAATIO (hover CSS, click "imeytyy itseensä") ====== -->
+    <script>
+      (function () {
+        const logo = document.querySelector(".brand-text-logo");
+        const img = logo && logo.querySelector("img");
+        if (!logo || !img) return;
+        logo.addEventListener("click", (e) => {
+          if (img.classList.contains("is-sucking")) return;
+          e.preventDefault();
+          img.classList.add("is-sucking");
+          // avaa etusivu hieman ennen animaation loppua (animaatio 500ms)
+          setTimeout(() => { window.location.href = logo.getAttribute("href"); }, 380);
         });
       })();
     </script>

@@ -1274,7 +1274,8 @@ let textures = {};
 
 // tila
 let entered = false, diving = false, modalOpen = false, scrollEnabled = false;
-let tCurrent = 0, tTarget = 0, lastWheel = 0;
+// aloitusnäkymä viimeiseen puhekuplaan (viimeisin kortti näkyy heti aloituksessa)
+let tCurrent = CARDS.length - 1, tTarget = CARDS.length - 1, lastWheel = 0;
 let camOrbitR = CONFIG.cameraEnterZ;  // kameran kiertoradan säde (intro kasvattaa cameraEnterZ→cameraZ)
 let diveCancel = null;       // sukelluksen tweenin peruutus
 let diveIndex = -1;          // aktiivisen sukelluksen kortti (paluuanimaatiota varten)

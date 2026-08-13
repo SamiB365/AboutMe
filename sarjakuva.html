@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Caveat:wght@700&family=Space+Mono:wght@400;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=70" />
+    <link rel="stylesheet" href="styles.css?v=73" />
 
     <!-- Three.js (CDN, ESM importmap) – ei buildiä -->
     <script type="importmap">
@@ -79,6 +79,10 @@
       <div class="brand-group">
         <a class="brand-text-logo" href="index.html" aria-label="Duobotit">
           <img src="assets/duobotit/Sarjakuva kuvat/duobotit-logo-textside2.svg?v=1" alt="Duobotit" />
+          <span class="logo-shine" aria-hidden="true"></span>
+          <span class="logo-particles" aria-hidden="true">
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          </span>
         </a>
       </div>
 
@@ -107,12 +111,6 @@
       </nav>
 
       <div class="nav-right">
-        <span class="demo-wrap">
-          <a class="nav-demo" href="loader-original-test.html" aria-label="Play">
-            <img class="nav-demo-img" src="assets/duobotit/Sarjakuva kuvat/playbutton-robotsUP-pink.svg?v=1" alt="Play" />
-          </a>
-        </span>
-
         <div class="lang-switch" role="group" aria-label="Kieli / Language">
           <button type="button" class="lang-btn is-active" data-lang="fi" aria-pressed="true">FI</button>
           <span class="lang-sep" aria-hidden="true">/</span>
@@ -143,7 +141,6 @@
               </svg>
           </a>
         </div>
-        <a class="nav-demo mobile-menu-demo" href="loader-original-test.html" data-i18n="nav.demo">Play</a>
       </div>
     </header>
 

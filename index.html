@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Caveat:wght@700&family=Space+Mono:wght@400;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=83" />
+    <link rel="stylesheet" href="styles.css?v=94" />
     <!-- EI Three.js / WebGL -importmappia tällä sivulla — kevyt 2D-etusivu. -->
   </head>
 
@@ -66,7 +66,8 @@
     <header class="topbar" id="topbar">
       <div class="brand-group">
         <a class="brand-text-logo" href="index.html" aria-label="Duobotit">
-          <img src="assets/duobotit/Etusivu kuvat/Duobotit_juliste_logo_transparent.svg?v=3" alt="Duobotit" />
+          <img src="assets/duobotit/Sarjakuva kuvat/duobotit-logo-textside2.svg?v=1" alt="Duobotit" />
+          <span class="logo-shine" aria-hidden="true"></span>
           <span class="logo-particles" aria-hidden="true">
             <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
           </span>
@@ -98,10 +99,6 @@
       </nav>
 
       <div class="nav-right">
-        <span class="demo-wrap">
-          <a class="nav-demo" href="loader-original-test.html" data-i18n="nav.demo">Play demo</a>
-        </span>
-
         <div class="lang-switch" role="group" aria-label="Kieli / Language">
           <button type="button" class="lang-btn is-active" data-lang="fi" aria-pressed="true">FI</button>
           <span class="lang-sep" aria-hidden="true">/</span>
@@ -135,13 +132,32 @@
             </svg>
           </a>
         </div>
-        <a class="nav-demo mobile-menu-demo" href="loader-original-test.html" data-i18n="nav.demo">Play</a>
       </div>
     </header>
 
     <main>
       <!-- ====== HERO (taustakuva + keskitetty otsikkoteksti) ====== -->
       <section class="hero" aria-label="Esittely">
+        <div class="hero-bg" aria-hidden="true">
+          <i class="hero-layer hero-layer-sky"></i>
+          <i class="hero-layer hero-layer-mountains"></i>
+          <i class="hero-layer hero-layer-clouds-fg"></i>
+          <i class="hero-layer hero-layer-island-1 hero-island"></i>
+          <i class="hero-layer hero-layer-island-2 hero-island"></i>
+          <i class="hero-layer hero-layer-island-3 hero-island"></i>
+          <i class="hero-layer hero-layer-island-4 hero-island"></i>
+          <i class="hero-layer hero-layer-island-5 hero-island"></i>
+          <i class="hero-layer hero-layer-island-6"></i>
+          <i class="hero-layer hero-layer-sea hero-water"></i>
+          <i class="hero-layer hero-layer-grass hero-sway"></i>
+          <i class="hero-layer hero-layer-flowers hero-sway"></i>
+        </div>
+        <div class="hero-godrays" aria-hidden="true">
+          <i class="ray ray-1"></i>
+          <i class="ray ray-2"></i>
+          <i class="ray ray-3"></i>
+          <i class="ray ray-4"></i>
+        </div>
         <div class="hero-clouds" aria-hidden="true">
           <span class="cloud cloud-1"></span>
           <span class="cloud cloud-2"></span>

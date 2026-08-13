@@ -577,7 +577,7 @@ body.page-home .topbar {
 .brand-text-logo {
   /* ===== LOGON SÄÄDÖT (muuta vain näitä arvoja) ===== */
   --logo-size: 45px;   /* logon korkeus (leveys skaalautuu automaattisesti) */
-  --logo-x: -5px;      /* vaakasiirto: positiivinen = oikealle, negatiivinen = vasemmalle */
+  --logo-x: -10px;      /* vaakasiirto: positiivinen = oikealle, negatiivinen = vasemmalle */
   --logo-y: 0px;      /* pystysiirto: negatiivinen = ylös, positiivinen = alas */
   /* ================================================== */
   display: inline-flex;
@@ -605,10 +605,38 @@ body.page-home .topbar {
   color: var(--cream);
   white-space: nowrap;
 }
+/* Kiilto-pyyhkäisy koko logon yli, looppaa väliajoin (naamioitu logon omalla alfalla) */
+.logo-shine {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.9) 50%, transparent 65%);
+  background-size: 300% 100%;
+  background-position: 150% 0;
+  -webkit-mask-image: url("assets/duobotit/Sarjakuva%20kuvat/duobotit-logo-textside2.svg?v=1");
+  mask-image: url("assets/duobotit/Sarjakuva%20kuvat/duobotit-logo-textside2.svg?v=1");
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  mix-blend-mode: screen;
+  animation: logo-shine-sweep 7.5s ease-in-out infinite;
+}
+@keyframes logo-shine-sweep {
+  0%, 70%  { background-position: 150% 0; }
+  85%      { background-position: -50% 0; }
+  100%     { background-position: -50% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .logo-shine { animation: none; }
+}
+/* Etusivulla sama logotiedosto kuin sarjakuva.html:ssä -> ei tarvitse erillistä naamio-ylikirjoitusta */
 /* Leijuvat teal-kipinät logon ympärillä (kevyt CSS-only) */
 .logo-particles {
   position: absolute;
-  inset: -6px -4px 0;
+  inset: -22px -20px -16px -20px;
   pointer-events: none;
   z-index: -1;
   overflow: visible;
@@ -624,18 +652,18 @@ body.page-home .topbar {
   animation: logo-particle-drift 3.2s ease-in-out infinite;
 }
 /* Kuva ilman piirrettyjä kipinöitä -> partikkelit levitetty vapaasti koko logon ylle */
-.logo-particles i:nth-child(1)  { left: 6%;  top: 40%; animation-delay: 0s;    animation-duration: 3.6s; --s: 0.7; --dx: 10px; --dy: -8px; }
-.logo-particles i:nth-child(2)  { left: 16%; top: 20%; animation-delay: 0.9s;  animation-duration: 4.2s; --s: 1.1; --dx: -8px; --dy: 9px; }
-.logo-particles i:nth-child(3)  { left: 28%; top: 55%; animation-delay: 1.8s;  animation-duration: 3.9s; --s: 0.8; --dx: 9px;  --dy: 10px; }
-.logo-particles i:nth-child(4)  { left: 38%; top: 15%; animation-delay: 0.4s;  animation-duration: 4.5s; --s: 1.2; --dx: -10px; --dy: -7px; }
-.logo-particles i:nth-child(5)  { left: 46%; top: 60%; animation-delay: 1.3s;  animation-duration: 3.4s; --s: 0.6; --dx: 8px;  --dy: -10px; background: #a8e0df; box-shadow: 0 0 5px 1.5px rgba(168, 224, 223, 0.85); }
-.logo-particles i:nth-child(6)  { left: 58%; top: 25%; animation-delay: 2.4s;  animation-duration: 4.0s; --s: 0.9; --dx: -9px; --dy: 8px;  background: #6bc4a1; box-shadow: 0 0 5px 1.5px rgba(107, 196, 161, 0.85); }
-.logo-particles i:nth-child(7)  { left: 68%; top: 50%; animation-delay: 0.2s;  animation-duration: 3.7s; --s: 1.0; --dx: 10px; --dy: 9px;  background: #6bc4a1; box-shadow: 0 0 5px 1.5px rgba(107, 196, 161, 0.85); }
-.logo-particles i:nth-child(8)  { left: 78%; top: 18%; animation-delay: 2.1s;  animation-duration: 4.3s; --s: 0.7; --dx: -8px; --dy: -9px; background: #6bc4a1; box-shadow: 0 0 5px 1.5px rgba(107, 196, 161, 0.85); }
-.logo-particles i:nth-child(9)  { left: 88%; top: 45%; animation-delay: 1.1s;  animation-duration: 3.5s; --s: 1.1; --dx: 9px;  --dy: -8px; background: #6bc4a1; box-shadow: 0 0 5px 1.5px rgba(107, 196, 161, 0.85); }
-.logo-particles i:nth-child(10) { left: 94%; top: 30%; animation-delay: 2.8s;  animation-duration: 4.1s; --s: 0.6; --dx: -10px; --dy: 8px;  background: #6bc4a1; box-shadow: 0 0 5px 1.5px rgba(107, 196, 161, 0.85); }
-.logo-particles i:nth-child(11) { left: 22%; top: 65%; animation-delay: 3.2s;  animation-duration: 3.8s; --s: 0.9; --dx: 8px;  --dy: -9px; }
-.logo-particles i:nth-child(12) { left: 62%; top: 68%; animation-delay: 1.6s;  animation-duration: 4.4s; --s: 0.8; --dx: -9px; --dy: -8px; background: #a8e0df; box-shadow: 0 0 5px 1.5px rgba(168, 224, 223, 0.85); }
+.logo-particles i:nth-child(1)  { left: 6%;  top: 40%; animation-delay: 0s;    animation-duration: 3.6s; --s: 0.7; --dx: 22px; --dy: -18px; }
+.logo-particles i:nth-child(2)  { left: 16%; top: 20%; animation-delay: 0.9s;  animation-duration: 4.2s; --s: 1.1; --dx: -18px; --dy: 20px; }
+.logo-particles i:nth-child(3)  { left: 28%; top: 55%; animation-delay: 1.8s;  animation-duration: 3.9s; --s: 0.8; --dx: 20px;  --dy: 22px; }
+.logo-particles i:nth-child(4)  { left: 38%; top: 15%; animation-delay: 0.4s;  animation-duration: 4.5s; --s: 1.2; --dx: -22px; --dy: -16px; }
+.logo-particles i:nth-child(5)  { left: 46%; top: 60%; animation-delay: 1.3s;  animation-duration: 3.4s; --s: 0.6; --dx: 18px;  --dy: -22px; background: #a8e0df; box-shadow: 0 0 5px 1.5px rgba(168, 224, 223, 0.85); }
+.logo-particles i:nth-child(6)  { left: 58%; top: 25%; animation-delay: 2.4s;  animation-duration: 4.0s; --s: 0.9; --dx: -20px; --dy: 18px;  background: #6bc4a1; box-shadow: 0 0 5px 1.5px rgba(107, 196, 161, 0.85); }
+.logo-particles i:nth-child(7)  { left: 68%; top: 50%; animation-delay: 0.2s;  animation-duration: 3.7s; --s: 1.0; --dx: 22px; --dy: 20px;  background: #6bc4a1; box-shadow: 0 0 5px 1.5px rgba(107, 196, 161, 0.85); }
+.logo-particles i:nth-child(8)  { left: 78%; top: 18%; animation-delay: 2.1s;  animation-duration: 4.3s; --s: 0.7; --dx: -18px; --dy: -20px; background: #6bc4a1; box-shadow: 0 0 5px 1.5px rgba(107, 196, 161, 0.85); }
+.logo-particles i:nth-child(9)  { left: 88%; top: 45%; animation-delay: 1.1s;  animation-duration: 3.5s; --s: 1.1; --dx: 20px;  --dy: -18px; background: #6bc4a1; box-shadow: 0 0 5px 1.5px rgba(107, 196, 161, 0.85); }
+.logo-particles i:nth-child(10) { left: 94%; top: 30%; animation-delay: 2.8s;  animation-duration: 4.1s; --s: 0.6; --dx: -22px; --dy: 18px;  background: #6bc4a1; box-shadow: 0 0 5px 1.5px rgba(107, 196, 161, 0.85); }
+.logo-particles i:nth-child(11) { left: 22%; top: 65%; animation-delay: 3.2s;  animation-duration: 3.8s; --s: 0.9; --dx: 18px;  --dy: -20px; }
+.logo-particles i:nth-child(12) { left: 62%; top: 68%; animation-delay: 1.6s;  animation-duration: 4.4s; --s: 0.8; --dx: -20px; --dy: -18px; background: #a8e0df; box-shadow: 0 0 5px 1.5px rgba(168, 224, 223, 0.85); }
 @keyframes logo-particle-drift {
   0%   { opacity: 0;    transform: translate(0, 0) scale(0.4); }
   20%  { opacity: 0.9;  transform: translate(calc(var(--dx) * 0.3), calc(var(--dy) * 0.3)) scale(var(--s, 1)); }
@@ -1017,15 +1045,141 @@ body.page-home {
 /* lukitse scroll niin kauan kun aloitusanimaatio (.intro) on näkyvissä */
 body.page-home:not(.entered) { overflow: hidden; }
 
-/* ---- hero (taustakuva: väliaikainen placeholder, ei efektejä/parallaksia) ---- */
+/* ---- hero (taustakuva koostettu erillisistä syvyystasoista, mahdollistaa parallaksin myöhemmin) ---- */
 .hero {
   position: relative;
   z-index: 1;
+  overflow: hidden;
   min-height: 100vh;   /* fallback vanhoille selaimille */
   min-height: 100svh;  /* pieni viewport (mobiilin selainpalkit huomioiden) */
-  background:
-    linear-gradient(180deg, rgba(5,6,12,0.3), rgba(5,6,12,0.05)),
-    url("assets/duobotit/Etusivu kuvat/Duobotit_BG_master_copy.webp") center / cover no-repeat;
+  background: #0c1524; /* varmistus ennen kuin kuvatasot ovat latautuneet */
+}
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(180deg, rgba(5,6,12,0.3), rgba(5,6,12,0.05));
+  pointer-events: none;
+}
+/* Taustan syvyystasot, järjestetty kauimmaisesta lähimpään (DOM-järjestys = pinoamisjärjestys) */
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+.hero-layer {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.hero-layer-sky        { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/05_Sky.png"); }
+.hero-layer-mountains  { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/04_Mountains.png"); }
+.hero-layer-clouds-fg  { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/06_Clouds_Foreground.png"); }
+.hero-layer-island-1   { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/07_Floating_Island_01.png"); }
+.hero-layer-island-2   { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/08_Floating_Island_02.png"); }
+.hero-layer-island-3   { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/09_Floating_Island_03.png"); }
+.hero-layer-island-4   { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/10_Floating_Island_04.png"); }
+.hero-layer-island-5   { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/11_Floating_Island_05.png"); }
+.hero-layer-island-6   { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/12_Floating_Island_06.png"); }
+.hero-layer-sea        { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/03_Sea.png"); }
+.hero-layer-grass      { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/02_Midground_Grass.png"); }
+.hero-layer-flowers    { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/01_Foreground_Flowers.png"); }
+
+/* Leijuvien saarten pehmeä kellunta: säädä kunkin saaren --float-* -muuttujia alla */
+.hero-island {
+  animation: hero-island-float var(--float-dur, 7s) ease-in-out infinite;
+  animation-delay: var(--float-delay, 0s);
+  will-change: transform;
+}
+@keyframes hero-island-float {
+  0%   { transform: translateY(0) rotate(calc(var(--float-rot, 0deg) * -1)); }
+  50%  { transform: translateY(var(--float-amp, -15px)) rotate(var(--float-rot, 0deg)); }
+  100% { transform: translateY(0) rotate(calc(var(--float-rot, 0deg) * -1)); }
+}
+/* ===== SAARTEN KELLUNTA-SÄÄDÖT (muuta vain näitä arvoja) ===== */
+.hero-layer-island-1 { --float-amp: -5px;  --float-dur: 11s;  --float-delay: 0s;   --float-rot: 0.3deg; }
+.hero-layer-island-2 { --float-amp: -6px;  --float-dur: 12s;  --float-delay: -2s;  --float-rot: 0.35deg; }
+.hero-layer-island-3 { --float-amp: -18px; --float-dur: 12s;   --float-delay: -4s;  --float-rot: 1deg; }
+.hero-layer-island-4 { --float-amp: -10px; --float-dur: 12s;   --float-delay: -1s;  --float-rot: 0.7deg; }
+.hero-layer-island-5 { --float-amp: 0px; --float-dur: 15s; --float-delay: -8s;  --float-rot: 0.4deg; }
+.hero-layer-island-6 { --float-amp: -16px; --float-dur: 6.5s; --float-delay: 0s;  --float-rot: 0.8deg; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-island { animation: none; }
+}
+/* Etualan ruohon/kukkien huojunta tuulessa: pivot alareunassa, vain yläosa heiluu */
+.hero-sway {
+  animation: hero-grass-sway var(--sway-dur, 5s) ease-in-out infinite;
+  animation-delay: var(--sway-delay, 0s);
+  transform-origin: bottom center;
+  will-change: transform;
+}
+@keyframes hero-grass-sway {
+  0%   { transform: skewX(calc(var(--sway-amt, 1.5deg) * -1)); }
+  50%  { transform: skewX(var(--sway-amt, 1.5deg)); }
+  100% { transform: skewX(calc(var(--sway-amt, 1.5deg) * -1)); }
+}
+/* ===== HUOJUNNAN SÄÄDÖT (muuta vain näitä arvoja) ===== */
+.hero-layer-grass   { --sway-amt: 0.deg; --sway-dur: 1s;   --sway-delay: 0.1s; }
+.hero-layer-flowers { --sway-amt: 0.5deg; --sway-dur: 7s; --sway-delay: 0s; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-sway { animation: none; }
+}
+/* Meren pinnan hidas väreily: pivot ylhäällä (horisontti kiinni), vain alaosa hengittää */
+.hero-water {
+  animation: hero-water-shimmer var(--water-dur, 6s) ease-in-out infinite;
+  transform-origin: top center;
+  will-change: transform;
+}
+@keyframes hero-water-shimmer {
+  0%, 100% { transform: scaleY(1) skewX(0deg); }
+  50%      { transform: scaleY(var(--water-scale, 1.008)) skewX(var(--water-skew, 0.3deg)); }
+}
+/* ===== VEDEN VÄREILYN SÄÄDÖT (muuta vain näitä arvoja) ===== */
+.hero-layer-sea { --water-dur: 6.5s; --water-scale: 1.003; --water-skew: 0.15deg; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-water { animation: none; }
+}
+/* Pehmeät aurinkosäteet: valona (screen-blend), ei peittävänä kerroksena -> ei raitoja */
+.hero-godrays {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+.hero-godrays .ray {
+  position: absolute;
+  top: -15%;
+  left: var(--ray-x, 20%);
+  width: var(--ray-w, 110px);
+  height: 150%;
+  background: linear-gradient(180deg,
+    transparent 0%,
+    rgba(255, 244, 214, var(--ray-o, 0.16)) 35%,
+    rgba(255, 244, 214, var(--ray-o, 0.16)) 55%,
+    transparent 100%);
+  filter: blur(var(--ray-blur, 28px));
+  transform: rotate(var(--ray-rot, -20deg));
+  transform-origin: top center;
+  animation: hero-ray-breathe var(--ray-dur, 10s) ease-in-out infinite;
+  animation-delay: var(--ray-delay, 0s);
+}
+@keyframes hero-ray-breathe {
+  0%, 100% { opacity: 0.7; }
+  50%      { opacity: 1; }
+}
+/* ===== SÄTEIDEN SÄÄDÖT (sijainti, leveys, kulma, sumeus, kirkkaus, ajastus) ===== */
+.ray-1 { --ray-x: 6%;  --ray-w: 90px;  --ray-rot: -18deg; --ray-blur: 26px; --ray-o: 0.14; --ray-dur: 11s; --ray-delay: 0s; }
+.ray-2 { --ray-x: 22%; --ray-w: 140px; --ray-rot: -22deg; --ray-blur: 34px; --ray-o: 0.18; --ray-dur: 9s;  --ray-delay: -3s; }
+.ray-3 { --ray-x: 76%; --ray-w: 70px;  --ray-rot: -16deg; --ray-blur: 22px; --ray-o: 0.12; --ray-dur: 12s; --ray-delay: -6s; }
+.ray-4 { --ray-x: 92%; --ray-w: 120px; --ray-rot: -24deg; --ray-blur: 30px; --ray-o: 0.16; --ray-dur: 10s; --ray-delay: -1.5s; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-godrays .ray { animation: none; opacity: 0.85; }
 }
 
 /* Hero-tekstipino: keskitetty vaakasuunnassa, ylhäällä taivaan/vuorten rauhallisella

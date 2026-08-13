@@ -580,7 +580,9 @@ body.page-home .topbar {
   --logo-x: -5px;      /* vaakasiirto: positiivinen = oikealle, negatiivinen = vasemmalle */
   --logo-y: 0px;      /* pystysiirto: negatiivinen = ylös, positiivinen = alas */
   /* ================================================== */
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   position: relative;
   pointer-events: auto;
   text-decoration: none;
@@ -593,6 +595,15 @@ body.page-home .topbar {
   width: auto;
   transform-origin: center;
   transition: transform 0.2s ease, filter 0.2s ease;
+}
+/* Esikatselu: teksti logon vasemmalla puolella (samaa fonttia kuin nav-linkit) */
+.brand-text-logo-label {
+  font-family: "Nunito", sans-serif;
+  font-weight: 800;
+  font-size: 1.15rem;
+  letter-spacing: 0.01em;
+  color: var(--cream);
+  white-space: nowrap;
 }
 /* Leijuvat teal-kipinät logon ympärillä (kevyt CSS-only) */
 .logo-particles {

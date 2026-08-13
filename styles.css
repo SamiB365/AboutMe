@@ -456,7 +456,7 @@ body.page-home .topbar {
   align-items: center;
   justify-content: center;
   height: 30px;
-  width: 55px;   /* ← kehyksen leveys; suurenna/pienennä tarpeen mukaan */
+  width: auto;   /* ← kehyksen leveys; suurenna/pienennä tarpeen mukaan */
 }
 .nav-right .lang-switch {
   height: 30px;
@@ -575,69 +575,65 @@ body.page-home .topbar {
 
 /* Duobotit-tekstilogo (SVG) palkin vasemmassa yläkulmassa */
 .brand-text-logo {
+  /* ===== LOGON SÄÄDÖT (muuta vain näitä arvoja) ===== */
+  --logo-size: 45px;   /* logon korkeus (leveys skaalautuu automaattisesti) */
+  --logo-x: -5px;      /* vaakasiirto: positiivinen = oikealle, negatiivinen = vasemmalle */
+  --logo-y: 0px;      /* pystysiirto: negatiivinen = ylös, positiivinen = alas */
+  /* ================================================== */
   display: inline-block;
   position: relative;
   pointer-events: auto;
   text-decoration: none;
+  top: var(--logo-y);
+  left: var(--logo-x);
 }
 .brand-text-logo img {
   display: block;
-  height: clamp(58px, 6vw, 74px);
+  height: var(--logo-size);
   width: auto;
   transform-origin: center;
   transition: transform 0.2s ease, filter 0.2s ease;
-  /* Sujuva ping-pong -hehku: min -> max -> min saumattomasti. Huippu 50 %:ssa.
-     Sama kesto kuin glitzillä -> efektit synkassa. */
-  animation: logo-glow 6.4s ease-in-out infinite;
 }
-@keyframes logo-glow {
-  0%, 100% {
-    filter: drop-shadow(0 0 3px rgba(255, 175, 82, 0.5));
-  }
-  50% {
-    filter:
-      drop-shadow(0 0 6px rgba(255, 175, 82, 0.9))
-      drop-shadow(0 0 16px rgba(255, 145, 40, 0.6));
-  }
-}
-/* Kevyt glitz: kirkas kiiltopyyhkäisy — ajastettu osumaan hohteen huippuun (50 %). */
-.brand-text-logo::after {
-  content: "";
+/* Leijuvat teal-kipinät logon ympärillä (kevyt CSS-only) */
+.logo-particles {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(115deg, transparent 42%, rgba(255, 255, 255, 0.85) 50%, transparent 58%);
-  background-size: 300% 100%;
-  background-position: 150% 0;
-  -webkit-mask: url("assets/duobotit/Etusivu kuvat/duobotit-glow-orange.svg") no-repeat center / contain;
-          mask: url("assets/duobotit/Etusivu kuvat/duobotit-glow-orange.svg") no-repeat center / contain;
-  mix-blend-mode: screen;
+  inset: -6px -4px 0;
   pointer-events: none;
-  /* Sama kesto kuin hehulla -> pyyhkäisy tulee juuri hohteen ollessa maksimissa. */
-  animation: logo-glitz 6.4s ease-in-out infinite;
+  z-index: -1;
+  overflow: visible;
 }
-@keyframes logo-glitz {
-  0%, 40% { background-position: 150% 0; }
-  60% { background-position: -50% 0; }
-  100% { background-position: -50% 0; }
+.logo-particles i {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: #83d0cf;
+  box-shadow: 0 0 5px 1.5px rgba(131, 208, 207, 0.85);
+  opacity: 0;
+  animation: logo-particle-drift 3.2s ease-in-out infinite;
 }
-/* Sarjakuva-sivu (page-comic): pinkin sävyinen hohde + glitz-maski pinkin logon muotoon.
-   Sama kesto/tahti -> pysyy synkassa glitzin kanssa. */
-.page-comic .brand-text-logo img {
-  animation-name: logo-glow-pink;
+/* Kuva ilman piirrettyjä kipinöitä -> partikkelit levitetty vapaasti koko logon ylle */
+.logo-particles i:nth-child(1)  { left: 6%;  top: 40%; animation-delay: 0s;    animation-duration: 3.6s; --s: 0.7; --dx: 10px; --dy: -8px; }
+.logo-particles i:nth-child(2)  { left: 16%; top: 20%; animation-delay: 0.9s;  animation-duration: 4.2s; --s: 1.1; --dx: -8px; --dy: 9px; }
+.logo-particles i:nth-child(3)  { left: 28%; top: 55%; animation-delay: 1.8s;  animation-duration: 3.9s; --s: 0.8; --dx: 9px;  --dy: 10px; }
+.logo-particles i:nth-child(4)  { left: 38%; top: 15%; animation-delay: 0.4s;  animation-duration: 4.5s; --s: 1.2; --dx: -10px; --dy: -7px; }
+.logo-particles i:nth-child(5)  { left: 46%; top: 60%; animation-delay: 1.3s;  animation-duration: 3.4s; --s: 0.6; --dx: 8px;  --dy: -10px; background: #a8e0df; box-shadow: 0 0 5px 1.5px rgba(168, 224, 223, 0.85); }
+.logo-particles i:nth-child(6)  { left: 58%; top: 25%; animation-delay: 2.4s;  animation-duration: 4.0s; --s: 0.9; --dx: -9px; --dy: 8px;  background: #6bc4a1; box-shadow: 0 0 5px 1.5px rgba(107, 196, 161, 0.85); }
+.logo-particles i:nth-child(7)  { left: 68%; top: 50%; animation-delay: 0.2s;  animation-duration: 3.7s; --s: 1.0; --dx: 10px; --dy: 9px;  background: #6bc4a1; box-shadow: 0 0 5px 1.5px rgba(107, 196, 161, 0.85); }
+.logo-particles i:nth-child(8)  { left: 78%; top: 18%; animation-delay: 2.1s;  animation-duration: 4.3s; --s: 0.7; --dx: -8px; --dy: -9px; background: #6bc4a1; box-shadow: 0 0 5px 1.5px rgba(107, 196, 161, 0.85); }
+.logo-particles i:nth-child(9)  { left: 88%; top: 45%; animation-delay: 1.1s;  animation-duration: 3.5s; --s: 1.1; --dx: 9px;  --dy: -8px; background: #6bc4a1; box-shadow: 0 0 5px 1.5px rgba(107, 196, 161, 0.85); }
+.logo-particles i:nth-child(10) { left: 94%; top: 30%; animation-delay: 2.8s;  animation-duration: 4.1s; --s: 0.6; --dx: -10px; --dy: 8px;  background: #6bc4a1; box-shadow: 0 0 5px 1.5px rgba(107, 196, 161, 0.85); }
+.logo-particles i:nth-child(11) { left: 22%; top: 65%; animation-delay: 3.2s;  animation-duration: 3.8s; --s: 0.9; --dx: 8px;  --dy: -9px; }
+.logo-particles i:nth-child(12) { left: 62%; top: 68%; animation-delay: 1.6s;  animation-duration: 4.4s; --s: 0.8; --dx: -9px; --dy: -8px; background: #a8e0df; box-shadow: 0 0 5px 1.5px rgba(168, 224, 223, 0.85); }
+@keyframes logo-particle-drift {
+  0%   { opacity: 0;    transform: translate(0, 0) scale(0.4); }
+  20%  { opacity: 0.9;  transform: translate(calc(var(--dx) * 0.3), calc(var(--dy) * 0.3)) scale(var(--s, 1)); }
+  50%  { opacity: 0.5;  transform: translate(var(--dx), var(--dy)) scale(calc(var(--s, 1) * 0.8)); }
+  80%  { opacity: 0.9;  transform: translate(calc(var(--dx) * 0.6), calc(var(--dy) * 0.6)) scale(var(--s, 1)); }
+  100% { opacity: 0;    transform: translate(0, 0) scale(0.4); }
 }
-@keyframes logo-glow-pink {
-  0%, 100% {
-    filter: drop-shadow(0 0 3px rgba(255, 161, 223, 0.5));
-  }
-  50% {
-    filter:
-      drop-shadow(0 0 6px rgba(255, 130, 210, 0.9))
-      drop-shadow(0 0 16px rgba(255, 82, 197, 0.6));
-  }
-}
-.page-comic .brand-text-logo::after {
-  -webkit-mask-image: url("assets/duobotit/Sarjakuva kuvat/duobotit-logo-pink.svg");
-          mask-image: url("assets/duobotit/Sarjakuva kuvat/duobotit-logo-pink.svg");
+@media (prefers-reduced-motion: reduce) {
+  .logo-particles i { animation: none; opacity: 0; }
 }
 /* HOVER: kevyt pyörähdys + suurennos */
 .brand-text-logo:hover img {
@@ -1038,6 +1034,47 @@ body.page-home:not(.entered) { overflow: hidden; }
   width: 100%;
   max-width: 900px;
   padding: 0 20px;
+}
+/* ---- ajelehtivat pilvet taustakuvan päällä (kevyt CSS-only, ei kuva-assettia) ---- */
+/* PAUSED: odotetaan oikeaa höyry-/pilvikuva-assettia, koodi säilytetty valmiina myöhempää animointia varten */
+.hero-clouds {
+  display: none;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+.cloud {
+  position: absolute;
+  bottom: 0;
+  width: 3vw;
+  height: 22vw;
+  border-radius: 50% / 15%;
+  background: linear-gradient(0deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.85) 35%, rgba(255,255,255,0.55) 75%, rgba(255,255,255,0) 100%);
+  filter: blur(3px);
+  will-change: transform, opacity, filter;
+  opacity: 0;
+  transform-origin: center bottom;
+  animation: steam-wisp var(--dur, 7s) ease-in infinite;
+}
+/* Lähtöpaikat kohdistettu taustakuvan pilvimöykkyjen kohdalle: ohuet säikeet nousevat sieltä ylös */
+.cloud-1 { left: 9%;  top: 24%; --max-o: 0.8;  --dx: -14px; --dur: 6.5s; }
+.cloud-2 { left: 18%; top: 30%; --max-o: 0.75; --dx: 12px;  --dur: 7.5s; animation-delay: -2.5s; }
+.cloud-3 { left: 55%; top: 22%; --max-o: 0.7;  --dx: -12px; --dur: 7s;   animation-delay: -4s; }
+.cloud-4 { left: 70%; top: 32%; --max-o: 0.65; --dx: 14px;  --dur: 8s;   animation-delay: -1s; }
+/* Kiemurteleva höyrysäie: kaartuu sivulta toiselle noustessaan, kapenee ja haihtuu huippua kohti */
+@keyframes steam-wisp {
+  0%   { opacity: 0;                       filter: blur(2px); transform: translate(0, 0)                          scaleX(1)    scaleY(0.2); }
+  10%  { opacity: var(--max-o); }
+  25%  { filter: blur(3px);                                   transform: translate(calc(var(--dx) * 0.4), -20%)    scaleX(0.9)  scaleY(0.55); }
+  45%  { filter: blur(4px);                                   transform: translate(calc(var(--dx) * -0.5), -42%)   scaleX(0.75) scaleY(0.8); }
+  65%  { opacity: calc(var(--max-o) * .7);  filter: blur(5px); transform: translate(calc(var(--dx) * 0.7), -66%)   scaleX(0.6)  scaleY(1); }
+  85%  { opacity: calc(var(--max-o) * .3);  filter: blur(7px); transform: translate(calc(var(--dx) * -0.6), -88%)  scaleX(0.4)  scaleY(1.1); }
+  100% { opacity: 0;                        filter: blur(9px); transform: translate(var(--dx), -108%)              scaleX(0.25) scaleY(1.15); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cloud { animation: none; }
 }
 .hero-title {
   margin: 0;

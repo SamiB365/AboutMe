@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Caveat:wght@700&family=Space+Mono:wght@400;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=63" />
+    <link rel="stylesheet" href="styles.css?v=83" />
     <!-- EI Three.js / WebGL -importmappia tällä sivulla — kevyt 2D-etusivu. -->
   </head>
 
@@ -66,7 +66,10 @@
     <header class="topbar" id="topbar">
       <div class="brand-group">
         <a class="brand-text-logo" href="index.html" aria-label="Duobotit">
-          <img src="assets/duobotit/Etusivu kuvat/duobotit-logo-orange.svg?v=1" alt="Duobotit" />
+          <img src="assets/duobotit/Etusivu kuvat/Duobotit_juliste_logo_transparent.svg?v=3" alt="Duobotit" />
+          <span class="logo-particles" aria-hidden="true">
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          </span>
         </a>
       </div>
 
@@ -96,9 +99,7 @@
 
       <div class="nav-right">
         <span class="demo-wrap">
-          <a class="nav-demo" href="loader-original-test.html" aria-label="Play">
-            <img class="nav-demo-img" src="assets/duobotit/Etusivu kuvat/playbutton-robotsUP.svg?v=1" alt="Play" />
-          </a>
+          <a class="nav-demo" href="loader-original-test.html" data-i18n="nav.demo">Play demo</a>
         </span>
 
         <div class="lang-switch" role="group" aria-label="Kieli / Language">
@@ -141,6 +142,12 @@
     <main>
       <!-- ====== HERO (taustakuva + keskitetty otsikkoteksti) ====== -->
       <section class="hero" aria-label="Esittely">
+        <div class="hero-clouds" aria-hidden="true">
+          <span class="cloud cloud-1"></span>
+          <span class="cloud cloud-2"></span>
+          <span class="cloud cloud-3"></span>
+          <span class="cloud cloud-4"></span>
+        </div>
         <div class="hero-content">
           <h1 class="hero-title">DuBaRa</h1>
           <p class="hero-subtitle" data-i18n="hero.subtitle">Lue sarjakuvaa, tutki maailmaa, pelaa peliä.</p>
@@ -161,7 +168,7 @@
             "nav.hahmot": "Hahmot",
             "nav.sarjakuva": "Sarjakuva",
             "nav.tietoa": "Tietoa",
-            "nav.demo": "Play",
+            "nav.demo": "Play demo",
             "hero.subtitle": "Lue sarjakuvaa, tutki maailmaa, pelaa peliä.",
           },
           en: {
@@ -169,7 +176,7 @@
             "nav.hahmot": "Characters",
             "nav.sarjakuva": "Comic",
             "nav.tietoa": "About",
-            "nav.demo": "Play",
+            "nav.demo": "Play demo",
             "hero.subtitle": "Read the comic, explore the world, play the game.",
           },
         };

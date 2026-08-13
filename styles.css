@@ -1077,14 +1077,19 @@ body.page-home:not(.entered) { overflow: hidden; }
   background-repeat: no-repeat;
 }
 .hero-layer-sky        { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/05_Sky.png"); }
-.hero-layer-mountains  { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/04_Mountains.png"); }
+.hero-layer-clouds-bg  { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/06_Clouds_Back.png"); }
+.hero-layer-mountains  { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/04_Mountains.png"); background-position: center 65%; transform: scale(1.06); }
+.hero-layer-clouds-mid { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/06_Clouds_Middle.png"); }
 .hero-layer-clouds-fg  { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/06_Clouds_Foreground.png"); }
-.hero-layer-island-1   { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/07_Floating_Island_01.png"); }
+.hero-layer-island-1a  { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/04_Floating_Island_01_1.png"); }
+.hero-layer-island-1b  { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/04_Floating_Island_01_2.png"); }
 .hero-layer-island-2   { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/08_Floating_Island_02.png"); }
 .hero-layer-island-3   { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/09_Floating_Island_03.png"); }
-.hero-layer-island-4   { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/10_Floating_Island_04.png"); }
-.hero-layer-island-5   { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/11_Floating_Island_05.png"); }
+.hero-layer-island-4   { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/10_Floating_Island_04.png"); filter: contrast(1.2) saturate(1.15) drop-shadow(0 6px 10px rgba(20,30,50,0.25)); }
+.hero-layer-island-5a  { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/08_Floating_Island_05_1.png"); }
+.hero-layer-island-5b  { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/08_Floating_Island_05_2.png"); }
 .hero-layer-island-6   { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/12_Floating_Island_06.png"); }
+.hero-layer-island-7   { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/08_Floating_Island_05.png"); }
 .hero-layer-sea        { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/03_Sea.png"); }
 .hero-layer-grass      { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/02_Midground_Grass.png"); }
 .hero-layer-flowers    { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/01_Foreground_Flowers.png"); }
@@ -1101,11 +1106,14 @@ body.page-home:not(.entered) { overflow: hidden; }
   100% { transform: translateY(0) rotate(calc(var(--float-rot, 0deg) * -1)); }
 }
 /* ===== SAARTEN KELLUNTA-SÄÄDÖT (muuta vain näitä arvoja) ===== */
-.hero-layer-island-1 { --float-amp: -5px;  --float-dur: 11s;  --float-delay: 0s;   --float-rot: 0.3deg; }
-.hero-layer-island-2 { --float-amp: -6px;  --float-dur: 12s;  --float-delay: -2s;  --float-rot: 0.35deg; }
-.hero-layer-island-3 { --float-amp: -18px; --float-dur: 12s;   --float-delay: -4s;  --float-rot: 1deg; }
+.hero-layer-island-1a { --float-amp: -3px;  --float-dur: 13s;  --float-delay: 0s;   --float-rot: 0.15deg; }
+.hero-layer-island-1b { --float-amp: -2.5px;  --float-dur: 12s;   --float-delay: -3s;  --float-rot: 0.12deg; }
+.hero-layer-island-2 { --float-amp: -6px;  --float-dur: 12s;  --float-delay: 1s;  --float-rot: 0.0deg; }
+.hero-layer-island-3 { --float-amp: -5px; --float-dur: 15s;   --float-delay: -6s;  --float-rot: 0.25deg; }
 .hero-layer-island-4 { --float-amp: -10px; --float-dur: 12s;   --float-delay: -1s;  --float-rot: 0.7deg; }
-.hero-layer-island-5 { --float-amp: 0px; --float-dur: 15s; --float-delay: -8s;  --float-rot: 0.4deg; }
+.hero-layer-island-5a { --float-amp: -4px; --float-dur: 9.5s; --float-delay: -2s;  --float-rot: 0.2deg; }
+.hero-layer-island-5b { --float-amp: -6px; --float-dur: 11s; --float-delay: -4.5s;  --float-rot: 0.3deg; }
+.hero-layer-island-7 { --float-amp: -8px; --float-dur: 10.5s; --float-delay: -6s;  --float-rot: 0.4deg; }
 .hero-layer-island-6 { --float-amp: -16px; --float-dur: 6.5s; --float-delay: 0s;  --float-rot: 0.8deg; }
 @media (prefers-reduced-motion: reduce) {
   .hero-island { animation: none; }

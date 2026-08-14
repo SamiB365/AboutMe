@@ -1106,15 +1106,16 @@ body.page-home:not(.entered) { overflow: hidden; }
   100% { transform: translateY(0) rotate(calc(var(--float-rot, 0deg) * -1)); }
 }
 /* ===== SAARTEN KELLUNTA-SÄÄDÖT (muuta vain näitä arvoja) ===== */
-.hero-layer-island-1a { --float-amp: -3px;  --float-dur: 13s;  --float-delay: 0s;   --float-rot: 0.15deg; }
-.hero-layer-island-1b { --float-amp: -2.5px;  --float-dur: 12s;   --float-delay: -3s;  --float-rot: 0.12deg; }
-.hero-layer-island-2 { --float-amp: -6px;  --float-dur: 12s;  --float-delay: 1s;  --float-rot: 0.0deg; }
-.hero-layer-island-3 { --float-amp: -5px; --float-dur: 15s;   --float-delay: -6s;  --float-rot: 0.25deg; }
-.hero-layer-island-4 { --float-amp: -10px; --float-dur: 12s;   --float-delay: -1s;  --float-rot: 0.7deg; }
-.hero-layer-island-5a { --float-amp: -4px; --float-dur: 9.5s; --float-delay: -2s;  --float-rot: 0.2deg; }
-.hero-layer-island-5b { --float-amp: -6px; --float-dur: 11s; --float-delay: -4.5s;  --float-rot: 0.3deg; }
-.hero-layer-island-7 { --float-amp: -8px; --float-dur: 10.5s; --float-delay: -6s;  --float-rot: 0.4deg; }
-.hero-layer-island-6 { --float-amp: -16px; --float-dur: 6.5s; --float-delay: 0s;  --float-rot: 0.8deg; }
+/* järjestys vasemmalta oikealle: 1=vasemmalla ... 8=oikealla, island-2 ei näy */
+.hero-layer-island-5a { --float-amp: 0.05px; --float-dur: 20s; --float-delay: 1s;  --float-rot: 0.6deg; } /* ensimmäinen saari vasemmalta pieni */
+.hero-layer-island-7 { --float-amp: -1.3px; --float-dur: 12s; --float-delay: -2s;  --float-rot: 0.15deg; } /* toinen saari vasemmalta iso */
+.hero-layer-island-5b { --float-amp: 0.05px; --float-dur: 8s; --float-delay: -2s;  --float-rot: 0.2deg; } /* kolmas saari vasemmalta pieni */
+.hero-layer-island-1a { --float-amp: 5px;  --float-dur: 7s;  --float-delay: -0.1s;   --float-rot: 0.3deg; } /* neljäs saari vasemmalta, iso keskellä */
+.hero-layer-island-1b { --float-amp: 0.9px;  --float-dur: 5s;   --float-delay: -0.1s;  --float-rot: 0.3deg; } /* viides saari vasemmalta, pieni keskellä */
+.hero-layer-island-3 { --float-amp: -4px; --float-dur: 8s;   --float-delay: 0.1s;  --float-rot: 0.00deg; } /* kuudes saari vasemmalta, iso keskellä */
+.hero-layer-island-4 { --float-amp: -7px; --float-dur: 5s;   --float-delay: 0.1s;  --float-rot: 0.4deg; } /* seitsämäs saari vasemmalta, pieni keskellä */
+.hero-layer-island-6 { --float-amp: -3px; --float-dur: 10s; --float-delay: 0s;  --float-rot: 0.4deg; } /* kahdeksas saari vasemmalta, kaukana oikealla */
+.hero-layer-island-2 { --float-amp: -3px;  --float-dur: 15s;  --float-delay: 1s;  --float-rot: 0.2deg; } /* tätä ei ole näkyvissä*/
 @media (prefers-reduced-motion: reduce) {
   .hero-island { animation: none; }
 }

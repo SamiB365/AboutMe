@@ -91,11 +91,12 @@ const CONFIG = {
   // UUSI 3D-MALLI keskellä (GLB, korvaa vanhan proseduraalisen piirilevypuun) — kortit kiertävät sitä
   tree: {
     enabled: true,
-    url: "assets/models/cherry_tree.glb", // GLB-tiedoston polku
+    url: "assets/models/sakura tree_3D ilman lehtiä.glb", // GLB-tiedoston polku
     baseY: -3,       // tyven korkeus (kortit kiertävät tämän ympärillä) — myös gridin "reunan" korkeus
     scale: 3,        // koko (säädä mallin omien mittojen mukaan)
     rotSpeed: 0,     // pyörintänopeus (0 = ei pyöri)
-    sinkIntoWell: 1.7, // kuinka paljon puu laskeutuu baseY:n ALAPUOLELLE, jotta se istuu kuopan pohjalla
+    sinkIntoWell: 1.15, // kuinka paljon puu laskeutuu baseY:n ALAPUOLELLE, jotta tyvi/juuristo istuu
+                        // täsmälleen kuopan pohjimmaisen kohdan (baseY - wellDepth) tasolla
   },
   // NEONGRIDI-ALUSTA puun alla (synkkywave-lattia, kuten referenssikuvan hehkuva ruudukko + rengas)
   grid: {
@@ -109,14 +110,17 @@ const CONFIG = {
     ringRadius: 4.2,           // renkaan säde (isompi → näkyy rungon/kiven ulkopuolella)
     ringWidth: 0.18,           // renkaan paksuus
     fadeRadius: 22,            // etäisyys jolloin ruudukko häipyy näkyvistä (horisontti)
-    wellDepth: 2.4,            // kuinka syvälle ruudukko "uppoaa" puun kohdalla (massakuoppa)
-    wellRadius: 5,             // uppouman leveys (isompi → loivempi/laajempi kuoppa)
+    wellDepth: 4.5,            // kuinka syvälle ruudukko "uppoaa" puun kohdalla (massakuoppa) —
+                               // iso arvo = jyrkkä, syvä suppilo (kuten painovoimakuoppa-referenssikuva)
+    wellRadius: 6.5,           // uppouman leveys — leveä säde levittää suppilon laajalle alueelle
+                               // ruudukkoa (ei enää vain tyven kokoinen tiukka notko)
     gradientRadius: 9,         // etäisyys jolloin ruudukon väri siirtyy kokonaan rengasväristä (pinkki)
                                // perusväriin (syaani) — referenssikuvan liukuvärinen lattia
     pulseSpeed: 1.3,           // renkaiden sykkeen (hengityksen) nopeus
     pulseAmount: 0.35,         // sykkeen voimakkuus (0..1, kirkkauden vaihteluväli)
     ring2Radius: 3.0,          // sisemmän renkaan säde (kerroksellinen hehku, kuten referenssikuvassa)
     ring2Width: 0.12,          // sisemmän renkaan paksuus
+    yOffset: -1,             // koko gridin oma lisälasku (puun/korttien korkeuteen ei vaikuta)
 
     // VALOEFEKTI: N hehkuvaa "käärmettä" (snakeCount kpl) kulkee pitkin ruudukkoviivoja eteenpäin,
     // kääntyen aina risteyksessä satunnaiseen suuntaan (ei koskaan käänny takaisin). Jos käärme
@@ -1884,7 +1888,7 @@ function buildGroundGrid() {
   });
   gridMesh = new THREE.Mesh(geo, gridMat);
   gridMesh.rotation.x = -Math.PI / 2;     // makaamaan XZ-tasoon
-  gridMesh.position.y = CONFIG.tree.baseY; // sama korkeus kuin puun tyvi
+  gridMesh.position.y = CONFIG.tree.baseY + G.yOffset; // sama korkeus kuin puun tyvi (+ pieni oma lasku)
   gridMesh.renderOrder = -1;
   scene.add(gridMesh);
   snakeInit();
@@ -2617,6 +2621,38 @@ async function boot() {
       frame() { layoutCarousel(true); composer.render(); },
       goto(i) { tCurrent = tTarget = clamp(i, 0, CARDS.length - 1); layoutCarousel(true); composer.render(); },
       tree(v) { if (treeGroup) treeGroup.visible = v !== false; },
+      treeBBox() {
+        if (!treeGroup) return null;
+        const box = new THREE.Box3().setFromObject(treeGroup);
+        const size = new THREE.Vector3();
+        box.getSize(size);
+        return { min: box.min, max: box.max, size, baseY: treeGroup.position.y };
+      },
+      treeFootprint(frac = 0.08) {
+        if (!treeGroup) return null;
+        const box = new THREE.Box3().setFromObject(treeGroup);
+        const yThresh = box.min.y + (box.max.y - box.min.y) * frac;
+        let maxR = 0, minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity, n = 0;
+        const v = new THREE.Vector3();
+        treeGroup.updateMatrixWorld(true);
+        treeGroup.traverse((o) => {
+          if (!o.isMesh || !o.geometry) return;
+          const pos = o.geometry.attributes.position;
+          if (!pos) return;
+          for (let i = 0; i < pos.count; i++) {
+            v.fromBufferAttribute(pos, i).applyMatrix4(o.matrixWorld);
+            if (v.y > yThresh) continue;
+            n++;
+            const r = Math.hypot(v.x, v.z);
+            if (r > maxR) maxR = r;
+            if (v.x < minX) minX = v.x;
+            if (v.x > maxX) maxX = v.x;
+            if (v.z < minZ) minZ = v.z;
+            if (v.z > maxZ) maxZ = v.z;
+          }
+        });
+        return { yThresh, maxR, width: maxX - minX, depth: maxZ - minZ, sampleCount: n };
+      },
       ring(v) { if (ringGroup) ringGroup.visible = v !== false; composer.render(); },
       inspect() {
         const c = cards[3];

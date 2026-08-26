@@ -9,6 +9,7 @@ tallenna tiedostoja välimuistiin -> muutokset näkyvät heti (F5 riittää).
 """
 import sys
 from http.server import HTTPServer, SimpleHTTPRequestHandler
+from socketserver import ThreadingMixIn
 
 
 class NoCacheHandler(SimpleHTTPRequestHandler):
@@ -19,7 +20,11 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
         super().end_headers()
 
 
+class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
+    daemon_threads = True
+
+
 if __name__ == "__main__":
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8000
     print(f"Dev-palvelin (ei välimuistia) -> http://localhost:{port}/")
-    HTTPServer(("", port), NoCacheHandler).serve_forever()
+    ThreadingHTTPServer(("", port), NoCacheHandler).serve_forever()

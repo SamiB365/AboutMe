@@ -1095,11 +1095,9 @@ body.page-home:not(.entered) { overflow: hidden; }
 .hero-layer-flowers    { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/01_Foreground_Flowers.png"); }
 .hero-layer-characters {
   background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/Characters.png");
-  /* vw-yksiköt (EI %), koska % laskee koon/sijainnin suhteessa elementin kokoon eri tavalla
-     kuin muiden tasojen background-size:cover — vw pitää tämän synkassa muun kuvituksen
-     kanssa kun ikkunan kokoa muutetaan (kaikki skaalautuvat samassa suhteessa leveyteen). */
-  background-size: 130vw auto;
-  background-position: -20vw 100%;
+  /* Sama kangaskoko (3840x2160) kuin muillakin tasoilla → peritään base .hero-layerin
+     cover/center sellaisenaan, jolloin tämä pysyy AINA synkassa muun kuvituksen kanssa
+     riippumatta siitä kumpi mitta (leveys vai korkeus) rajoittaa cover-skaalausta. */
 }
 
 /* Leijuvien saarten pehmeä kellunta: säädä kunkin saaren --float-* -muuttujia alla */

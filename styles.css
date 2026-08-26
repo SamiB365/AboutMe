@@ -1299,6 +1299,43 @@ body.page-home:not(.entered) { overflow: hidden; }
   overflow: visible;
   filter: drop-shadow(0 6px 14px rgba(0,0,0,0.45)) drop-shadow(0 2px 5px rgba(0,0,0,0.35)) drop-shadow(0 0 20px rgba(255,255,255,0.35));
 }
+/* Kirjainanimaatio kahdessa vaiheessa: 1) kirjaimet ilmestyvät yksitellen ("appear"),
+   2) kun kaikki näkyvissä, koko sana aaltoilee ja vaimenee paikoilleen ("settle-wave").
+   --letter-stagger = ilmestymisen porrastusväli, --wave-stagger = aallon kulkunopeus kirjainten läpi. */
+.hero-title textPath tspan {
+  --letter-stagger: 0.14s;
+  --wave-stagger: 0.05s;
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  opacity: 0;
+}
+body.entered .hero-title textPath tspan {
+  animation-name: hero-title-appear, hero-title-float-wave;
+  animation-duration: 0.7s, 2.2s;
+  animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1), ease-in-out;
+  animation-fill-mode: forwards, forwards;
+  animation-iteration-count: 1, infinite;
+  animation-delay: calc(var(--i, 0) * var(--letter-stagger)), calc(1.4s + var(--i, 0) * var(--wave-stagger));
+}
+@keyframes hero-title-appear {
+  0%   { opacity: 0; transform: translateY(-25px) scale(0.85); }
+  60%  { opacity: 1; transform: translateY(6px)  scale(1.05); }
+  100% { opacity: 1; transform: translateY(0)    scale(1); }
+}
+/* Tapa B: jatkuva kevyt leijunta (ei asetu paikoilleen, pyörii ikuisesti pienellä amplitudilla). */
+@keyframes hero-title-float-wave {
+  0%   { transform: translateY(0); }
+  20%  { transform: translateY(-3px); }
+  40%  { transform: translateY(2px); }
+  60%  { transform: translateY(-1.5px); }
+  78%  { transform: translateY(1px); }
+  90%  { transform: translateY(-0.5px); }
+  100% { transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-title textPath tspan { opacity: 1; }
+  body.entered .hero-title textPath tspan { animation: none; opacity: 1; transform: none; }
+}
 .hero-title text, .hero-title textPath {
   font-family: "Fredoka", sans-serif;
   font-weight: 700;

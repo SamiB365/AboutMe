@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Caveat:wght@700&family=Space+Mono:wght@400;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=117" />
+    <link rel="stylesheet" href="styles.css?v=129" />
     <!-- EI Three.js / WebGL -importmappia tällä sivulla — kevyt 2D-etusivu. -->
   </head>
 
@@ -114,6 +114,11 @@
       </button>
 
       <div class="mobile-menu" id="mobileMenu">
+        <div class="lang-switch mobile-menu-lang" role="group" aria-label="Kieli / Language">
+          <button type="button" class="lang-btn is-active" data-lang="fi" aria-pressed="true">FI</button>
+          <span class="lang-sep" aria-hidden="true">/</span>
+          <button type="button" class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+        </div>
         <ul class="mobile-menu-links">
           <li><a href="#kartta" data-i18n="nav.kartta">Kartta</a></li>
           <li><a href="hahmot.html" data-i18n="nav.hahmot">Hahmot</a></li>
@@ -169,8 +174,19 @@
           <span class="cloud cloud-4"></span>
         </div>
         <div class="hero-content">
-          <h1 class="hero-title">DuBaRa</h1>
-          <p class="hero-subtitle" data-i18n="hero.subtitle">Lue sarjakuvaa, tutki maailmaa, pelaa peliä.</p>
+          <svg class="hero-title" viewBox="0 0 440 170" role="img" aria-label="DuBaRa">
+            <defs>
+              <linearGradient id="heroTitleGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#ffffff" />
+                <stop offset="45%" stop-color="#f1f4f9" />
+                <stop offset="100%" stop-color="#d7dee8" />
+              </linearGradient>
+            </defs>
+            <path id="heroTitleArc" d="M 20 150 Q 220 10 420 150" fill="none" />
+            <text text-anchor="middle">
+              <textPath href="#heroTitleArc" startOffset="50%">DuBaRa</textPath>
+            </text>
+          </svg>
           <!-- Napit (Lue sarjakuvaa / Tutki karttaa) lisätään tähän myöhemmin -->
         </div>
       </section>

@@ -577,7 +577,7 @@ body.page-home .topbar {
 .brand-text-logo {
   /* ===== LOGON SÄÄDÖT (muuta vain näitä arvoja) ===== */
   --logo-size: 45px;   /* logon korkeus (leveys skaalautuu automaattisesti) */
-  --logo-x: -10px;      /* vaakasiirto: positiivinen = oikealle, negatiivinen = vasemmalle */
+  --logo-x: 6px;      /* vaakasiirto: positiivinen = oikealle, negatiivinen = vasemmalle */
   --logo-y: 0px;      /* pystysiirto: negatiivinen = ylös, positiivinen = alas */
   /* ================================================== */
   display: inline-flex;
@@ -816,6 +816,21 @@ body.page-home .topbar {
   pointer-events: auto;
 }
 .mobile-menu.is-open { display: flex; }
+.mobile-menu-lang {
+  justify-content: center;
+  padding-bottom: 12px;
+  border: 0;
+  background: none;
+  border-bottom: 1px solid rgba(244, 234, 215, 0.14);
+}
+.mobile-menu-lang .lang-btn.is-active {
+  background: none;
+  box-shadow: none;
+  color: var(--marigold);
+}
+.mobile-menu-lang .lang-btn {
+  color: var(--muted); /* mobile-menu on aina tumma tausta, ei home-heron vaaleaa väriä */
+}
 .mobile-menu-links {
   display: flex;
   flex-direction: column;
@@ -843,9 +858,8 @@ body.page-home .topbar {
 
 @media (max-width: 760px) {
   .topbar-nav { display: none; }           /* nav-linkit + some-ikonit siirtyvät hampurilaisvalikkoon */
-  .nav-right { flex: 1 1 auto; justify-content: center; }
-  .nav-right .nav-demo { display: none; }  /* "Pelaa demoa" siirtyy hampurilaisvalikkoon, kielivalitsin jää keskelle */
-  .hamburger-btn { display: flex; }
+  .nav-right { display: none; }            /* kielivalitsin siirtyy hampurilaisvalikon ylimmäksi */
+  .hamburger-btn { display: flex; margin-left: auto; } /* nav-right ei enää työnnä nappia reunaan */
 }
 
 
@@ -1100,6 +1114,29 @@ body.page-home:not(.entered) { overflow: hidden; }
      riippumatta siitä kumpi mitta (leveys vai korkeus) rajoittaa cover-skaalausta. */
 }
 
+/* Mobiili: korvaa jokainen taso omalla pystyformaattiin sommitellulla mobiilikuvalla
+   (assets/.../Duobotit_Background_Mobile/), poistetaan tasot joille ei ole mobiiliversiota */
+@media (max-width: 640px) {
+  .hero-layer-sky        { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/Duobotit_Background_Mobile/Duobotit_BG_Mobile_Sky.png"); }
+  .hero-layer-clouds-bg  { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/Duobotit_Background_Mobile/Duobotit_BG_Mobile_Cloud_Back.png"); }
+  .hero-layer-mountains  { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/Duobotit_Background_Mobile/Duobotit_BG_Mobile_Cloud_Mountain.png"); background-position: center; transform: none; }
+  .hero-layer-clouds-mid { display: none; }
+  .hero-layer-clouds-fg  { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/Duobotit_Background_Mobile/Duobotit_BG_Mobile_Cloud_Foreground.png"); }
+  .hero-layer-island-1a  { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/Duobotit_Background_Mobile/Duobotit_BG_Mobile_Floating_Island_1.png"); }
+  .hero-layer-island-1b  { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/Duobotit_Background_Mobile/Duobotit_BG_Mobile_Floating_Island_2.png"); }
+  .hero-layer-island-3   { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/Duobotit_Background_Mobile/Duobotit_BG_Mobile_Floating_Island_3.png"); }
+  .hero-layer-island-2,
+  .hero-layer-island-4,
+  .hero-layer-island-5a,
+  .hero-layer-island-5b,
+  .hero-layer-island-6,
+  .hero-layer-island-7   { display: none; } /* island-4 = pieni irrallinen kivenmurunen, ei käytetä */
+  .hero-layer-sea        { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/Duobotit_Background_Mobile/Duobotit_BG_Mobile_Sea.png"); }
+  .hero-layer-grass      { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/Duobotit_Background_Mobile/Duobotit_BG_Mobile_Midground_Grass.png"); }
+  .hero-layer-flowers    { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/Duobotit_Background_Mobile/Duobotit_BG_Mobile_Flowers.png"); --sway-amt: 2deg; }
+  .hero-layer-characters { background-image: url("assets/duobotit/Etusivu kuvat/Duobotit_Background/Duobotit_Background_Mobile/Duobotit_BG_Mobile_Characters.png"); }
+}
+
 /* Leijuvien saarten pehmeä kellunta: säädä kunkin saaren --float-* -muuttujia alla */
 .hero-island {
   animation: hero-island-float var(--float-dur, 7s) ease-in-out infinite;
@@ -1138,7 +1175,7 @@ body.page-home:not(.entered) { overflow: hidden; }
   100% { transform: skewX(calc(var(--sway-amt, 1.5deg) * -1)); }
 }
 /* ===== HUOJUNNAN SÄÄDÖT (muuta vain näitä arvoja) ===== */
-.hero-layer-grass   { --sway-amt: 0.deg; --sway-dur: 1s;   --sway-delay: 0.1s; }
+.hero-layer-grass   { --sway-amt: 0.5deg; --sway-dur: 7s; --sway-delay: 0s; }
 .hero-layer-flowers { --sway-amt: 0.5deg; --sway-dur: 7s; --sway-delay: 0s; }
 @media (prefers-reduced-motion: reduce) {
   .hero-sway { animation: none; }
@@ -1257,15 +1294,21 @@ body.page-home:not(.entered) { overflow: hidden; }
   .cloud { animation: none; }
 }
 .hero-title {
-  margin: 0;
+  width: clamp(380px, 48vw, 680px); /* vastaa entisen h1:n clamp(56px,8vw,96px) visuaalista kokoa */
+  height: auto;
+  overflow: visible;
+  filter: drop-shadow(0 6px 14px rgba(0,0,0,0.45)) drop-shadow(0 2px 5px rgba(0,0,0,0.35)) drop-shadow(0 0 20px rgba(255,255,255,0.35));
+}
+.hero-title text, .hero-title textPath {
   font-family: "Fredoka", sans-serif;
   font-weight: 700;
-  font-size: clamp(56px, 8vw, 96px);
-  line-height: 1.05;
-  letter-spacing: 0.01em;
-  color: #fff;
-  white-space: nowrap;   /* estää "DuBaRa":n katkeamisen kahdelle riville kapealla ruudulla */
-  text-shadow: 0 4px 26px rgba(0,0,0,0.5), 0 1px 4px rgba(0,0,0,0.35);
+  font-size: 80px;
+  letter-spacing: -0.1em;
+  fill: url(#heroTitleGradient); /* placeholder bubble-tyyli: graafikko viimeistelee myöhemmin */
+  stroke: #2b3a55;
+  stroke-width: 7px;
+  stroke-linejoin: round;
+  paint-order: stroke fill;
 }
 .hero-subtitle {
   margin: 14px 0 0;

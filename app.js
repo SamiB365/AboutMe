@@ -163,28 +163,31 @@ const CONFIG = {
   // omaa väripalettia) — kun tämä on päällä, kuutiogridi piilotetaan automaattisesti.
   wormhole: {
     enabled: true,           // näytä madonreikä (ja piilota kuutiogridi)
-    neckRadius: 1.83,        // r_s — kaulan säde (tapahtumahorisontti), pienempi = jyrkempi/kapeampi
-    depthScale: 1.6,         // suppilon syvyyskerroin — isompi = syvempi/dramaattisempi kaari
-    outerRadius: 45,         // profiilin ulottuvuus — riittävästi marginaalia kulmien yli (mitattu
-                             // säteenammunnalla: n. 13-14 yksikköä riittää tälle kameralle/kuvasuhteelle)
+    neckRadius: 1.7568,      // r_s — kaulan säde (tapahtumahorisontti) — käyttäjän säätöjen lopputulos
+                             // (skaalaus 2.5x + 1.5x + kavennukset 2x/20%/20%/20%, ks. repo-muisti)
+    depthScale: 2.48,        // suppilon syvyyskerroin — lyhennetty 3.1→2.48 (-20%) keskiosan pituuden vuoksi
+    outerRadius: 22.5,       // profiilin ulottuvuus — käyttäjän säätöjen lopputulos
+                             // (mitattu säteenammunnalla: n. 13-14 yksikköä riittää tälle kameralle/kuvasuhteelle)
     profileSegments: 96,     // pisteitä PER PUOLI kaulasta reunaan (mesh pysyy sileänä koko matkalla)
     angularSegments: 128,    // geometrian tiheys koko kehän ympäri (sileys vaakasuunnassa)
-    spokeCount: 44,          // näkyvien viivojen määrä kehää pitkin (vUv.x)
-    ringCount: 90,           // näkyvien renkaiden määrä kaulasta reunaan (vUv.y) — nostettu 60→90,
+    spokeCount: 88,          // näkyvien viivojen määrä kehää pitkin (vUv.x) — tuplattu (44→88)
+    ringCount: 180,          // näkyvien renkaiden määrä kaulasta reunaan (vUv.y) — tuplattu (90→180),
                              // koska ringBias pakkaa renkaat kaulaan ja harventaa niitä reunoilla:
                              // suurempi kokonaismäärä pitää reunatkin (sivut) riittävän tiheänä
     ringBias: 2.5,           // pow(distFromThroat, 1/ringBias) shaderissa pakkaa renkaat kaulaan —
                              // >1 = renkaat tiheämmässä kaulalla, harvemmassa reunalla (referenssin mukaan)
     lineWidth: 1.5,          // viivan paksuus (suhteessa segmenttiväliin)
-    rollStart: 0.75,         // missä kohdassa (0-1, osuus Umax:sta) reuna alkaa kaartua sisään
+    rollStart: 0.3,          // missä kohdassa (0-1, osuus Umax:sta) reuna alkaa kaartua sisään —
+                             // säädetty 0.75→0.3 käyttäjän pyynnöstä
     rollAmount: 1.0,         // 0-1: kuinka pitkälle kohti closeRadius/keskitasoa kaarto menee —
-                             // 1.0 = reunat OIKEASTI YHTYVÄT samaan pisteeseen (ei vain lähene)
-    closeRadius: 42,         // KIINTEÄ säde jossa ylä- ja alareuna kohtaavat kun rollAmount=1 —
-                             // riippumaton rMax:sta/outerRadiuksesta, joten reuna ei "karkaa"
-                             // äärettömiin eikä törmää kaulan omaan säteeseen (rs)
-    rollSharpness: 0.4,      // kuinka ISO OSA roll-alueesta kuluu itse kaartumiseen (0-1) — loppuosa
-                             // pysyy tasan closeRadius:ssa, joten sulkeutuminen NÄKYY selvänä reunuksena
-                             // eikä vain hipaise kohdetta viimeisessä pisteessä
+                             // 1.0 = reunat OIKEASTI YHTYVÄT samaan pisteeseen — duplikaattirengas
+                             // poistetaan erikseen alempana, joten tuplaviivaa ei enää synny
+    closeRadius: 21.15,      // KIINTEÄ säde jossa ylä- ja alareuna kohtaavat kun rollAmount=1 —
+                             // skaalattu yhdessä outerRadiuksen kanssa
+    rollSharpness: 1.0,      // kuinka ISO OSA roll-alueesta kuluu itse kaartumiseen (0-1) — nostettu
+                             // 0.4→1.0, jotta käännös venyy koko roll-matkalle eikä näytä terävältä
+                             // kärjeltä sivuilla (loppuosa pysyy tasan closeRadius:ssa, joten sulkeutuminen
+                             // NÄKYY selvänä reunuksena eikä vain hipaise kohdetta viimeisessä pisteessä
   },
   // SARJAKUVATAUSTA (Spider-Verse-printti): halftone-pisteet + litteät väritasot + terävät hiukkaset
   comicBg: {

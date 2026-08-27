@@ -163,15 +163,13 @@ const CONFIG = {
   // omaa väripalettia) — kun tämä on päällä, kuutiogridi piilotetaan automaattisesti.
   wormhole: {
     enabled: true,           // näytä madonreikä (ja piilota kuutiogridi)
-    neckRadius: 1.7568,      // r_s — kaulan säde (tapahtumahorisontti) — käyttäjän säätöjen lopputulos
-                             // (skaalaus 2.5x + 1.5x + kavennukset 2x/20%/20%/20%, ks. repo-muisti)
-    depthScale: 2.48,        // suppilon syvyyskerroin — lyhennetty 3.1→2.48 (-20%) keskiosan pituuden vuoksi
-    outerRadius: 22.5,       // profiilin ulottuvuus — käyttäjän säätöjen lopputulos
-                             // (mitattu säteenammunnalla: n. 13-14 yksikköä riittää tälle kameralle/kuvasuhteelle)
+    neckRadius: 2.25686,     // r_s — kaulan säde — kavennettu 20% keskiosan ohentamiseksi: 2.82107→2.25686
+    depthScale: 3.4584,      // suppilon syvyyskerroin — skaalattu √1.1x vielä 10% kasvatuksessa: 3.29749→3.4584
+    outerRadius: 20.9088,    // profiilin ulottuvuus — koko objekti kasvatettu vielä 10%: 19.008→20.9088
     profileSegments: 96,     // pisteitä PER PUOLI kaulasta reunaan (mesh pysyy sileänä koko matkalla)
     angularSegments: 128,    // geometrian tiheys koko kehän ympäri (sileys vaakasuunnassa)
-    spokeCount: 88,          // näkyvien viivojen määrä kehää pitkin (vUv.x) — tuplattu (44→88)
-    ringCount: 180,          // näkyvien renkaiden määrä kaulasta reunaan (vUv.y) — tuplattu (90→180),
+    spokeCount: 79,          // näkyvien viivojen määrä kehää pitkin (vUv.x) — vähennetty 10%: 88→79
+    ringCount: 162,          // näkyvien renkaiden määrä kaulasta reunaan (vUv.y) — vähennetty 10%: 180→162,
                              // koska ringBias pakkaa renkaat kaulaan ja harventaa niitä reunoilla:
                              // suurempi kokonaismäärä pitää reunatkin (sivut) riittävän tiheänä
     ringBias: 2.5,           // pow(distFromThroat, 1/ringBias) shaderissa pakkaa renkaat kaulaan —
@@ -182,8 +180,8 @@ const CONFIG = {
     rollAmount: 1.0,         // 0-1: kuinka pitkälle kohti closeRadius/keskitasoa kaarto menee —
                              // 1.0 = reunat OIKEASTI YHTYVÄT samaan pisteeseen — duplikaattirengas
                              // poistetaan erikseen alempana, joten tuplaviivaa ei enää synny
-    closeRadius: 21.15,      // KIINTEÄ säde jossa ylä- ja alareuna kohtaavat kun rollAmount=1 —
-                             // skaalattu yhdessä outerRadiuksen kanssa
+    closeRadius: 19.65427,   // KIINTEÄ säde jossa ylä- ja alareuna kohtaavat kun rollAmount=1 —
+                             // skaalattu yhdessä outerRadiuksen kanssa (vielä 10% kasvatus: 17.86752→19.65427)
     rollSharpness: 1.0,      // kuinka ISO OSA roll-alueesta kuluu itse kaartumiseen (0-1) — nostettu
                              // 0.4→1.0, jotta käännös venyy koko roll-matkalle eikä näytä terävältä
                              // kärjeltä sivuilla (loppuosa pysyy tasan closeRadius:ssa, joten sulkeutuminen

@@ -1240,7 +1240,7 @@ body.page-home:not(.entered) { overflow: hidden; }
    (flex-column jättää niille luontevasti tilaa). */
 .hero-content {
   position: absolute;
-  top: 15%;
+  top: 10%;
   left: 50%;
   transform: translateX(-50%);
   z-index: 1;

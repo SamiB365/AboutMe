@@ -25,14 +25,16 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 const CONFIG = {
   radius: 6.8,          // putken säde (isompi → loivempi kaari, enemmän kortteja näkyvissä)
   anglePerCard: 28,     // astetta korttien välillä kehällä
-  helix: 1.1,           // pystyporras / kortti ≈ 1/3 kortin korkeudesta (selvä spiraali)
-  ringYOffset: -3.0,    // koko kierteen (kortit+kuplat+kamera) yleinen lasku — n. puhekuplan koon (3.0)
-                        // verran, jotta aloituspiste (indeksi 0) osuu juuri gridin tasolle (baseY -3)
-  slotYOffset: 1.0,     // kortin OMA "slot"-korkeus nostettu hieman ylemmäs — EI vaikuta kameran
-                        // katselukohteeseen (h), joten kortti näkyy hieman ruudun keskiön yläpuolella
-  cameraZ: 15.0,        // kameran lepoetäisyys (taempana → isompi rengas mahtuu)
+  helix: 0,             // POIS PÄÄLTÄ (käyttäjän pyynnöstä) — kortit/kuplat/kamera pysyvät samalla
+                        // korkeudella, muodostaen tasaisen VAAKARENKAAN madonreiän ympärille (ei spiraalia)
+  ringYOffset: 0,       // koko kierteen (kortit+kuplat+kamera) yleinen korkeus — 0 = keskitetty
+                        // madonreikä-tunnelin kaulan korkeudelle (ks. buildWormholeTunnel(), y=0.2)
+  slotYOffset: 0,       // kortin OMA "slot"-korkeus — 0 = ei enää erillistä nostoa, pysyy tunnelin
+                        // kaulan korkeudella (katso ringYOffset)
+  cameraZ: 18.5,        // kameran lepoetäisyys (taempana → isompi rengas mahtuu)
   cameraEnterZ: 21,     // mistä kamera lentää sisään introssa
-  fov: 55,
+  fov: 76,              // 1.5x zoom out (tan(fov/2) kerrottu 1.5:llä 55°:sta) — leveämpi kuva-ala
+                        // ilman kameran siirtoa (siirto rikkoisi scene.fog:in far=24 sumurajan)
   scrollSensitivity: 0.0017, // wheel → karusellin pyöritys
   scrollEase: 0.085,    // kuinka nopeasti nykyinen indeksi seuraa tavoitetta
   snapDelay: 150,       // ms scrollin jälkeen ennen snäppiä lähimpään korttiin
@@ -90,7 +92,7 @@ const CONFIG = {
   },
   // UUSI 3D-MALLI keskellä (GLB, korvaa vanhan proseduraalisen piirilevypuun) — kortit kiertävät sitä
   tree: {
-    enabled: true,
+    enabled: false, // VÄLIAIKAISESTI POISTETTU käyttäjän pyynnöstä — aseta takaisin true kun puu palautetaan
     url: "assets/models/sakura tree_3D ilman lehtiä.glb", // GLB-tiedoston polku
     baseY: -3,       // tyven korkeus (kortit kiertävät tämän ympärillä) — myös gridin "reunan" korkeus
     scale: 3,        // koko (säädä mallin omien mittojen mukaan)
@@ -99,9 +101,15 @@ const CONFIG = {
                         // täsmälleen kuopan pohjimmaisen kohdan (baseY - wellDepth) tasolla
   },
   // NEONGRIDI-ALUSTA puun alla (synkkywave-lattia, kuten referenssikuvan hehkuva ruudukko + rengas)
+  // + YHTENÄINEN KUUTIO: kaikki 6 seinää (lattia/katto/vasen/oikea/etu/taka) käyttävät SAMAA
+  // neliönmuotoista geometriaa ja materiaalia — PÄÄSÄÄDIN koon muuttamiseen on `cubeSize` (alla).
   grid: {
     enabled: true,
-    size: 60,                 // lattiatason koko (world-yksikköä)
+    cubeSize: 16,              // *** KUUTION KOKO *** — puolisivu keskeltä yhteen seinään (world-yksikköä).
+                               // Koko kuution särmän pituus = cubeSize*2. MUUTA VAIN TÄTÄ LUKUA
+                               // suurentaaksesi/pienentääksesi koko kuutiota — kaikki 6 seinää, niiden
+                               // sijainnit JA fade-häivytyksen kantama skaalautuvat automaattisesti mukana
+                               // (ks. buildGroundGrid()), joten grid-tyyli pysyy symmetrisenä joka koossa.
     cellSize: 1.2,             // ruudukon solun koko
     lineWidth: 0.02,           // viivan paksuus (world-yksikköä)
     color: "80,200,255",       // ruudukon väri (syaäni)
@@ -109,18 +117,27 @@ const CONFIG = {
     ringColor: "255,120,220",  // hehkuva rengas puun tyven ympärillä
     ringRadius: 4.2,           // renkaan säde (isompi → näkyy rungon/kiven ulkopuolella)
     ringWidth: 0.18,           // renkaan paksuus
-    fadeRadius: 22,            // etäisyys jolloin ruudukko häipyy näkyvistä (horisontti)
-    wellDepth: 4.5,            // kuinka syvälle ruudukko "uppoaa" puun kohdalla (massakuoppa) —
-                               // iso arvo = jyrkkä, syvä suppilo (kuten painovoimakuoppa-referenssikuva)
-    wellRadius: 6.5,           // uppouman leveys — leveä säde levittää suppilon laajalle alueelle
-                               // ruudukkoa (ei enää vain tyven kokoinen tiukka notko)
+    fadeRadius: 22,            // vähimmäishäivytyssäde — buildGroundGrid() nostaa tätä automaattisesti
+                               // (cubeSize*1.6) jos cubeSize on iso, ettei kulmat tummene ennen reunaa
+    wellDepth: 0,              // SUORISTETTU (käyttäjän pyynnöstä) — 0 = täysin litteä ruudukko,
+                               // ei enää kuoppaa/uppoumaa. Nosta takaisin jos syvennys halutaan palauttaa.
+    wellRadius: 6.5,           // uppouman leveys (vaikutuksetta kun wellDepth on 0)
     gradientRadius: 9,         // etäisyys jolloin ruudukon väri siirtyy kokonaan rengasväristä (pinkki)
                                // perusväriin (syaani) — referenssikuvan liukuvärinen lattia
     pulseSpeed: 1.3,           // renkaiden sykkeen (hengityksen) nopeus
     pulseAmount: 0.35,         // sykkeen voimakkuus (0..1, kirkkauden vaihteluväli)
     ring2Radius: 3.0,          // sisemmän renkaan säde (kerroksellinen hehku, kuten referenssikuvassa)
     ring2Width: 0.12,          // sisemmän renkaan paksuus
-    yOffset: -1,             // koko gridin oma lisälasku (puun/korttien korkeuteen ei vaikuta)
+    yOffset: -1,             // koko kuution oma lisälasku (puun/korttien korkeuteen ei vaikuta) — siirtää
+                              // AINOASTAAN lattian korkeutta, muut 5 seinää seuraavat cubeSize:n mukana
+
+    // TOINEN RISTIKKO YLÖS + SIVU-/ETU-/TAKARISTIKOT — kaikkien sijainnit lasketaan cubeSize:sta
+    // buildGroundGrid()issa (ei enää erillisiä topOffset/sideOffset-lukuja, jotta kuutio pysyy AINA
+    // symmetrisenä eikä pysty ajautumaan vinoksi kun cubeSize:a säädetään).
+    topEnabled: true,          // näytä myös yläristikko (katto)
+    topDrop: 10,               // laskee kattoa tämän verran alemmas symmetrisestä kuutiokorkeudesta
+                               // (0 = täysi kuutio, isompi luku = katto näkyy lähempänä/matalampana)
+    sideEnabled: true,         // näytä myös sivu-/etu-/takaseinät (yhdessä 6 sivun kuutio)
 
     // VALOEFEKTI: N hehkuvaa "käärmettä" (snakeCount kpl) kulkee pitkin ruudukkoviivoja eteenpäin,
     // kääntyen aina risteyksessä satunnaiseen suuntaan (ei koskaan käänny takaisin). Jos käärme
@@ -138,6 +155,36 @@ const CONFIG = {
     // Väripaletti, josta käärmeet saavat värinsä kierrättäen (indeksi % paletin pituus) — antaa
     // visuaalista vaihtelua kun monta käärmettä liikkuu yhtä aikaa.
     snakeColors: ["255,120,220", "150,90,255", "80,200,255"],
+  },
+  // MADONREIKÄ: Flammin paraboloidi (fysikaalisesti oikea upotuskaavio Schwarzschildin
+  // aika-avaruudelle, z = depthScale*sqrt(rs)*u missä r = rs+u² — ks. buildWormholeGeometry()).
+  // Kaksi paraboloidia liitettynä kaulasta (Einstein-Rosen-silta) syntyy YHDESTÄ symmetrisestä
+  // THREE.LatheGeometry-pyörähdyspinnasta. Käyttää CONFIG.grid.color/ringColor/glow -värejä (ei
+  // omaa väripalettia) — kun tämä on päällä, kuutiogridi piilotetaan automaattisesti.
+  wormhole: {
+    enabled: true,           // näytä madonreikä (ja piilota kuutiogridi)
+    neckRadius: 1.83,        // r_s — kaulan säde (tapahtumahorisontti), pienempi = jyrkempi/kapeampi
+    depthScale: 1.6,         // suppilon syvyyskerroin — isompi = syvempi/dramaattisempi kaari
+    outerRadius: 45,         // profiilin ulottuvuus — riittävästi marginaalia kulmien yli (mitattu
+                             // säteenammunnalla: n. 13-14 yksikköä riittää tälle kameralle/kuvasuhteelle)
+    profileSegments: 96,     // pisteitä PER PUOLI kaulasta reunaan (mesh pysyy sileänä koko matkalla)
+    angularSegments: 128,    // geometrian tiheys koko kehän ympäri (sileys vaakasuunnassa)
+    spokeCount: 44,          // näkyvien viivojen määrä kehää pitkin (vUv.x)
+    ringCount: 90,           // näkyvien renkaiden määrä kaulasta reunaan (vUv.y) — nostettu 60→90,
+                             // koska ringBias pakkaa renkaat kaulaan ja harventaa niitä reunoilla:
+                             // suurempi kokonaismäärä pitää reunatkin (sivut) riittävän tiheänä
+    ringBias: 2.5,           // pow(distFromThroat, 1/ringBias) shaderissa pakkaa renkaat kaulaan —
+                             // >1 = renkaat tiheämmässä kaulalla, harvemmassa reunalla (referenssin mukaan)
+    lineWidth: 1.5,          // viivan paksuus (suhteessa segmenttiväliin)
+    rollStart: 0.75,         // missä kohdassa (0-1, osuus Umax:sta) reuna alkaa kaartua sisään
+    rollAmount: 1.0,         // 0-1: kuinka pitkälle kohti closeRadius/keskitasoa kaarto menee —
+                             // 1.0 = reunat OIKEASTI YHTYVÄT samaan pisteeseen (ei vain lähene)
+    closeRadius: 42,         // KIINTEÄ säde jossa ylä- ja alareuna kohtaavat kun rollAmount=1 —
+                             // riippumaton rMax:sta/outerRadiuksesta, joten reuna ei "karkaa"
+                             // äärettömiin eikä törmää kaulan omaan säteeseen (rs)
+    rollSharpness: 0.4,      // kuinka ISO OSA roll-alueesta kuluu itse kaartumiseen (0-1) — loppuosa
+                             // pysyy tasan closeRadius:ssa, joten sulkeutuminen NÄKYY selvänä reunuksena
+                             // eikä vain hipaise kohdetta viimeisessä pisteessä
   },
   // SARJAKUVATAUSTA (Spider-Verse-printti): halftone-pisteet + litteät väritasot + terävät hiukkaset
   comicBg: {
@@ -1097,6 +1144,10 @@ let treeMixer = null;         // AnimationMixer, jos GLB sisältää animaatioit
 let treeT = 0;                // edellinen aika (dt AnimationMixerille)
 let treeReady = Promise.resolve(); // ratkeaa kun puu-GLB on ladattu (tai epäonnistunut) → sivunlataus-overlay odottaa tätä
 let gridMesh = null, gridMat = null; // neongridi-lattia puun alla
+let gridMeshTop = null;       // toinen (peilattu) ristikko ylhäällä, jakaa gridMatin ala-gridin kanssa
+let gridMeshLeft = null, gridMeshRight = null; // sivuristikot (samat geo/mat, muodostavat kuution ylä/ala-ristikon kanssa)
+let gridMeshFront = null, gridMeshBack = null; // etu-/takaristikot — kuution 5. ja 6. sivu
+let wormholeMesh = null, wormholeMat = null; // madonreikä-tunneli (vaihtoehto kuutiogridille)
 
 // KÄÄRME-VALOEFEKTI (KEVYT, TEKSTUURIPOHJAINEN): N hehkuvaa viivaa (CONFIG.grid.snakeCount kpl)
 // kulkee ruudukon linjoja pitkin eteenpäin, kääntyen risteyksissä satunnaiseen suuntaan (ei
@@ -1313,6 +1364,7 @@ function initThree(canvas) {
   buildLights();
   loadTreeModel();
   buildGroundGrid();
+  buildWormholeTunnel();
   buildCards();
   buildBubble();
   buildComposer();
@@ -1824,13 +1876,197 @@ const GRID_FRAG = /* glsl */ `
   }
 `;
 
+// MADONREIKÄ-TUNNELI: yksinkertainen läpikulkeva UV (x=kulma ympäri, y=pituus) — polaarinen
+// muoto tulee itse GEOMETRIASTA (ks. buildWormholeTunnel()), ei vertex-shaderin tarvitse taivuttaa mitään.
+const WORMHOLE_VERT = /* glsl */ `
+  varying vec2 vUv;
+  void main(){
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+const WORMHOLE_FRAG = /* glsl */ `
+  precision highp float;
+  varying vec2 vUv;
+  uniform vec3  uColor;
+  uniform vec3  uRingColor;
+  uniform float uSpokeCount;
+  uniform float uRingCount;
+  uniform float uRingBias;
+  uniform float uLineWidth;
+  uniform float uGlow;
+  uniform float uTime;
+  uniform float uPulseSpeed;
+  uniform float uPulseAmount;
+  uniform float uEffectsOn;
+  uniform float uOpacity;
+
+  float gridLine(float coord, float lineW){
+    float g = abs(fract(coord - 0.5) - 0.5) / (fwidth(coord) * max(lineW, 0.6));
+    return 1.0 - clamp(g, 0.0, 1.0);
+  }
+
+  void main(){
+    float spokes = gridLine(vUv.x * uSpokeCount, uLineWidth);
+
+    // Väriliuku: rengasväri (pinkki) kaulalla (vUv.y ~ 0.5) → perusväri (syaani) suiden luona (0/1).
+    float distFromThroat = abs(vUv.y - 0.5) * 2.0;
+    vec3 gridColor = mix(uRingColor, uColor, distFromThroat);
+
+    // Rengasviivat TIIVIINÄ kaulalla ja HARVENEVINA ulkoreunaa kohti (referenssikuvan mukaan):
+    // uRingBias > 1 taivuttaa viivojen sijoituksen niin että sama viivamäärä pakkautuu kaulan
+    // lähelle ja levittäytyy loivasti ulkoreunalle asti.
+    float biasedCoord = sign(vUv.y - 0.5) * pow(distFromThroat, 1.0 / uRingBias) * 0.5 + 0.5;
+    float rings = gridLine(biasedCoord * uRingCount, uLineWidth);
+    float lineMask = max(spokes, rings);
+
+    float pulse = 1.0 + uPulseAmount * sin(uTime * uPulseSpeed) * uEffectsOn;
+
+    vec3 col = gridColor * lineMask * uGlow * pulse;
+    float alpha = lineMask * uOpacity;
+    if (alpha < 0.004) discard;
+    gl_FragColor = vec4(col, alpha);
+  }
+`;
+
+// Rakentaa madonreiän: THREE.LatheGeometry pyörittää Flammin paraboloidi -profiilin paikallisen
+// Y-akselin ympäri. Profiili = symmetrinen pistetaulukko kaulasta (rs) molempiin suuntiin ulos:
+// u-substituutio (r = rs+u², z = depthScale*sqrt(rs)*u, LINEAARINEN u:ssa) pakkaa pisteet
+// automaattisesti tiheiksi kaulan lähelle ja harvoiksi ulkoreunalle — kaarenpituus ds/du on
+// pienimmillään juuri u=0:ssa (kaula) ja kasvaa ulospäin, joten tasavälinen u tuottaa fysikaalisesti
+// oikean tiheysgradientin ILMAN keinotekoista pow()-vääristystä shaderissa (ks. uRingBias=1).
+// Taulukon KESKIMMÄINEN piste (j=0, u=0) on kaula → Lathe-UV.y=0.5 siinä, täsmää WORMHOLE_FRAGiin.
+// ULOIN OSA (at=|t| > rollStart) kaartuu sisäänpäin: r/z SEKOITETAAN (ei korvata) Flammin jatkeen
+// ja "rullattu"-tavoitteen välillä smoothstep-painolla — koska paino JA sen derivaatta ovat 0
+// taitteessa, tulos täsmää siellä automaattisesti sekä paikaltaan että kaltevuudeltaan (ei kulmaa).
+function buildWormholeGeometry(W) {
+  const rs = W.neckRadius;
+  const Umax = Math.sqrt(Math.max(W.outerRadius - rs, 0.0001));
+  const M = W.profileSegments;
+  const k0 = W.depthScale * Math.sqrt(rs);
+
+  const rollStart = W.rollStart !== undefined ? W.rollStart : 0.75;
+  const rollAmount = W.rollAmount !== undefined ? W.rollAmount : 1.0;
+  const closeRadius = W.closeRadius !== undefined ? W.closeRadius : 8;
+  // kuinka ISO OSA roll-alueesta (0-1) kuluu itse siirtymään — loppuosa pysyy TASAN closeRadius:ssa,
+  // joten reuna ei vain "hipaise" kohdetta viimeisessä pisteessä vaan on OIKEASTI kiinni siinä pidemmän
+  // matkan (näkyvä suljettu reunus), koska muuten flammR/flammZ:n jatkuva kasvu hallitsee sekoitusta
+  // lähes koko roll-alueen ajan ja sulkeutuminen näkyisi vain aivan viimeisenä äkkinäisenä nykivänä.
+  const rollSharpness = W.rollSharpness !== undefined ? W.rollSharpness : 0.4;
+
+  const uRoll = rollStart * Umax;
+  const rMax = rs + uRoll * uRoll;
+  const zAtRoll = k0 * uRoll;
+  // rTarget interpoloi rMax:sta (ei sulkeutumista) KIINTEÄÄN closeRadius-säteeseen (täysi sulkeutuminen)
+  // — TÄRKEÄÄ: ei enää interpoloi kohti rs:ää, joten täysi sulkeutuminen (rollAmount=1) ei osu
+  // päällekkäin kaulan oman säteen kanssa vaan omaan, erilliseen, äärelliseen kohtaamispisteeseen.
+  const rTarget = rMax + (closeRadius - rMax) * rollAmount;
+
+  const pts = [];
+  // kun s saturoituu (=1) pysyy (r,z) VAKIONA loppumatkan — jos jokaiselle indeksille silti lisätään
+  // oma piste, LatheGeometryn indeksipohjainen vUv.y kasvaa tyhjää fyysistä matkaa kohti JATKUVASTI,
+  // jolloin moni rengasviiva ahtautuu samaan kohtaan ja sulautuu sumeaksi/kiinteäksi väripinnaksi
+  // (nähtiin reunan "huulessa"). Korjaus: kun toinen puoli on jo saturoitunut, ei lisätä duplikaatteja
+  // — näin loppumatkan indeksit/vUv-budjetti säästyy oikeasti liikkuvalle osalle, tiheys pysyy tasaisena.
+  let satPos = false, satNeg = false;
+  for (let j = -M; j <= M; j++) {
+    const t = j / M;
+    const at = Math.abs(t);
+    const u = t * Umax;
+
+    const flammR = rs + u * u;
+    const flammZ = k0 * u;
+    let r = flammR;
+    let z = flammZ;
+    let saturated = false;
+
+    if (at > rollStart) {
+      const k = (at - rollStart) / (1.0 - rollStart);
+      // s tiivistää siirtymän rollSharpness-osuuteen roll-alueesta ja säilyttää silti ease'(0)=0:n
+      // (koska smoothstep ajetaan s:lleä, ei k:lle sellaisenaan) — loppuosa (s=1) on TASAN kohteessa.
+      const s = Math.min(k / rollSharpness, 1.0);
+      const ease = s * s * (3.0 - 2.0 * s);   // smoothstep: ease(0)=ease'(0)=0 → sileä liitos
+      saturated = s >= 1.0;
+
+      // z:n tavoite taitteen jälkeen: KÄÄNTYY takaisin keskitasoa kohti (ei jatka kasvuaan ulos) —
+      // rollAmount=1 sulkee reunan täysin keskitasolle, 0 = ei sulkeutumista.
+      const targetZ = Math.sign(t) * zAtRoll * (1 - rollAmount);
+
+      r = flammR * (1 - ease) + rTarget * ease;
+      z = flammZ * (1 - ease) + targetZ * ease;
+    }
+
+    // TURVARAJA: closeRadius/rollAmount saavat käyttäjän säädössä ylittää outerRadiuksen (esim.
+    // closeRadius=42 > rMax≈26), jolloin objekti kasvaisi outerRadiusta suuremmaksi ilman tätä —
+    // outerRadius on siis AINA koko objektin kiinteä kokonaissäde, riippumatta muista roll-arvoista.
+    r = Math.min(r, W.outerRadius);
+
+    if (saturated) {
+      if (t > 0) { if (satPos) continue; satPos = true; }
+      else { if (satNeg) continue; satNeg = true; }
+    }
+
+    pts.push(new THREE.Vector2(Math.max(r, 0.01), z));
+  }
+  return new THREE.LatheGeometry(pts, W.angularSegments);
+}
+
+
+
+function buildWormholeTunnel() {
+  const W = CONFIG.wormhole;
+  if (!W.enabled) return;
+  const geo = buildWormholeGeometry(W);
+  wormholeMat = new THREE.ShaderMaterial({
+    transparent: true,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+    blending: THREE.AdditiveBlending,
+    uniforms: {
+      uColor: { value: colRGB255(CONFIG.grid.color) },
+      uRingColor: { value: colRGB255(CONFIG.grid.ringColor) },
+      uSpokeCount: { value: W.spokeCount },
+      uRingCount: { value: W.ringCount },
+      uRingBias: { value: W.ringBias },
+      uLineWidth: { value: W.lineWidth },
+      uGlow: { value: CONFIG.grid.glow },
+      uTime: { value: 0 },
+      uPulseSpeed: { value: CONFIG.grid.pulseSpeed },
+      uPulseAmount: { value: CONFIG.grid.pulseAmount },
+      uEffectsOn: { value: reduce ? 0 : 1 },
+      uOpacity: { value: 0 },
+    },
+    vertexShader: WORMHOLE_VERT,
+    fragmentShader: WORMHOLE_FRAG,
+  });
+  wormholeMesh = new THREE.Mesh(geo, wormholeMat);
+  // EI rotaatiota: THREE.LatheGeometry pyörittää profiilin jo paikallisen Y-akselin ympäri, joten
+  // kaula/syvyysakseli osoittaa suoraan maailman Y:tä (ylös/alas) pitkin ilman kiertoa (toisin kuin
+  // aiempi TorusGeometry, jonka pyörähdysakseli oli Z ja vaati 90° X-kierron).
+  // Keskitetty lähelle kameran katselupistettä (0, 0.2, 0), jotta madonreikä näkyy ruudun keskellä.
+  wormholeMesh.position.set(0, 0.2, 0);
+  wormholeMesh.renderOrder = -1;
+  scene.add(wormholeMesh);
+
+  // Piilota kuutiogridi ettei kaksi rakennetta sekoitu keskenään samassa näkymässä.
+  for (const m of [gridMesh, gridMeshTop, gridMeshLeft, gridMeshRight, gridMeshFront, gridMeshBack]) {
+    if (m) m.visible = false;
+  }
+}
+
 function buildGroundGrid() {
   const G = CONFIG.grid;
   if (!G.enabled) return;
   // Riittävästi segmenttejä, jotta painovoimakuoppa (uWellDepth/uWellRadius) taipuu pehmeästi
   // eikä jää kulmikkaaksi (litteä 1x1-taso ei voisi taipua ollenkaan).
-  const segs = Math.max(64, Math.round(G.size / 0.6));
-  const geo = new THREE.PlaneGeometry(G.size, G.size, segs, segs);
+  // Kaikki 6 seinää jakavat SAMAN neliögeometrian, jonka koko = kuution särmä (cubeSize*2) — tämä
+  // takaa että vierekkäiset seinät kohtaavat siististi reunoiltaan (ä jää aukkoja/päällekkäisyyttä).
+  const faceSize = G.cubeSize * 2;
+  const segs = Math.max(64, Math.round(faceSize / 0.6));
+  const geo = new THREE.PlaneGeometry(faceSize, faceSize, segs, segs);
+  // Häivytyssäde skaalataan cubeSize:n mukana, ettei kulmat (etäisyys keskeltä ≈ cubeSize*1.41)
+  // tummene ennen kuin ruudukko ehtii reunaan — yhtenäinen kuutio, ei ennenaikaista horisonttihäivytystä.
+  const fadeR = Math.max(G.fadeRadius, G.cubeSize * 1.6);
 
   // Käärmeiden bakattu hännän tekstuuri (ks. kommentit snakeUpdate():n yllä): resoluutio riittää
   // kattamaan koko näkyvyysalueen (fadeRadius) + pieni marginaali, origon offset (HALF) hoitaa
@@ -1864,7 +2100,7 @@ function buildGroundGrid() {
       uRingWidth: { value: G.ringWidth },
       uRing2Radius: { value: G.ring2Radius },
       uRing2Width: { value: G.ring2Width },
-      uFadeRadius: { value: G.fadeRadius },
+      uFadeRadius: { value: fadeR },
       uGradientRadius: { value: G.gradientRadius },
       uPulseSpeed: { value: G.pulseSpeed },
       uPulseAmount: { value: G.pulseAmount },
@@ -1887,10 +2123,50 @@ function buildGroundGrid() {
     fragmentShader: GRID_FRAG,
   });
   gridMesh = new THREE.Mesh(geo, gridMat);
-  gridMesh.rotation.x = -Math.PI / 2;     // makaamaan XZ-tasoon
+  gridMesh.rotation.x = -Math.PI / 2;     // makaamaan XZ-tasoon (lattia = kuution POHJA)
   gridMesh.position.y = CONFIG.tree.baseY + G.yOffset; // sama korkeus kuin puun tyvi (+ pieni oma lasku)
   gridMesh.renderOrder = -1;
   scene.add(gridMesh);
+
+  // Kuution keskikorkeus (lattiasta cubeSize verran ylös) — katto, sivut ja etu/taka käyttävät tätä
+  // symmetrisesti, jotta koko kuutio pysyy tasasivuisena kun cubeSize:a säädetään.
+  const centerY = gridMesh.position.y + G.cubeSize;
+
+  // KATTO: peilattu lattia, cubeSize*2 verran ylempänä (kuution katto), tuotu topDrop verran alemmas.
+  if (G.topEnabled) {
+    gridMeshTop = new THREE.Mesh(geo, gridMat);
+    gridMeshTop.rotation.x = Math.PI / 2;  // peilattu (kääntyy "kattoa" kohti)
+    gridMeshTop.position.y = gridMesh.position.y + G.cubeSize * 2 - G.topDrop;
+    gridMeshTop.renderOrder = -1;
+    scene.add(gridMeshTop);
+  }
+
+  // SIVU-/ETU-/TAKASEINÄT: cubeSize etäisyydellä keskeltä joka suuntaan (x/z) — sama luku kuin katon
+  // korkeus, joten kuutio on aidosti tasasivuinen (ei vinoutunut mihinkään suuntaan).
+  if (G.sideEnabled) {
+    gridMeshLeft = new THREE.Mesh(geo, gridMat);
+    gridMeshLeft.rotation.y = Math.PI / 2;
+    gridMeshLeft.position.set(-G.cubeSize, centerY, 0);
+    gridMeshLeft.renderOrder = -1;
+    scene.add(gridMeshLeft);
+
+    gridMeshRight = new THREE.Mesh(geo, gridMat);
+    gridMeshRight.rotation.y = -Math.PI / 2;
+    gridMeshRight.position.set(G.cubeSize, centerY, 0);
+    gridMeshRight.renderOrder = -1;
+    scene.add(gridMeshRight);
+
+    // Paikallinen taso on jo XY-tasossa (normaali +Z) → ei tarvitse kiertoa, vain siirto Z:lla.
+    gridMeshFront = new THREE.Mesh(geo, gridMat);
+    gridMeshFront.position.set(0, centerY, G.cubeSize);
+    gridMeshFront.renderOrder = -1;
+    scene.add(gridMeshFront);
+
+    gridMeshBack = new THREE.Mesh(geo, gridMat);
+    gridMeshBack.position.set(0, centerY, -G.cubeSize);
+    gridMeshBack.renderOrder = -1;
+    scene.add(gridMeshBack);
+  }
   snakeInit();
 }
 
@@ -2570,6 +2846,10 @@ function animate() {
     gridMat.uniforms.uOpacity.value = revealP; // neongridi feidaa sisään introssa
     gridMat.uniforms.uTime.value = time;        // renkaiden sykintä
     if (!reduce && CONFIG.grid.snakeEnabled) snakeUpdate(time); // käärme-valoefekti (pois käytöstä tähän versioon)
+  }
+  if (wormholeMat) {
+    wormholeMat.uniforms.uOpacity.value = revealP; // sama feidaus-intro kuin kuutiogridillä
+    wormholeMat.uniforms.uTime.value = time;
   }
 
   composer.render();
